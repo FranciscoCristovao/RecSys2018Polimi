@@ -1,6 +1,6 @@
 # our RS
 from randomRS.randomRS import RandomRS
-from loader.loader import load_dataframe
+from loader.loader import load_dataframe, save_dataframe_arr
 # external libraries
 import os
 
@@ -10,5 +10,6 @@ file_path = os.path.expanduser('data/train.csv')
 dataframe = load_dataframe(file_path, ',')
 
 rs = RandomRS()
+# print(rs.recommend())
+save_dataframe_arr('output/submission.csv', ',', rs.recommend())
 
-print(rs.recommend())
