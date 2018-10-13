@@ -13,9 +13,12 @@ def save_dataframe_arr(path, sep, arr):
     dataframe = pd.DataFrame(arr)
     dataframe.index.names=['playlist_id']
 
+    dataframe.to_csv(path, sep=sep)
+    print("Successfully built csv from arr.. ")
 
-    #DataFrame()
-    print(dataframe)
+
+def save_dataframe(path, sep, dataframe):
+
     dataframe.to_csv(path, sep=sep)
     print("Successfully built csv..")
 
