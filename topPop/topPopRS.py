@@ -25,9 +25,6 @@ class TopPopRS:
         for i in range(10000):
             playlist.update({playlist_ids['playlist_id'][i]: string})
 
-
-        print(type(playlist.items()))
-
         dataframe = pd.DataFrame(list(playlist.items()), columns=['playlist_id', 'track_ids'])
         dataframe = dataframe.sort_values(['playlist_id'], ascending=True)
 
