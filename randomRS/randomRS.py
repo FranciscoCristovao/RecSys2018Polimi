@@ -9,7 +9,7 @@ class RandomRS:
         print("Fitting...")
 
     def evaluate(self):
-        print("evalueting..")
+        print("Evaluating..")
 
     def recommend(self):
         playlist = []

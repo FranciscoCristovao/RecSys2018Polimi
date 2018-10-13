@@ -1,15 +1,13 @@
 # our RS
 from randomRS.randomRS import RandomRS
-from loader.loader import load_dataframe, save_dataframe_arr
+from topPop.topPopRS import TopPopRS
+from loader.loader import save_dataframe_arr, save_topPop_result
 # external libraries
 import os
 
 
-# Load dataset
-file_path = os.path.expanduser('data/train.csv')
-dataframe = load_dataframe(file_path, ',')
-
-rs = RandomRS()
-# print(rs.recommend())
-save_dataframe_arr('output/submission.csv', ',', rs.recommend())
+#rs = RandomRS()
+rs = TopPopRS()
+result = rs.recommend()
+save_topPop_result('output/submission.csv', ',', result)
 
