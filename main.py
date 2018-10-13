@@ -1,16 +1,16 @@
 # our RS
-from randomRS.randomRS import RandomRS
-from loader.loader import load_dataframe, save_dataframe
+from topPop.topPopRS import TopPopRS
+from loader.loader import save_dataframe_arr, save_topPop_result
+'''
+In my opinion, this is better:
+from loader.loader import trainData
+'''
 # external libraries
 import os
 
 
-# Load dataset
-file_path = os.path.expanduser('data/train.csv')
-dataframe = load_dataframe(file_path, ',')
-playlist_ids = load_dataframe('data/target_playlists.csv', ',')
-rs = RandomRS()
-# print(rs.recommend())
-print("hey")
-save_dataframe('output/submission.csv', ',', rs.recommend(playlist_ids))
+rs = TopPopRS()
+result = rs.recommend()
+# result = rs.recommend_prop(trainData)
+save_topPop_result('output/submission_top_pop.csv.csv', ',', result)
 
