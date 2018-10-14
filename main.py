@@ -1,12 +1,12 @@
 # our RS
 from topPop.topPopRS import TopPopRS
-from loader.loader import save_topPop_result
+from loader.loader import save_dataframe, trainData, targetData
 
 # external libraries
-import os
 
 
 rs = TopPopRS()
-result = rs.recommend()
-save_topPop_result('output/submission_top_pop.csv', ',', result)
+
+result = rs.recommend(trainData, targetData)
+save_dataframe('output/submission_top_pop.csv', ',', result)
 
