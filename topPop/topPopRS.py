@@ -17,14 +17,35 @@ class TopPopRS:
 
     def recommend(self, train_data, playlist_ids):
 
-        topSongs = train_data['track_id'].value_counts().head(10).index.values
-        string = ' '.join(str(e) for e in topSongs)
-
+        topSongs = train_data['track_id'].value_counts().head(20).index.values
         playlist = {}
 
         for i in range(10000):
+            # the thing we called k in chat
+            num_already = 0
+            recommended_items = topSongs[0:10]
+            temp = train_data['track_id'].loc[train_data['playlist_id'] == playlist_ids['playlist_id'][i]].values
+
+            # todo: improve complexity
+            '''for j in recommended_items:
+                if j in temp:
+                    num_already = num_already + 1
+                    recommended_items = np.delete(recommended_items, np.where(recommended_items == j))
+                    recommended_items = np.append(recommended_items, topSongs[9+num_already])
+
+            string = ' '.join(str(e) for e in recommended_items)
+            playlist.update({playlist_ids['playlist_id'][i]: string})'''
+
+            topSongs_mask = np.in1d(topSongs, temp, invert=True)
+
+            rec_no_repeat = topSongs[topSongs_mask]
+            rec_no_repeat = rec_no_repeat[0:10]
+            print(i)
+            string = ' '.join(str(e) for e in rec_no_repeat)
             playlist.update({playlist_ids['playlist_id'][i]: string})
 
+
+        print("exit from df")
         dataframe = pd.DataFrame(list(playlist.items()), columns=['playlist_id', 'track_ids'])
         dataframe = dataframe.sort_values(['playlist_id'], ascending=True)
 
