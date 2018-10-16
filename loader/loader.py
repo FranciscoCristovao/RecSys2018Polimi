@@ -1,9 +1,11 @@
 import pandas as pd
 import os
 import numpy as np
+from sklearn.model_selection import train_test_split
 
 
-trainData = pd.read_csv('data/train.csv', sep=',')
+fullData = pd.read_csv('data/train.csv', sep=',')
+trainData, testData = train_test_split(fullData, test_size=0.2)
 targetData = pd.read_csv('data/target_playlists.csv', sep=',')
 
 

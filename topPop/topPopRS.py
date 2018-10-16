@@ -27,14 +27,6 @@ class TopPopRS:
             temp = train_data['track_id'].loc[train_data['playlist_id'] == playlist_ids['playlist_id'][i]].values
 
             # todo: improve complexity
-            '''for j in recommended_items:
-                if j in temp:
-                    num_already = num_already + 1
-                    recommended_items = np.delete(recommended_items, np.where(recommended_items == j))
-                    recommended_items = np.append(recommended_items, topSongs[9+num_already])
-
-            string = ' '.join(str(e) for e in recommended_items)
-            playlist.update({playlist_ids['playlist_id'][i]: string})'''
 
             topSongs_mask = np.in1d(topSongs, temp, invert=True)
 
