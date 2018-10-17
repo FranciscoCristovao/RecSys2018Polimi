@@ -3,12 +3,14 @@ import os
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-
+#Load data
 fullData = pd.read_csv('data/train.csv', sep=',')
 trainData, testData = train_test_split(fullData, test_size=0.2)
 targetData = pd.read_csv('data/target_playlists.csv', sep=',')
+item_content_matrix = pd.read_csv('data/tracks.csv', sep=',')
 
 
+#Store DataFrame in csv
 def save_dataframe(path, sep, dataframe):
 
     dataframe.to_csv(path, index=False, sep=sep)
