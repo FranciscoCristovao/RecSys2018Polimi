@@ -1,6 +1,6 @@
 # our RS
 from topPop.topPopRS import TopPopRS
-from loader.loader import save_dataframe, trainData, targetData, fullData, testData
+from loader.loader import save_dataframe, trainData, targetData, fullData, testData, urm_full_data
 from utils.auxUtils import Helper
 
 # external libraries
@@ -13,5 +13,6 @@ from utils.auxUtils import Helper
 
 
 helper = Helper()
-helper.buildURMMatrix(testData)
+helper.buildURMMatrix(fullData)
+helper.dataframeToCSR(urm_full_data)
 

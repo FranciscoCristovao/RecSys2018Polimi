@@ -8,6 +8,7 @@ fullData = pd.read_csv('data/train.csv', sep=',')
 trainData, testData = train_test_split(fullData, test_size=0.2)
 targetData = pd.read_csv('data/target_playlists.csv', sep=',')
 item_content_matrix = pd.read_csv('data/tracks.csv', sep=',')
+urm_full_data = pd.read_csv('data/URM.csv', sep=',')
 
 
 #Store DataFrame in csv
