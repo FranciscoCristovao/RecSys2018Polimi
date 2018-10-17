@@ -4,15 +4,8 @@ import numpy as np
 class Helper:
 
     def __init__(self):
-        print("TopPop recommender has been initialized")
+        print("Helper has been initialized")
 
-    def buildURMMatrix(self, data):
-        d = {'playlist_id': [1, 1, 2], 'song_id': [21, 32, 64]}
-        df = pd.DataFrame(data=d)
-        '''df = df.groupby('playlist_id').agg(lambda x: x.tolist())
-        urm = df.iloc[:,0].str.replace(' ','').str.get_dummies(sep=',')'''
-        df2 = df["song_id"]
-        print(df2)
-        aux = pd.Series(df2.tolist())
-        print(aux)
-        df = pd.get_dummies(aux)
+    def buildURMMatrix(self, data):g
+        df = pd.get_dummies(data.set_index('playlist_id')['track_id'])
+        df.to_csv("data/URM.csv", index=False, sep=',')
