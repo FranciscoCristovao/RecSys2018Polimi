@@ -6,10 +6,10 @@ from utils.auxUtils import Helper
 # external libraries
 
 
-#rs = TopPopRS()
+'''rs = TopPopRS(trainData)
 
-#result = rs.recommend(trainData, targetData)
-#save_dataframe('output/submission_top_pop.csv', ',', result)
+result = rs.recommend(targetData)
+save_dataframe('output/submission_top_pop.csv', ',', result)'''
 
 
 helper = Helper()

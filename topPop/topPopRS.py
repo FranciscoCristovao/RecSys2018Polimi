@@ -4,27 +4,29 @@ import pandas as pd
 
 class TopPopRS:
 
-    topSongs = np.arange(0, 9)
+    topSongs = np.arange(0, 19)
+    train_data = pd.DataFrame()
 
-    def __init__(self):
+    def __init__(self, train_data):
         print("TopPop recommender has been initialized")
 
     def fit(self):
         print("Fitting...")
+        self.topSongs = self.train_data['track_id'].value_counts().head(20).index.values
 
     def evaluate(self):
         print("Evaluating..")
 
-    def recommend(self, train_data, playlist_ids):
+    def recommend(self, playlist_ids):
 
-        topSongs = train_data['track_id'].value_counts().head(20).index.values
+        topSongs = self.train_data['track_id'].value_counts().head(20).index.values
         playlist = {}
 
         for i in range(10000):
             # the thing we called k in chat
             num_already = 0
             recommended_items = topSongs[0:10]
-            temp = train_data['track_id'].loc[train_data['playlist_id'] == playlist_ids['playlist_id'][i]].values
+            temp = self.train_data['track_id'].loc[self.train_data['playlist_id'] == playlist_ids['playlist_id'][i]].values
 
             # todo: improve complexity
 

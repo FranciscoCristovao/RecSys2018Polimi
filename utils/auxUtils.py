@@ -8,6 +8,7 @@ class Helper:
         print("Helper has been initialized")
 
     def buildURMMatrix(self, data):
+        print("STARTING!!!!!!")
         df = pd.get_dummies(data.set_index('playlist_id')['track_id'])
         df.to_csv("data/URM.csv", index=False, sep=',')
 
