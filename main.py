@@ -1,18 +1,20 @@
 # our RS
 from topPop.topPopRS import TopPopRS
-from loader.loader import save_dataframe, trainData, targetData, fullData, testData, urm_full_data
+from cbfRS.cbfRS import cbfRS
+from loader.loader import save_dataframe, trainData, targetData, fullData, testData, item_content_matrix
 from utils.auxUtils import Helper
 
 # external libraries
 
+# TOPPOP
 
 '''rs = TopPopRS(trainData)
 
 result = rs.recommend(targetData)
 save_dataframe('output/submission_top_pop.csv', ',', result)'''
 
+#CBF
 
-helper = Helper()
-helper.buildURMMatrix(fullData)
-helper.dataframeToCSR(urm_full_data)
+rs = cbfRS(item_content_matrix)
+rs.fit()
 
