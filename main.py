@@ -17,4 +17,5 @@ save_dataframe('output/submission_top_pop.csv', ',', result)'''
 
 rs = cbfRS(item_content_matrix)
 rs.fit()
-
+pred = rs.recommend(fullData, targetData['playlist_id'])
+save_dataframe('data/content_b_f.csv', ',', pred)
