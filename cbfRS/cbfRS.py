@@ -8,10 +8,14 @@ class cbfRS:
     icm = pd.DataFrame()
     sym = pd.DataFrame()
 
-    def __init__(self, icm):
+    def __init__(self, data):
         print("CBF recommender has been initialized")
-        self.icm = icm
-        self.tracks = len(icm)
+        data = data.drop(columns="duration_sec")
+        albums = data['album_id'].values
+        artists = data['artist_id'].values
+        frames = [pd.get_dummies(data['album_id'], sparse=True), pd.get_dummies(data['artist_id'], sparse=True)]
+        self.icm = pd.concat(frames, axis=1)
+
 
     def fit(self):
         print("Fitting...")
