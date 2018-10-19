@@ -43,14 +43,15 @@ class cbfRS:
 
         for row_index in p_id:
 
-            row = estimated_ratings[row_index]
+            row = estimated_ratings.getrow(row_index)
             print("FIRST ROW")
+            print("Index")
+            print(row_index)
 
-            aux = -np.argsort(row) #gets the indexes of the top products
-            print(row)
-            return
-            top_items = aux[-10:]
+            top_items = np.argsort(-row)[:10] #gets the indexes of the top products
+            print("SONGS")
             print(top_items)
+
             return
             #print("Suggested items")
             #print (top_items)
