@@ -11,8 +11,9 @@ class Helper:
 
         playlists = data["playlist_id"].values
         tracks = data["track_id"].values
-        interaction = np.ones(len(playlists))
+        interaction = np.ones(len(tracks))
         coo_urm = coo_matrix((interaction, (playlists, tracks)))
+        # print("This is the coo_urm", coo_urm)
         return coo_urm.tocsr()
 
     def buildICMMatrix(self, data):
@@ -26,6 +27,7 @@ class Helper:
         artists = data["artist_id"].values
         interaction = np.ones(len(tracks))
         coo_icm = coo_matrix((interaction, (tracks, artists)))
+        print("Coo icm with artists correctly built")
         return coo_icm.tocsr()
         '''
 

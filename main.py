@@ -20,4 +20,4 @@ rs.fit(fullData)
 
 pred = rs.recommend(targetData['playlist_id'])
 print("GONNA SAVE PREDICTIONS")
-#save_dataframe('output/content_b_f.csv', ',', pred)
+save_dataframe('output/content_b_f.csv', ',', pred)
