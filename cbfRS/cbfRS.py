@@ -37,19 +37,21 @@ class cbfRS:
         estimated_ratings = csr_matrix(self.urm.dot(self.sym))
 
         print("Estimated ratings!!")
-        ratings_df = pd.DataFrame(estimated_ratings.toarray())
-
-        print(ratings_df)
+        #ratings_df = pd.DataFrame(estimated_ratings.toarray())
 
         counter = 1
 
         for row_index in p_id:
 
-            row = ratings_df.iloc[row_index].values
+            row = estimated_ratings[row_index]
+            print("FIRST ROW")
 
-            #TODO Probably the problem is HERE!!!!! Because of the matrix computation
-            aux = np.argsort(row) #gets the indexes of the top products
+            aux = -np.argsort(row) #gets the indexes of the top products
+            print(row)
+            return
             top_items = aux[-10:]
+            print(top_items)
+            return
             #print("Suggested items")
             #print (top_items)
             #if(counter==4): return
@@ -60,6 +62,5 @@ class cbfRS:
             pred.update({row_index: string})
             print("Playlist num", counter, "/10000")
             counter += 1
-
 
         return pd.DataFrame(list(pred.items()), columns=['playlist_id', 'track_ids'])

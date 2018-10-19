@@ -16,8 +16,8 @@ save_dataframe('output/submission_top_pop.csv', ',', result)'''
 #CBF
 
 rs = cbfRS(tracksData)
-rs.fit(testData)
+rs.fit(fullData)
 
 pred = rs.recommend(targetData['playlist_id'])
 print("GONNA SAVE PREDICTIONS")
-save_dataframe('output/content_b_f.csv', ',', pred)
+#save_dataframe('output/content_b_f.csv', ',', pred)
