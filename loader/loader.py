@@ -4,10 +4,10 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 
 # Load data
-fullData = pd.read_csv('data/train.csv', sep=',')
-trainData, testData = train_test_split(fullData, test_size=0.2)
-targetData = pd.read_csv('data/target_playlists.csv', sep=',')
-tracksData = pd.read_csv('data/tracks.csv', sep=',')
+full_data = pd.read_csv('data/train.csv', sep=',')
+train_data, test_data = train_test_split(full_data, test_size=0.2)
+target_data = pd.read_csv('data/target_playlists.csv', sep=',')
+tracks_data = pd.read_csv('data/tracks.csv', sep=',')
 
 # urm_full_data = pd.read_csv('data/URM.csv', sep=',')
 
