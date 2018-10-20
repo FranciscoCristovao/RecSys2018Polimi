@@ -38,7 +38,7 @@ class cbfRS:
 
         print("STARTING ESTIMATION")
         estimated_ratings = csr_matrix(self.urm.dot(self.sym))
-        print("SYM: ", estimated_ratings.todense())
+        # print("SYM: ", estimated_ratings.todense())
         counter = 0
 
         for k in playlist_ids:
@@ -54,8 +54,7 @@ class cbfRS:
             aux = np.argsort(-row.data)
             # print("Row.data sorted", aux)
             top_songs = row.indices[aux[:20]]
-            # print("Top Songs ", top_songs)
-
+            # print("Top songs:", top_songs)
             temp = self.train_data['track_id'].loc[self.train_data['playlist_id'] == k].values
             # print("Songs in the playlist", temp)
 
@@ -67,7 +66,8 @@ class cbfRS:
 
             string = ' '.join(str(e) for e in rec_no_repeat)
             final_pred.update({k: string})
-            print("Playlist num", counter, "/10000")
+            if(counter % 100) == 0:
+                print("Playlist num", counter, "/10000")
             counter += 1
 
         df = pd.DataFrame(list(final_pred.items()), columns=['playlist_id', 'track_ids'])
