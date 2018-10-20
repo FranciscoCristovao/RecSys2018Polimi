@@ -17,11 +17,11 @@ save_dataframe('output/submission_top_pop.csv', ',', predictions)
 #CBF
 
 rs = cbfRS(tracks_data)
-rs.fit(full_data)
+rs.fit(train_data)
 
 predictions = rs.recommend(target_data['playlist_id'])
 print("GONNA SAVE PREDICTIONS")
-save_dataframe('output/content_b_f_bad.csv', ',', predictions)
+save_dataframe('output/content_b_f.csv', ',', predictions)
 
 evaluator = Evaluator()
 evaluator.evaluate(predictions, test_data)
