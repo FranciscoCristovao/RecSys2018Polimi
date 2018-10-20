@@ -10,6 +10,7 @@ class cbfRS:
     sym = pd.DataFrame()
     urm = pd.DataFrame()
     helper = Helper()
+    train_data = pd.DataFrame()
 
     def __init__(self, data):
         print("CBF recommender has been initialized")
@@ -33,10 +34,11 @@ class cbfRS:
     def recommend(self, playlist_ids):
         print("Recommending...")
 
-        pred = {}  # pd.DataFrame([])
+        final_pred = {}  # pd.DataFrame([])
 
         print("STARTING ESTIMATION")
         estimated_ratings = csr_matrix(self.urm.dot(self.sym))
+        print("SYM: ", estimated_ratings.todense())
         counter = 0
 
         for k in playlist_ids:
@@ -45,13 +47,14 @@ class cbfRS:
                   estimated_ratings.data[estimated_ratings.indptr[k]:estimated_ratings.indptr[k+1]])'''
             row = estimated_ratings[k]
             # print("Index", k)
+            # print("ROW", row.todense().size)
             # print("Row.data", row.data)
+
             # aux contains the indices (track_id) of the most similar songs
             aux = np.argsort(-row.data)
             # print("Row.data sorted", aux)
             top_songs = row.indices[aux[:20]]
             # print("Top Songs ", top_songs)
-            # print("Music to suggest ", top_songs)
 
             temp = self.train_data['track_id'].loc[self.train_data['playlist_id'] == k].values
             # print("Songs in the playlist", temp)
@@ -59,13 +62,14 @@ class cbfRS:
             top_songs_mask = np.in1d(top_songs, temp, invert=True)
 
             rec_no_repeat = top_songs[top_songs_mask]
-            rec_no_repeat = rec_no_repeat[0:10]
+            rec_no_repeat = rec_no_repeat[:10]
+            # print("Songs without repetitions", rec_no_repeat)
 
             string = ' '.join(str(e) for e in rec_no_repeat)
-            pred.update({k: string})
+            final_pred.update({k: string})
             print("Playlist num", counter, "/10000")
             counter += 1
 
-        df = pd.DataFrame(list(pred.items()), columns = ['playlist_id', 'track_ids'])
+        df = pd.DataFrame(list(final_pred.items()), columns=['playlist_id', 'track_ids'])
         print(df)
         return df

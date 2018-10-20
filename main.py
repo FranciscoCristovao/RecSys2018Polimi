@@ -23,7 +23,7 @@ predictions = rs.recommend(target_data['playlist_id'])
 print("GONNA SAVE PREDICTIONS")
 save_dataframe('output/content_b_f.csv', ',', predictions)
 
-evaluator = Evaluator()
-evaluator.evaluate(predictions, test_data)
+#evaluator = Evaluator()
+#evaluator.evaluate(predictions, test_data)
 
 

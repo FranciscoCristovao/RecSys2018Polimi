@@ -23,6 +23,11 @@ class Helper:
         aux = pd.concat(frames, axis=1)
         return csr_matrix(aux.values)'''
 
+        '''
+        frames = [pd.get_dummies(data['album_id']), pd.get_dummies(data['artist_id'])]
+        aux = pd.concat(frames, axis=1)
+        return csr_matrix(pd.get_dummies(data['artist_id'].values)'''
+
         tracks = data["track_id"].values
         artists = data["artist_id"].values
         interaction = np.ones(len(tracks))
