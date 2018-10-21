@@ -53,12 +53,13 @@ class Helper:
 
 class Cosine:
 
-    def compute(self, icm, shrinkage):
+    def compute(self, mat, shrinkage):
         # convert to csc matrix for faster column-wise operations
-        icm.tocsc()
+        mat = mat.tocsc()
+        # print(type(mat))
 
         # 2) compute the cosine similarity using the dot-product
-        dist = icm * icm.T
+        dist = mat * mat.T
         print("Computed")
 
         # zero out diagonal values

@@ -4,7 +4,7 @@ from scipy.sparse import csr_matrix
 from utils.auxUtils import Helper, Cosine
 
 
-class cbfRS:
+class CbfRS:
 
     icm = pd.DataFrame()
     sym = pd.DataFrame()
