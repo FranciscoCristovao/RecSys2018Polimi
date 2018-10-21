@@ -4,6 +4,7 @@ from scipy.sparse import csr_matrix
 from utils.auxUtils import Helper, Cosine
 from sklearn.metrics.pairwise import cosine_similarity
 
+
 class ColBfUURS:
 
     sym = pd.DataFrame()
@@ -29,7 +30,7 @@ class ColBfUURS:
         final_prediction = {}  # pd.DataFrame([])
 
         print("Transforming into mat_user")
-        mat_user = csr_matrix(self.sym).toarray()
+        mat_user = self.sym.toarray()
         counter = 0
         print("mat_user built")
 
@@ -46,12 +47,15 @@ class ColBfUURS:
             rec_no_repeat = []
             inc = 0
             no_rep_songs = self.train_data['track_id'].loc[self.train_data['playlist_id'] == k].values
+
             while len(rec_no_repeat) < 10:
+
                 top_songs = self.train_data['track_id'].loc[self.train_data['playlist_id'] == aux[inc]].values
                 songs_mask = np.in1d(top_songs, no_rep_songs, invert=True)
                 rec_no_repeat.extend(top_songs[songs_mask][:10])
                 inc = inc+1
                 # print(k, rec_no_repeat, len(rec_no_repeat))
+
             rec_no_repeat = rec_no_repeat[:10]
             string = ' '.join(str(e) for e in rec_no_repeat)
             final_prediction.update({k: string})
@@ -85,15 +89,19 @@ class ColBfUURS:
             rec_no_repeat = []
             inc = 0
             no_rep_songs = self.train_data['track_id'].loc[self.train_data['playlist_id'] == k].values
+
             while len(rec_no_repeat) < 10:
+
                 top_songs = self.train_data['track_id'].loc[self.train_data['playlist_id'] == aux[inc]].values
                 songs_mask = np.in1d(top_songs, no_rep_songs, invert=True)
                 rec_no_repeat.extend(top_songs[songs_mask][:10])
                 inc = inc+1
+
                 if inc >= len(aux):
                     print(k, rec_no_repeat)
                     break
                 # print(k, rec_no_repeat, len(rec_no_repeat))
+
             rec_no_repeat = rec_no_repeat[:10]
             string = ' '.join(str(e) for e in rec_no_repeat)
             final_prediction.update({k: string})
