@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
 from scipy.sparse import csr_matrix
 from utils.auxUtils import Helper, Cosine
+
 
 class cbfRS:
 
@@ -49,7 +49,7 @@ class cbfRS:
 
             # aux contains the indices (track_id) of the most similar songs
             aux = np.argsort(-row)
-            top_songs = aux[:100]
+            top_songs = aux[:50]
 
             temp = self.train_data['track_id'].loc[self.train_data['playlist_id'] == k].values
             top_songs_mask = np.in1d(top_songs, temp, invert=True)

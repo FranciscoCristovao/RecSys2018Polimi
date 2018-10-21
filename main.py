@@ -1,5 +1,3 @@
-# our RS
-from topPop.topPopRS import TopPopRS
 from cbfRS.cbfRS import cbfRS
 from loader.loader import save_dataframe, train_data, target_data, full_data, test_data, tracks_data
 from utils.auxUtils import Evaluator
@@ -25,5 +23,3 @@ save_dataframe('output/content_b_f.csv', ',', predictions)
 
 evaluator = Evaluator()
 evaluator.evaluate(predictions, test_data)
-
-

@@ -3,7 +3,6 @@ import numpy as np
 from scipy.sparse import csr_matrix, coo_matrix
 import scipy.sparse as sps
 import scipy
-import math
 
 class Helper:
 
@@ -65,16 +64,14 @@ class Cosine:
         # zero out diagonal values
         dist = dist - sps.dia_matrix((dist.diagonal()[scipy.newaxis, :], [0]), shape=dist.shape)
         print("Removed diagonal")
-
-        return csr_matrix(dist)
-
+        '''
         #SHRINKAGE FOR LATER
         # and apply the shrinkage
-        if self.shrinkage > 0:
+        if shrinkage > 0:
             dist = self.apply_shrinkage(X, dist)
             print("Applied shrinkage")
-        
-        return dist
+        '''
+        return csr_matrix(dist)
 
     def apply_shrinkage(self, icm, dist):
         # create an "indicator" version of X (i.e. replace values in X with ones)
@@ -105,7 +102,6 @@ class Evaluator:
 
         is_relevant = np.in1d(recommended_items, relevant_items, assume_unique=True)
 
-        print(is_relevant)
         # Cumulative sum: precision at 1, at 2, at 3 ...
         p_at_k = is_relevant * np.cumsum(is_relevant, dtype=np.float32) / (1 + np.arange(is_relevant.shape[0]))
 
@@ -126,8 +122,6 @@ class Evaluator:
             if len(relevant_items) > 0:
                 recommended_items = np.fromstring(recommended["track_ids"][counter], dtype=int, sep=' ')
                 num_eval += 1
-
-                #print("MAP: ", self.map(recommended_items, relevant_items))
 
                 cumulative_map += self.map(recommended_items, relevant_items)
 
