@@ -105,7 +105,7 @@ class Evaluator:
 
         is_relevant = np.in1d(recommended_items, relevant_items, assume_unique=True)
 
-        print(is_relevant)
+        # print(is_relevant)
         # Cumulative sum: precision at 1, at 2, at 3 ...
         p_at_k = is_relevant * np.cumsum(is_relevant, dtype=np.float32) / (1 + np.arange(is_relevant.shape[0]))
 

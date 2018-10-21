@@ -49,20 +49,21 @@ class cbfRS:
 
             # aux contains the indices (track_id) of the most similar songs
             aux = np.argsort(-row)
-            top_songs = aux[:100]
+            top_songs = aux[:50]
 
             temp = self.train_data['track_id'].loc[self.train_data['playlist_id'] == k].values
             top_songs_mask = np.in1d(top_songs, temp, invert=True)
             rec_no_repeat = top_songs[top_songs_mask][:10]
-
+            if len(rec_no_repeat) < 10:
+                print("playlist k not enough long", k)
             string = ' '.join(str(e) for e in rec_no_repeat)
             final_prediction.update({k: string})
 
-            if(counter % 100) == 0:
+            if(counter % 1000) == 0:
                 print("Playlist num", counter, "/10000")
 
             counter += 1
 
         df = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
-        print(df)
+        # print(df)
         return df
