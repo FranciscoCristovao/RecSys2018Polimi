@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
 from scipy.sparse import csr_matrix
 from utils.auxUtils import Helper, Cosine
+
 
 class cbfRS:
 
