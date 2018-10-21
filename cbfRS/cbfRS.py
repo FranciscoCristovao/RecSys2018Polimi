@@ -3,7 +3,6 @@ import pandas as pd
 from scipy.sparse import csr_matrix
 from utils.auxUtils import Helper, Cosine
 
-
 class CbfRS:
 
     icm = pd.DataFrame()

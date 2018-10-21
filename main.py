@@ -20,10 +20,10 @@ rs.fit(train_data)
 # rs = CbfRS(tracks_data)
 # rs.fit(train_data)
 
-predictions = rs.recommend(target_data['playlist_id'])
+predictions = rs.recommend_faster(target_data['playlist_id'])
 
 print("GONNA SAVE PREDICTIONS")
-save_dataframe('output/collaborative_question_b_f.csv', ',', predictions)
+save_dataframe('output/submit_faster.csv', ',', predictions)
 
 evaluator = Evaluator()
 evaluator.evaluate(predictions, test_data)

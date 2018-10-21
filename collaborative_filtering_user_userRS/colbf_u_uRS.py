@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix
 from utils.auxUtils import Helper, Cosine
-
+from sklearn.metrics.pairwise import cosine_similarity
 
 class ColBfUURS:
 
@@ -20,7 +20,7 @@ class ColBfUURS:
         self.train_data = train_data
         self.urm = self.helper.buildURMMatrix(train_data)
         print("Starting symilarity computation")
-        self.sym = self.cos.compute(self.urm, 0)
+        self.sym = csr_matrix(cosine_similarity(self.urm, dense_output=False))  # self.cos.compute(self.urm, 0)
         # print("Symilarity matrix u-u: \n", self.sym)
         print("Sym mat completed")
 
