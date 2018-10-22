@@ -1,3 +1,4 @@
+import pandas as pd
 from cbfRS.cbfRS import CbfRS
 from loader.loader import save_dataframe, train_data, target_data, full_data, test_data, tracks_data
 from utils.auxUtils import Evaluator
@@ -21,10 +22,22 @@ rs = ColBfUURS()
 rs.fit(train_data)
 
 # recommend faster?
-predictions = rs.recommend(target_data['playlist_id'])
+k = 0
+final_prediction = {}
 
-print("GONNA SAVE PREDICTIONS")
-save_dataframe('output/collaborative_b_f.csv', ',', predictions)
+'''
+for k in target_data['playlist_id']:
+    predictions_single = rs.recommend_single(k)
+    string = ' '.join(str(e) for e in predictions_single)
+    final_prediction.update({k: string})
+
+df = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
+evaluator.evaluate(df, test_data)
+save_dataframe('output/single_pred.csv', ',', df)
+'''
+
+predictions = rs.recommend(target_data['playlist_id'])
 
 evaluator = Evaluator()
 evaluator.evaluate(predictions, test_data)
+save_dataframe('output/collaborative.csv', ',', predictions)

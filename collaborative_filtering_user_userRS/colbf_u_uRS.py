@@ -29,21 +29,67 @@ class ColBfUURS:
         else:
             raise NotImplementedError('Distance {} not im')
         '''
-        print("CBF recommender has been initialized")
+        print("Collaborative Based Filter recommender has been initialized")
 
     def fit(self, train_data):
 
         print("Fitting...")
         self.train_data = train_data
         self.urm = self.helper.buildURMMatrix(train_data)
-        print("Starting symilarity computation")
         # self.sym = check_matrix(cosine_similarity(self.urm, dense_output=False), 'csr')
-
         self.sym = check_matrix(self.cosine.compute(self.urm), 'csr')
         print("Sym mat completed")
 
-
     def recommend(self, playlist_ids):
+        print("Recommending...")
+        final_prediction = {}
+
+        estimated_ratings = csr_matrix(self.sym.dot(self.urm))
+        counter = 0
+
+        for k in playlist_ids:
+
+            row = estimated_ratings.getrow(k)
+            # aux contains the indices (track_id) of the most similar songs
+            indx = row.data.argsort()[::-1]
+            aux = row.indices[indx]
+            user_playlist = self.urm[k]
+
+            top_songs = filter_seen(user_playlist, aux)[:10]
+
+            if len(top_songs) < 10:
+                print("Francisco was right once at least")
+
+            string = ' '.join(str(e) for e in top_songs)
+            final_prediction.update({k: string})
+
+            if (counter % 1000) == 0:
+                print("Playlist num", counter, "/10000")
+
+            counter += 1
+
+        df = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
+        # print(df)
+        return df
+
+    def recommend_single(self, k):
+        print("Playlist num: ", k, "/50440")
+        row = self.sym.getrow(k)
+        # compute prediction
+        est_row = csr_matrix(row.dot(self.urm))
+        # retrieve the index
+        # print(est_row)
+        indx = est_row.data.argsort()[::-1]
+        aux = est_row.indices[indx]
+
+        user_playlist = self.urm[k]
+        # filter the songs
+        top_songs = filter_seen(user_playlist, aux)[:10]
+
+        return top_songs
+
+
+    def recommend_slower(self, playlist_ids):
         print("Recommending...")
         final_prediction = {}
 
@@ -74,11 +120,7 @@ class ColBfUURS:
         df = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
         # print(df)
         return df
-
-
-
     '''
-
     def recommend_slower(self, playlist_ids):
         print("Recommending...")
         final_prediction = {}  # pd.DataFrame([])
