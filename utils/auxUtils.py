@@ -20,21 +20,17 @@ class Helper:
 
     def buildICMMatrix(self, data):
 
-        '''
-        frames = [pd.get_dummies(data['album_id']), pd.get_dummies(data['artist_id'])]
-        aux = pd.concat(frames, axis=1)
-        return csr_matrix(aux.values)'''
-
-        '''
-        frames = [pd.get_dummies(data['album_id']), pd.get_dummies(data['artist_id'])]
-        aux = pd.concat(frames, axis=1)
-        return csr_matrix(pd.get_dummies(data['artist_id'].values)'''
-
         tracks = data["track_id"].values
         artists = data["artist_id"].values
         interaction = np.ones(len(tracks))
         coo_icm = coo_matrix((interaction, (tracks, artists)))
-        print("Coo icm with artists correctly built")
+        '''
+        features_per_item = (coo_icm > 0).sum(axis=1)
+        items_per_feature = (coo_icm > 0).sum(axis=0)
+        '''
+        print("Coo icm with artists correctly built.")  # , features_per_item.shape)
+        # print("Item per features: ", items_per_feature.shape)
+
         return coo_icm.tocsr()
         '''
 

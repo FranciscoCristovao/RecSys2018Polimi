@@ -15,9 +15,9 @@ save_dataframe('output/submission_top_pop.csv', ',', predictions)
 
 #CBF
 
-rs = ColBfUURS()
+# rs = ColBfUURS()
 # rs.fit(train_data)
-# rs = CbfRS(tracks_data)
+rs = CbfRS(tracks_data)
 rs.fit(train_data)
 
 # recommend faster?

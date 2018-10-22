@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix
 from utils.auxUtils import Helper, Cosine
-from utils.cosine_similarity import Cosine_Similarity
+# from utils.cosine_similarity import Cosine_Similarity
 # from sklearn.metrics.pairwise import cosine_similarity
 
 
