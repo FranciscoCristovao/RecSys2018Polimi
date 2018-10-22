@@ -16,15 +16,15 @@ save_dataframe('output/submission_top_pop.csv', ',', predictions)
 #CBF
 
 rs = ColBfUURS()
-rs.fit(train_data)
-# rs = CbfRS(tracks_data)
 # rs.fit(train_data)
+# rs = CbfRS(tracks_data)
+rs.fit(train_data)
 
-predictions = rs.recommend_faster(target_data['playlist_id'])
+# recommend faster?
+predictions = rs.recommend(target_data['playlist_id'])
 
 print("GONNA SAVE PREDICTIONS")
-save_dataframe('output/submit_faster.csv', ',', predictions)
+save_dataframe('output/debugging_fast.csv', ',', predictions)
 
 evaluator = Evaluator()
 evaluator.evaluate(predictions, test_data)
-

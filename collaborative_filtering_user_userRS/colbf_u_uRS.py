@@ -2,7 +2,9 @@ import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix
 from utils.auxUtils import Helper, Cosine
-from sklearn.metrics.pairwise import cosine_similarity
+from utils.cosine_similarity import Cosine_Similarity
+# from sklearn.metrics.pairwise import cosine_similarity
+
 
 class ColBfUURS:
 
@@ -10,7 +12,6 @@ class ColBfUURS:
     urm = pd.DataFrame()
     helper = Helper()
     train_data = pd.DataFrame()
-    cos = Cosine()
 
     def __init__(self):
         print("CBF recommender has been initialized")
@@ -20,7 +21,10 @@ class ColBfUURS:
         self.train_data = train_data
         self.urm = self.helper.buildURMMatrix(train_data)
         print("Starting symilarity computation")
-        self.sym = csr_matrix(cosine_similarity(self.urm, dense_output=False))  # self.cos.compute(self.urm, 0)
+        #self.sym = csr_matrix(cosine_similarity(self.urm, dense_output=False))  # self.cos.compute(self.urm, 0)
+        # print(self.urm)
+        self.sym = Cosine_Similarity(self.urm.T).compute_similarity()
+        print(self.sym)
         # print("Symilarity matrix u-u: \n", self.sym)
         print("Sym mat completed")
 
@@ -86,13 +90,14 @@ class ColBfUURS:
             inc = 0
             no_rep_songs = self.train_data['track_id'].loc[self.train_data['playlist_id'] == k].values
             while len(rec_no_repeat) < 10:
+                if inc >= len(aux):
+                    print(k, rec_no_repeat)
+                    break
                 top_songs = self.train_data['track_id'].loc[self.train_data['playlist_id'] == aux[inc]].values
                 songs_mask = np.in1d(top_songs, no_rep_songs, invert=True)
                 rec_no_repeat.extend(top_songs[songs_mask][:10])
                 inc = inc+1
-                if inc >= len(aux):
-                    print(k, rec_no_repeat)
-                    break
+
                 # print(k, rec_no_repeat, len(rec_no_repeat))
             rec_no_repeat = rec_no_repeat[:10]
             string = ' '.join(str(e) for e in rec_no_repeat)

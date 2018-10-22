@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix
 from utils.auxUtils import Helper, Cosine
+from utils.cosine_similarity import Cosine_Similarity
 
 class CbfRS:
 
@@ -10,7 +11,6 @@ class CbfRS:
     urm = pd.DataFrame()
     helper = Helper()
     train_data = pd.DataFrame()
-    cos = Cosine()
 
     def __init__(self, data):
         print("CBF recommender has been initialized")
@@ -21,17 +21,19 @@ class CbfRS:
         # print(self.icm.todense())
         print("ICM loaded into the class")
 
-
     def fit(self, train_data):
         print("Fitting...")
         self.train_data = train_data
         # it was a numpy array, i transformed it into a csr matrix
-        self.sym = self.cos.compute(self.icm, 0)
+        # Here we have 3 different ways to compute the similarities
+        # self.sym = csr_matrix(self.icm.dot(self.icm.T))
+        self.sym = Cosine_Similarity(self.icm.T).compute_similarity()
+        # self.sym = self.cos.compute(self.icm, 0)
         # self.sym = csr_matrix(cosine_similarity(self.icm, self.icm))
+        # print(self.sym)
         print("Sym correctly loaded")
 
         self.urm = self.helper.buildURMMatrix(train_data)
-
 
     def recommend(self, playlist_ids):
         print("Recommending...")
@@ -39,6 +41,7 @@ class CbfRS:
         final_prediction = {}  # pd.DataFrame([])
 
         print("STARTING ESTIMATION")
+        # add ravel() ?
         estimated_ratings = csr_matrix(self.urm.dot(self.sym)).toarray()
         counter = 0
 
