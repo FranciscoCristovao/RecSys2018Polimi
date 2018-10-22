@@ -1,7 +1,8 @@
-import scipy.sparse as sps
 import numpy as np
 import scipy
 from utils.auxUtils import check_matrix
+from scipy import sparse as sps
+
 
 class ISimilarity(object):
     """Abstract interface for the similarity metrics"""
