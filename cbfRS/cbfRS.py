@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix
-from utils.auxUtils import Helper
+from utils.auxUtils import Helper, check_matrix, filter_seen
 from utils.cosine_similarity import Cosine
-from utils.auxUtils import check_matrix
+
 
 
 class CbfRS:
@@ -65,7 +65,10 @@ class CbfRS:
 
             # aux contains the indices (track_id) of the most similar songs
             aux = row.argsort()[::-1]
-            top_songs = self._filter_seen(k, aux)[:10]
+            user_playlist = self.urm[k]
+
+            top_songs = filter_seen(user_playlist, aux)[:10]
+
             if len(top_songs) < 10:
                 print("Francisco was right once at least")
 
@@ -81,7 +84,14 @@ class CbfRS:
         # print(df)
         return df
 
-    def _filter_seen(self, p_id, ranking):
-        seen = self.train_data['track_id'].loc[self.train_data['playlist_id'] == p_id].values
-        unseen_mask = np.in1d(ranking, seen, assume_unique=True, invert=True)
-        return ranking[unseen_mask]
+
+    def recommend_single(self, k):
+        # print("Recommending...")
+        # add ravel() ?
+        row = self.urm[k]
+        estimated_ratings = row.dot(self.sym).toarray().ravel()
+
+        aux = estimated_ratings.argsort()[::-1]
+
+        top_songs = self._filter_seen(k, aux)[:10]
+        return top_songs

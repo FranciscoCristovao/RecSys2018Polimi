@@ -147,3 +147,9 @@ def check_matrix(X, format, dtype=np.float32):
         return X.tolil().astype(dtype)
     else:
         return X.astype(dtype)
+
+
+def filter_seen(user_playlist, ranking):
+    seen = user_playlist.indices
+    unseen_mask = np.in1d(ranking, seen, assume_unique=True, invert=True)
+    return ranking[unseen_mask]
