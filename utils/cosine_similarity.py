@@ -7,7 +7,7 @@ from scipy import sparse as sps
 class ISimilarity(object):
     """Abstract interface for the similarity metrics"""
 
-    def __init__(self, shrinkage=10):
+    def __init__(self, shrinkage=0):
         self.shrinkage = shrinkage
 
     def compute(self, X):

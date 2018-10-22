@@ -36,13 +36,16 @@ class CbfRS:
         print("ICM loaded into the class")
 
     def fit(self, train_data):
+
         print("Fitting...")
+
         self.train_data = train_data
         # it was a numpy array, i transformed it into a csr matrix
         # Here we have 3 different ways to compute the similarities
         # self.sym = csr_matrix(self.icm.dot(self.icm.T))
-        self.sym = self.cosine.compute(self.icm)
-        self.sym = check_matrix(self.sym, 'csr')
+
+        self.sym = check_matrix(self.cosine.compute(self.icm))
+
         # print(type(self.sym))
         # self.sym = self.cos.compute(self.icm, 0)
         # self.sym = csr_matrix(cosine_similarity(self.icm, self.icm))

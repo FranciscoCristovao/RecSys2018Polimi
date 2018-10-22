@@ -13,18 +13,71 @@ class ColBfUURS:
     helper = Helper()
     train_data = pd.DataFrame()
 
-    def __init__(self):
+    def __init__(self, k=50, shrinkage=0, similarity='cosine'):
+
+        self.k = k
+        self.shrinkage = shrinkage
+        self.similarity_name = similarity
+
+        if similarity == 'cosine':
+            self.cosine = Cosine(shrinkage=self.shrinkage)
+        '''
+        elif similarity == 'pearson':
+            self.distance = Pearson(shrinkage=self.shrinkage)
+        elif similarity == 'adj-cosine':
+            self.distance = AdjustedCosine(shrinkage=self.shrinkage)
+        else:
+            raise NotImplementedError('Distance {} not im')
+        '''
         print("CBF recommender has been initialized")
 
     def fit(self, train_data):
+
         print("Fitting...")
         self.train_data = train_data
         self.urm = self.helper.buildURMMatrix(train_data)
         print("Starting symilarity computation")
-        # self.sym = check_matrix(cosine_similarity(self.urm, dense_output=False), 'csr')  # self.cos.compute(self.urm, 0)
-        # print(self.urm)
-        self.sym = check_matrix(Cosine().compute(self.urm), 'csr')
+        # self.sym = check_matrix(cosine_similarity(self.urm, dense_output=False), 'csr')
+
+        self.sym = check_matrix(self.cosine.compute(self.urm), 'csr')
         print("Sym mat completed")
+
+
+    def recommend(self, playlist_ids):
+        print("Recommending...")
+        final_prediction = {}
+
+        estimated_ratings = csr_matrix(self.sym.dot(self.urm)).toarray()
+        counter = 0
+
+        for k in playlist_ids:
+
+            row = estimated_ratings[k]
+
+            # aux contains the indices (track_id) of the most similar songs
+            aux = row.argsort()[::-1]
+            user_playlist = self.urm[k]
+
+            top_songs = filter_seen(user_playlist, aux)[:10]
+
+            if len(top_songs) < 10:
+                print("Francisco was right once at least")
+
+            string = ' '.join(str(e) for e in top_songs)
+            final_prediction.update({k: string})
+
+            if (counter % 1000) == 0:
+                print("Playlist num", counter, "/10000")
+
+            counter += 1
+
+        df = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
+        # print(df)
+        return df
+
+
+
+    '''
 
     def recommend_slower(self, playlist_ids):
         print("Recommending...")
@@ -67,59 +120,5 @@ class ColBfUURS:
         df = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
         # print(df)
         return df
-
-    def recommend_faster(self, playlist_ids):
-        print("Recommending...")
-        final_prediction = {}  # pd.DataFrame([])
-
-        print("Transforming into mat_user")
-        mat_user = self.sym
-        counter = 0
-        print("mat_user built")
-
-        for k in playlist_ids:
-
-            row = mat_user.getrow(k)
-
-            # sort most similar playlist
-            sort_indx = row.data.argsort()[::-1]
-            # take most similar playlist indexes
-            user_similar_playlist = row.indices[sort_indx]
-            no_rep_songs = []
-            inc = 0
-            user_playlist = self.urm[k]
-            # songs from the top pop
-            top_pop_songs = [8956, 10848, 5606, 15578, 10496, 17239, 13980, 2674, 18266, 2272]
-
-            while len(no_rep_songs) < 10:
-
-                if inc >= len(user_similar_playlist):
-                    print("Francisco was right once at least")
-                    no_rep_songs.extend(top_pop_songs)
-                    no_rep_songs = no_rep_songs[:10]
-                    break
-
-                # concat to user_playlist the recommended songs, to avoid duplicates
-                # vstack([user_playlist, check_matrix(user_similar_songs, 'csr')], format='csr')
-
-                # select songs from a similar playlist
-                user_similar_songs = self.train_data['track_id'].\
-                    loc[self.train_data['playlist_id'] == user_similar_playlist[inc]].values
-                # eliminate duplicates, include them into uss
-                '''user_similar_songs = np.concatenate(
-                    filter_seen(user_playlist, user_similar_songs)[:10], user_similar_songs)
-                '''
-                user_similar_songs = filter_seen(user_playlist, user_similar_songs)[:10]
-                no_rep_songs.extend(user_similar_songs)
-                inc += 1
-            string = ' '.join(str(e) for e in no_rep_songs)
-            final_prediction.update({k: string})
-
-            if (counter % 1000) == 0:
-                print("Playlist num", counter, "/10000")
-
-            counter += 1
-
-        df = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
-        # print(df)
-        return df
+    
+    '''

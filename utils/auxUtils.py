@@ -18,6 +18,7 @@ class Helper:
         # print("This is the coo_urm", coo_urm)
         return coo_urm.tocsr()
 
+
     def buildICMMatrix(self, data):
         '''
         tracks = data["track_id"].values
@@ -42,6 +43,7 @@ class Helper:
         interaction = np.ones(len(features))
         coo_icm = coo_matrix((interaction, (tracks_sized, features)))
         return coo_icm.tocsr()
+
 
     def dataframeToCSR(self, data):
         print(csr_matrix(data))
