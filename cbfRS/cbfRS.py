@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import scipy.sparse as sps
 from scipy.sparse import csr_matrix
 from utils.auxUtils import Helper, check_matrix, filter_seen
 from utils.cosine_similarity import Cosine
@@ -11,7 +12,7 @@ class CbfRS:
     helper = Helper()
     train_data = pd.DataFrame()
 
-    def __init__(self, data, k=50, shrinkage=100, similarity='cosine'):
+    def __init__(self, data, k=50, shrinkage=0, similarity='cosine'):
         self.k = k
         self.shrinkage = shrinkage
         self.similarity_name = similarity
@@ -49,6 +50,26 @@ class CbfRS:
         print("Sym correctly loaded")
         self.urm = self.helper.buildURMMatrix(train_data)
 
+        # Get KNN
+
+        values, rows, cols = [], [], []
+        nitems = self.sym.shape[1]
+
+        for i in range(nitems):
+            if (i % 10000 == 0):
+                print("Item %d of %d" % (i, nitems))
+
+            this_item_sym = self.sym[i, :].toarray()[0]
+
+            # get index of more similar items
+            top_k_idx = np.argsort(this_item_sym)[-self.k:]
+
+            values.extend(this_item_sym[top_k_idx])
+            rows.extend(np.arange(nitems)[top_k_idx])
+            cols.extend(np.ones(self.k) * i)
+
+        self.sym_sparse = sps.csc_matrix((values, (rows, cols)), shape=(nitems, nitems), dtype=np.float32)
+
     def recommend(self, playlist_ids):
         print("Recommending...")
 
@@ -56,7 +77,7 @@ class CbfRS:
 
         print("STARTING ESTIMATION")
         # add ravel() ?
-        estimated_ratings = csr_matrix(self.urm.dot(self.sym)).toarray()
+        estimated_ratings = csr_matrix(self.urm.dot(self.sym_sparse)).toarray()
         counter = 0
 
         for k in playlist_ids:

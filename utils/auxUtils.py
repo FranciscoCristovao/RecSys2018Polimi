@@ -19,15 +19,15 @@ class Helper:
         return coo_urm.tocsr()
 
     def buildICMMatrix(self, data):
-
+        '''
         tracks = data["track_id"].values
         artists = data["artist_id"].values
         interaction = np.ones(len(tracks))
         coo_icm = coo_matrix((interaction, (tracks, artists)))
-        '''
+
         features_per_item = (coo_icm > 0).sum(axis=1)
         items_per_feature = (coo_icm > 0).sum(axis=0)
-        '''
+
         print("Coo icm with artists correctly built.")  # , features_per_item.shape)
         # print("Item per features: ", items_per_feature.shape)
 
@@ -41,7 +41,7 @@ class Helper:
         tracks_sized = np.concatenate([tracks, tracks])
         interaction = np.ones(len(features))
         coo_icm = coo_matrix((interaction, (tracks_sized, features)))
-        return coo_icm.tocsr()'''
+        return coo_icm.tocsr()
 
     def dataframeToCSR(self, data):
         print(csr_matrix(data))
