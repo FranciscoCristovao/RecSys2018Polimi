@@ -5,13 +5,12 @@ from utils.auxUtils import Helper, check_matrix, filter_seen
 from utils.cosine_similarity import Cosine
 
 
-
 class CbfRS:
 
     helper = Helper()
     train_data = pd.DataFrame()
 
-    def __init__(self, data, k=50, shrinkage=100, similarity='cosine'):
+    def __init__(self, data, k=40, shrinkage=0, similarity='cosine'):
         self.k = k
         self.shrinkage = shrinkage
         self.similarity_name = similarity
@@ -84,7 +83,6 @@ class CbfRS:
         # print(df)
         return df
 
-
     def recommend_single(self, k):
         # print("Recommending...")
         # add ravel() ?
@@ -92,6 +90,5 @@ class CbfRS:
         estimated_ratings = row.dot(self.sym).toarray().ravel()
 
         aux = estimated_ratings.argsort()[::-1]
-
-        top_songs = self._filter_seen(k, aux)[:10]
+        top_songs = filter_seen(k, aux)[:10]
         return top_songs

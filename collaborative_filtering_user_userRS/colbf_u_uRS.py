@@ -3,8 +3,7 @@ import pandas as pd
 from scipy.sparse import csr_matrix
 from utils.auxUtils import Helper, check_matrix, filter_seen
 from utils.cosine_similarity import Cosine
-
-# from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 class ColBfUURS:
@@ -22,13 +21,12 @@ class ColBfUURS:
         self.train_data = train_data
         self.urm = self.helper.buildURMMatrix(train_data)
         print("Starting symilarity computation")
-        # self.sym = csr_matrix(cosine_similarity(self.urm, dense_output=False))  # self.cos.compute(self.urm, 0)
+        # self.sym = check_matrix(cosine_similarity(self.urm, dense_output=False), 'csr')  # self.cos.compute(self.urm, 0)
         # print(self.urm)
         self.sym = check_matrix(Cosine().compute(self.urm), 'csr')
-        print(type(self.sym))
         print("Sym mat completed")
 
-    def recommend(self, playlist_ids):
+    def recommend_slower(self, playlist_ids):
         print("Recommending...")
         final_prediction = {}  # pd.DataFrame([])
 
@@ -56,6 +54,7 @@ class ColBfUURS:
                 rec_no_repeat.extend(top_songs[songs_mask][:10])
                 inc = inc+1
                 # print(k, rec_no_repeat, len(rec_no_repeat))
+
             rec_no_repeat = rec_no_repeat[:10]
             string = ' '.join(str(e) for e in rec_no_repeat)
             final_prediction.update({k: string})
@@ -82,18 +81,38 @@ class ColBfUURS:
 
             row = mat_user.getrow(k)
 
-            # aux contains the indices (track_id) of the most similar songs
+            # sort most similar playlist
             sort_indx = row.data.argsort()[::-1]
-            user_similar_songs = row.indices[sort_indx]
-
+            # take most similar playlist indexes
+            user_similar_playlist = row.indices[sort_indx]
+            no_rep_songs = []
+            inc = 0
             user_playlist = self.urm[k]
-            top_songs = filter_seen(user_playlist, user_similar_songs)[:10]
+            # songs from the top pop
+            top_pop_songs = [8956, 10848, 5606, 15578, 10496, 17239, 13980, 2674, 18266, 2272]
 
-            if len(top_songs) < 10:
-                print("Francisco was right once at least")
-                top_songs = [8956, 10848, 5606, 15578, 10496, 17239, 13980, 2674, 18266, 2272]
+            while len(no_rep_songs) < 10:
 
-            string = ' '.join(str(e) for e in top_songs)
+                if inc >= len(user_similar_playlist):
+                    print("Francisco was right once at least")
+                    no_rep_songs.extend(top_pop_songs)
+                    no_rep_songs = no_rep_songs[:10]
+                    break
+
+                # concat to user_playlist the recommended songs, to avoid duplicates
+                # vstack([user_playlist, check_matrix(user_similar_songs, 'csr')], format='csr')
+
+                # select songs from a similar playlist
+                user_similar_songs = self.train_data['track_id'].\
+                    loc[self.train_data['playlist_id'] == user_similar_playlist[inc]].values
+                # eliminate duplicates, include them into uss
+                '''user_similar_songs = np.concatenate(
+                    filter_seen(user_playlist, user_similar_songs)[:10], user_similar_songs)
+                '''
+                user_similar_songs = filter_seen(user_playlist, user_similar_songs)[:10]
+                no_rep_songs.extend(user_similar_songs)
+                inc += 1
+            string = ' '.join(str(e) for e in no_rep_songs)
             final_prediction.update({k: string})
 
             if (counter % 1000) == 0:
