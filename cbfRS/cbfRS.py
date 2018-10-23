@@ -3,7 +3,7 @@ import pandas as pd
 import scipy.sparse as sps
 from scipy.sparse import csr_matrix
 from utils.auxUtils import Helper, check_matrix, filter_seen
-from utils.cosine_similarity import Cosine
+from utils.cosine_similarity_full import Compute_Similarity_Python
 
 
 class CbfRS:
@@ -11,23 +11,11 @@ class CbfRS:
     helper = Helper()
     train_data = pd.DataFrame()
 
-    def __init__(self, data, k=50, shrinkage=0, similarity='cosine'):
+    def __init__(self, data, k=100, shrinkage=0, similarity='cosine'):
 
         self.k = k
         self.shrinkage = shrinkage
         self.similarity_name = similarity
-
-        if similarity == 'cosine':
-            self.cosine = Cosine(shrinkage=self.shrinkage)
-        '''
-        elif similarity == 'pearson':
-            self.distance = Pearson(shrinkage=self.shrinkage)
-        elif similarity == 'adj-cosine':
-            self.distance = AdjustedCosine(shrinkage=self.shrinkage)
-        else:
-            raise NotImplementedError('Distance {} not im')
-        '''
-        print("CBF recommender has been initialized")
 
         data = data.drop(columns="duration_sec")
         self.icm = self.helper.buildICMMatrix(data)
@@ -40,11 +28,11 @@ class CbfRS:
         print("Fitting...")
 
         self.train_data = train_data
+        self.cosine = Compute_Similarity_Python(self.icm.T, self.k, self.shrinkage)
         # it was a numpy array, i transformed it into a csr matrix
         # Here we have 3 different ways to compute the similarities
         # self.sym = csr_matrix(self.icm.dot(self.icm.T))
-
-        self.sym = check_matrix(self.cosine.compute(self.icm))
+        self.sym = check_matrix(self.cosine.compute_similarity(), 'csr')
 
         # print(type(self.sym))
         # self.sym = self.cos.compute(self.icm, 0)
@@ -58,20 +46,6 @@ class CbfRS:
         values, rows, cols = [], [], []
         nitems = self.sym.shape[1]
 
-        for i in range(nitems):
-            if (i % 10000 == 0):
-                print("Item %d of %d" % (i, nitems))
-
-            this_item_sym = self.sym[i, :].toarray()[0]
-
-            # get index of more similar items
-            top_k_idx = np.argsort(this_item_sym)[-self.k:]
-
-            values.extend(this_item_sym[top_k_idx])
-            rows.extend(np.arange(nitems)[top_k_idx])
-            cols.extend(np.ones(self.k) * i)
-
-        self.sym_sparse = sps.csc_matrix((values, (rows, cols)), shape=(nitems, nitems), dtype=np.float32)
 
     def recommend(self, playlist_ids):
         print("Recommending...")
@@ -80,7 +54,7 @@ class CbfRS:
 
         print("STARTING ESTIMATION")
         # add ravel() ?
-        estimated_ratings = csr_matrix(self.urm.dot(self.sym_sparse)).toarray()
+        estimated_ratings = csr_matrix(self.urm.dot(self.sym)).toarray()
         counter = 0
 
         for k in playlist_ids:

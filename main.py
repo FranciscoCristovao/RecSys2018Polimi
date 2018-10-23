@@ -21,11 +21,12 @@ save_dataframe('output/submission_top_pop.csv', ',', predictions)
 rs = ColBfUURS()
 rs.fit(train_data)
 
+
+
+'''
 # recommend faster?
 k = 0
 final_prediction = {}
-
-'''
 for k in target_data['playlist_id']:
     predictions_single = rs.recommend_single(k)
     string = ' '.join(str(e) for e in predictions_single)
