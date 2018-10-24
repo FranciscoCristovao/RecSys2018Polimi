@@ -14,10 +14,10 @@ save_dataframe('output/submission_top_pop.csv', ',', predictions)
 '''
 
 #CBF
-# rs = CbfRS(tracks_data, 10)
+rs = CbfRS(tracks_data, 10)
 
 # Collaborative Filter User - User
-rs = ColBfUURS(10)
+# rs = ColBfUURS(10)
 rs.fit(train_data)
 
 predictions = rs.recommend(target_data['playlist_id'])
@@ -25,6 +25,7 @@ predictions = rs.recommend(target_data['playlist_id'])
 evaluator = Evaluator()
 evaluator.evaluate(predictions, test_data)
 
-save_dataframe('output/output_content.csv', ',', predictions)
+save_dataframe('output/output_faster.csv', ',', predictions)
+
 
 

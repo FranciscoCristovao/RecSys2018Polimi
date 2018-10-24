@@ -35,7 +35,7 @@ class ColBfUURS:
     def recommend(self, playlist_ids):
         print("Recommending...")
         final_prediction = {}
-
+        print(self.top_pop_songs)
         estimated_ratings = csr_matrix(self.sym.dot(self.urm))
         counter = 0
         print("TOP SONGS: ", self.top_pop_songs)

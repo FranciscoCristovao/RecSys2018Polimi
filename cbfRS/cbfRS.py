@@ -29,6 +29,7 @@ class CbfRS:
         print("Fitting...")
 
         self.train_data = train_data
+        self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values
         self.cosine = Compute_Similarity_Python(self.icm.T, self.k, self.shrinkage)
         # it was a numpy array, i transformed it into a csr matrix
         # Here we have 3 different ways to compute the similarities
@@ -55,7 +56,7 @@ class CbfRS:
         abc = 0
         for k in playlist_ids:
 
-            row = estimated_ratings.getrow(k)
+            row = estimated_ratings[k]
 
             # aux contains the indices (track_id) of the most similar songs
 
@@ -64,11 +65,8 @@ class CbfRS:
 
             user_playlist = self.urm[k]
 
-            top_songs = filter_seen(user_playlist, aux)[:self.at]
-
-            if len(top_songs) < self.at:
-                abc+=1
-                print("Francisco was right once at least")
+            aux = np.concatenate((aux, self.top_pop_songs), axis=None)
+            top_songs = filter_seen(aux, user_playlist)[:self.at]
 
             string = ' '.join(str(e) for e in top_songs)
             final_prediction.update({k: string})
@@ -84,7 +82,7 @@ class CbfRS:
 
     def recommend_slower(self, playlist_ids):
         print("Recommending...")
-
+        print(self.top_pop_songs)
         final_prediction = {}  # pd.DataFrame([])
 
         print("STARTING ESTIMATION")
@@ -102,7 +100,7 @@ class CbfRS:
 
             user_playlist = self.urm[k]
 
-            top_songs = filter_seen(user_playlist, aux)[:self.at]
+            top_songs = filter_seen(aux, user_playlist)[:self.at]
 
             if len(top_songs) < self.at:
                 abc += 1
