@@ -11,9 +11,10 @@ class CbfRS:
     helper = Helper()
     train_data = pd.DataFrame()
 
-    def __init__(self, data, k=100, shrinkage=0, similarity='cosine'):
+    def __init__(self, data, at, k=100, shrinkage=0, similarity='cosine'):
 
         self.k = k
+        self.at = at
         self.shrinkage = shrinkage
         self.similarity_name = similarity
 
@@ -41,11 +42,6 @@ class CbfRS:
         print("Sym correctly loaded")
         self.urm = self.helper.buildURMMatrix(train_data)
 
-        # Get KNN
-
-        values, rows, cols = [], [], []
-        nitems = self.sym.shape[1]
-
 
     def recommend(self, playlist_ids):
         print("Recommending...")
@@ -54,20 +50,24 @@ class CbfRS:
 
         print("STARTING ESTIMATION")
         # add ravel() ?
-        estimated_ratings = csr_matrix(self.urm.dot(self.sym)).toarray()
+        estimated_ratings = csr_matrix(self.urm.dot(self.sym))
         counter = 0
-
+        abc = 0
         for k in playlist_ids:
 
-            row = estimated_ratings[k]
+            row = estimated_ratings.getrow(k)
 
             # aux contains the indices (track_id) of the most similar songs
-            aux = row.argsort()[::-1]
+
+            indx = row.data.argsort()[::-1]
+            aux = row.indices[indx]
+
             user_playlist = self.urm[k]
 
-            top_songs = filter_seen(user_playlist, aux)[:10]
+            top_songs = filter_seen(user_playlist, aux)[:self.at]
 
-            if len(top_songs) < 10:
+            if len(top_songs) < self.at:
+                abc+=1
                 print("Francisco was right once at least")
 
             string = ' '.join(str(e) for e in top_songs)
@@ -79,15 +79,55 @@ class CbfRS:
             counter += 1
 
         df = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
-        # print(df)
+        print("THEY ARE: ", abc)
+        return df
+
+    def recommend_slower(self, playlist_ids):
+        print("Recommending...")
+
+        final_prediction = {}  # pd.DataFrame([])
+
+        print("STARTING ESTIMATION")
+        # add ravel() ?
+        estimated_ratings = csr_matrix(self.urm.dot(self.sym)).toarray()
+        counter = 0
+        abc = 0
+        for k in playlist_ids:
+
+            row = estimated_ratings[k]
+
+            # aux contains the indices (track_id) of the most similar songs
+
+            aux = row.argsort()[::-1]
+
+            user_playlist = self.urm[k]
+
+            top_songs = filter_seen(user_playlist, aux)[:self.at]
+
+            if len(top_songs) < self.at:
+                abc += 1
+                print("Francisco was right once at least")
+
+            string = ' '.join(str(e) for e in top_songs)
+            final_prediction.update({k: string})
+
+            if (counter % 1000) == 0:
+                print("Playlist num", counter, "/10000")
+
+            counter += 1
+
+        df = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
+        print("THEY ARE: ", abc)
         return df
 
     def recommend_single(self, k):
         # print("Recommending...")
         # add ravel() ?
         row = self.urm[k]
-        estimated_ratings = row.dot(self.sym).toarray().ravel()
+        estimated_ratings = row.dot(self.sym) # .toarray().ravel()
+        # aux = estimated_ratings.argsort()[::-1]
+        indx = estimated_ratings.data.argsort()[::-1]
+        aux = estimated_ratings.indices[indx]
 
-        aux = estimated_ratings.argsort()[::-1]
-        top_songs = filter_seen(k, aux)[:10]
+        top_songs = filter_seen(row, aux)[:self.at]
         return top_songs

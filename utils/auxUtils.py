@@ -20,7 +20,7 @@ class Helper:
 
 
     def buildICMMatrix(self, data):
-        '''
+
         tracks = data["track_id"].values
         artists = data["artist_id"].values
         interaction = np.ones(len(tracks))
@@ -43,7 +43,7 @@ class Helper:
         interaction = np.ones(len(features))
         coo_icm = coo_matrix((interaction, (tracks_sized, features)))
         return coo_icm.tocsr()
-
+        '''
 
     def dataframeToCSR(self, data):
         print(csr_matrix(data))
@@ -130,6 +130,7 @@ class Evaluator:
         print("Evaluated", num_eval, "playlists")
 
         print("Recommender performance is: MAP = {:.4f}".format(cumulative_map))
+        return cumulative_map
 
 
 def check_matrix(X, format, dtype=np.float32):
