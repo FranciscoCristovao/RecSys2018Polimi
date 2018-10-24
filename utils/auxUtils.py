@@ -47,9 +47,6 @@ class Helper:
 
         frames = [pd.get_dummies(data['album_id']), pd.get_dummies(data['artist_id'])]
         icm = pd.concat(frames, axis=1)
-
-        print(len(np.unique(data['artist_id'].values))+len(np.unique(data['album_id'].values)))
-        print(icm)
         print("Coo icm with artists correctly built.")
 
         return csr_matrix(icm)
@@ -165,6 +162,7 @@ def filter_seen(new_songs, user_playlist):
     seen = user_playlist.indices
     unseen_mask = np.in1d(new_songs, seen, assume_unique=False, invert=True)
     return new_songs[unseen_mask]
+
 
 def filter_seen_array(new_songs, playlist):
     unseen_mask = np.in1d(new_songs, playlist, assume_unique=True, invert=True)
