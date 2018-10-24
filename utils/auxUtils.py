@@ -157,7 +157,9 @@ def filter_seen(user_playlist, new_songs):
     unseen_mask = np.in1d(new_songs, seen, assume_unique=True, invert=True)
     return new_songs[unseen_mask]
 
-
-def filter_seen_array(user_playlist, new_songs):
-    unseen_mask = np.in1d(new_songs, user_playlist, assume_unique=True, invert=True)
+def filter_seen_array(new_songs, playlist):
+    unseen_mask = np.in1d(new_songs, playlist, assume_unique=True, invert=True)
     return new_songs[unseen_mask]
+
+
+

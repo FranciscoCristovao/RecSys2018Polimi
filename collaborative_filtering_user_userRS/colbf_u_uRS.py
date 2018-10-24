@@ -1,10 +1,8 @@
 import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix
-from utils.auxUtils import Helper, filter_seen
+from utils.auxUtils import Helper, filter_seen, filter_seen_array
 from utils.cosine_similarity_full import Compute_Similarity_Python, check_matrix
-from sklearn.metrics.pairwise import cosine_similarity
-from utils.cosine_similarity import Cosine
 
 
 class ColBfUURS:
@@ -14,7 +12,7 @@ class ColBfUURS:
     helper = Helper()
     train_data = pd.DataFrame()
 
-    def __init__(self, at, k=200, shrinkage=0, similarity='cosine'):
+    def __init__(self, at, k=100, shrinkage=0, similarity='cosine'):
 
         self.k = k
         # self.cosine = Cosine()
@@ -40,7 +38,7 @@ class ColBfUURS:
 
         estimated_ratings = csr_matrix(self.sym.dot(self.urm))
         counter = 0
-
+        print("TOP SONGS: ", self.top_pop_songs)
         for k in playlist_ids:
 
             row = estimated_ratings.getrow(k)
@@ -52,10 +50,9 @@ class ColBfUURS:
             top_songs = filter_seen(user_playlist, aux)[:self.at]
 
             if len(top_songs) < self.at:
-                # todo: check this
-                top_songs = np.concatenate((top_songs, self.top_pop_songs), axis=None)[:self.at]
 
-                print("Francisco was right once at least")
+                new_songs = filter_seen_array(self.top_pop_songs, user_playlist)
+                top_songs = np.concatenate((top_songs, new_songs), axis=None)[:self.at]
 
             string = ' '.join(str(e) for e in top_songs)
             final_prediction.update({k: string})
