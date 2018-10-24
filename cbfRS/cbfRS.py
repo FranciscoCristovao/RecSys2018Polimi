@@ -97,8 +97,8 @@ class CbfRS:
             aux = row.argsort()[::-1]
 
             user_playlist = self.urm[k].toarray()
-
-            top_songs = filter_seen_array(user_playlist, aux)[:self.at]
+            # check this
+            top_songs = filter_seen_array(aux, user_playlist)[:self.at]
 
             if len(top_songs) < self.at:
                 abc += 1

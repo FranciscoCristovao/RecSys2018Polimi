@@ -26,5 +26,3 @@ evaluator = Evaluator()
 evaluator.evaluate(predictions, test_data)
 
 save_dataframe('output/output_content.csv', ',', predictions)
-
-
