@@ -41,18 +41,14 @@ class ColBfUURS:
         print("TOP SONGS: ", self.top_pop_songs)
         for k in playlist_ids:
 
-            row = estimated_ratings.getrow(k)
+            row = estimated_ratings[k]
             # aux contains the indices (track_id) of the most similar songs
             indx = row.data.argsort()[::-1]
             aux = row.indices[indx]
             user_playlist = self.urm[k]
 
-            top_songs = filter_seen(user_playlist, aux)[:self.at]
-
-            if len(top_songs) < self.at:
-
-                new_songs = filter_seen_array(self.top_pop_songs, user_playlist)
-                top_songs = np.concatenate((top_songs, new_songs), axis=None)[:self.at]
+            aux = np.concatenate((aux, self.top_pop_songs), axis=None)
+            top_songs = filter_seen(aux, user_playlist)[:self.at]
 
             string = ' '.join(str(e) for e in top_songs)
             final_prediction.update({k: string})
