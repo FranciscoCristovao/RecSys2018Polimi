@@ -78,7 +78,9 @@ class CbfRS:
         return df
 
     def recommend_slower(self, playlist_ids):
+
         print("Recommending...")
+
         print(self.top_pop_songs)
         final_prediction = {}  # pd.DataFrame([])
 

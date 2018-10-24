@@ -47,7 +47,7 @@ class Helper:
 
         frames = [pd.get_dummies(data['album_id']), pd.get_dummies(data['artist_id'])]
         icm = pd.concat(frames, axis=1)
-        print("Coo icm with artists correctly built.")
+        print("ICM with artists and albums correctly built.")
 
         return csr_matrix(icm)
 

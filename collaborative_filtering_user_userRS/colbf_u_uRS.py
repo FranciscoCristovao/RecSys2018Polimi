@@ -21,6 +21,7 @@ class ColBfUURS:
         self.at = at
 
     def fit(self, train_data):
+
         print("Fitting...")
 
         self.train_data = train_data
@@ -33,7 +34,9 @@ class ColBfUURS:
         print("Sym mat completed")
 
     def recommend(self, playlist_ids):
+
         print("Recommending...")
+
         final_prediction = {}
         estimated_ratings = csr_matrix(self.sym.dot(self.urm))
         counter = 0
@@ -80,6 +83,7 @@ class ColBfUURS:
 
     def recommend_slower(self, playlist_ids):
         print("Recommending...")
+
         final_prediction = {}
 
         estimated_ratings = csr_matrix(self.sym.dot(self.urm)).toarray()
