@@ -152,7 +152,12 @@ def check_matrix(X, format, dtype=np.float32):
         return X.astype(dtype)
 
 
-def filter_seen(user_playlist, ranking):
+def filter_seen(user_playlist, new_songs):
     seen = user_playlist.indices
-    unseen_mask = np.in1d(ranking, seen, assume_unique=True, invert=True)
-    return ranking[unseen_mask]
+    unseen_mask = np.in1d(new_songs, seen, assume_unique=True, invert=True)
+    return new_songs[unseen_mask]
+
+
+def filter_seen_array(user_playlist, new_songs):
+    unseen_mask = np.in1d(new_songs, user_playlist, assume_unique=True, invert=True)
+    return new_songs[unseen_mask]

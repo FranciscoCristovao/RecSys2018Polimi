@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sps
 from scipy.sparse import csr_matrix
-from utils.auxUtils import Helper, check_matrix, filter_seen
+from utils.auxUtils import Helper, check_matrix, filter_seen, filter_seen_array
 from utils.cosine_similarity_full import Compute_Similarity_Python
 
 
@@ -42,7 +42,6 @@ class CbfRS:
         print("Sym correctly loaded")
         self.urm = self.helper.buildURMMatrix(train_data)
 
-
     def recommend(self, playlist_ids):
         print("Recommending...")
 
@@ -58,10 +57,8 @@ class CbfRS:
             row = estimated_ratings.getrow(k)
 
             # aux contains the indices (track_id) of the most similar songs
-
             indx = row.data.argsort()[::-1]
             aux = row.indices[indx]
-
             user_playlist = self.urm[k]
 
             top_songs = filter_seen(user_playlist, aux)[:self.at]
@@ -95,14 +92,13 @@ class CbfRS:
         for k in playlist_ids:
 
             row = estimated_ratings[k]
-
             # aux contains the indices (track_id) of the most similar songs
 
             aux = row.argsort()[::-1]
 
-            user_playlist = self.urm[k]
+            user_playlist = self.urm[k].toarray()
 
-            top_songs = filter_seen(user_playlist, aux)[:self.at]
+            top_songs = filter_seen_array(user_playlist, aux)[:self.at]
 
             if len(top_songs) < self.at:
                 abc += 1
@@ -124,7 +120,7 @@ class CbfRS:
         # print("Recommending...")
         # add ravel() ?
         row = self.urm[k]
-        estimated_ratings = row.dot(self.sym) # .toarray().ravel()
+        estimated_ratings = row.dot(self.sym)  # .toarray().ravel()
         # aux = estimated_ratings.argsort()[::-1]
         indx = estimated_ratings.data.argsort()[::-1]
         aux = estimated_ratings.indices[indx]

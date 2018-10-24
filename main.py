@@ -18,7 +18,7 @@ save_dataframe('output/submission_top_pop.csv', ',', predictions)
 rs = CbfRS(tracks_data, 10)
 
 # Collaborative Filter User - User
-# rs = ColBfUURS()
+# rs = ColBfUURS(10)
 rs.fit(train_data)
 
 
