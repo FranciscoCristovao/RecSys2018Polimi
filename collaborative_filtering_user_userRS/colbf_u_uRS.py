@@ -35,10 +35,9 @@ class ColBfUURS:
     def recommend(self, playlist_ids):
         print("Recommending...")
         final_prediction = {}
-        print(self.top_pop_songs)
         estimated_ratings = csr_matrix(self.sym.dot(self.urm))
         counter = 0
-        print("TOP SONGS: ", self.top_pop_songs)
+
         for k in playlist_ids:
 
             row = estimated_ratings[k]
@@ -63,6 +62,7 @@ class ColBfUURS:
         return df
 
     def recommend_single(self, k):
+
         print("Playlist num: ", k, "/50440")
         row = self.sym.getrow(k)
         # compute prediction
