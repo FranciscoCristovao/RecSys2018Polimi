@@ -3,6 +3,8 @@ import numpy as np
 from scipy.sparse import csr_matrix, coo_matrix
 import scipy.sparse as sps
 import scipy
+from sklearn.model_selection import train_test_split
+
 
 class Helper:
 
@@ -107,10 +109,21 @@ class Evaluator:
 
         is_relevant = np.in1d(recommended_items, relevant_items, assume_unique=True)
 
-        # Cumulative sum: precision at 1, at 2, at 3 ...
-        p_at_k = is_relevant * np.cumsum(is_relevant, dtype=np.float32) / (1 + np.arange(is_relevant.shape[0]))
+        '''
+        # i have to consider also the position. First i find the elements in the right position
+        temp = np.where(recommended_items == relevant_items)
+        # i make the same metrics they were using, considering the properly ordered elements
+        is_relevant = np.in1d(temp, relevant_items, assume_unique=True)
+        print(is_relevant)
+        '''
 
-        map_score = np.sum(p_at_k) / np.min([relevant_items.shape[0], is_relevant.shape[0]])
+        # Cumulative sum: precision at 1, at 2, at 3 ...
+        try:
+            p_at_k = is_relevant * np.cumsum(is_relevant, dtype=np.float32) / (1 + np.arange(is_relevant.shape[0]))
+            map_score = np.sum(p_at_k) / np.min([relevant_items.shape[0], is_relevant.shape[0]])
+        except RuntimeWarning:
+            print("Runtime Warning encountered")
+            map_score = 0
 
         return map_score
 
@@ -121,8 +134,11 @@ class Evaluator:
         urm_test = self.helper.buildURMMatrix(test_data)
 
         for i in recommended["playlist_id"]:
-
-            relevant_items = urm_test[i].indices
+            try:
+                relevant_items = urm_test[i].indices
+            except IndexError:
+                print("No row in the test set")
+                continue
 
             if len(relevant_items) > 0:
                 recommended_items = np.fromstring(recommended["track_ids"][counter], dtype=int, sep=' ')
@@ -168,5 +184,56 @@ def filter_seen_array(new_songs, playlist):
     unseen_mask = np.in1d(new_songs, playlist, assume_unique=True, invert=True)
     return new_songs[unseen_mask]
 
+
+def filter_seen_array(new_songs, playlist):
+    unseen_mask = np.in1d(new_songs, playlist, assume_unique=True, invert=True)
+    return new_songs[unseen_mask]
+
+
+def randomization_split(full_dataset, playlists, test_size):
+    # take the sequential order and make it random.
+    # select only target playlist data
+    full_data = pd.merge(full_dataset, playlists, on='playlist_id')
+
+    train_data, test_data = train_test_split(full_data, test_size=test_size)
+
+    train_data = pd.concat([full_dataset, test_data, test_data]).drop_duplicates(keep=False)
+    '''train_data = pd.merge(full_dataset, test_data, indicator=True, how='outer') \
+        .query('_merge=="left_only"').drop('_merge', axis=1)
+    '''
+
+    '''
+    ordered_playlist = playlists['playlist_id'][:5000]
+    # print("Last element of ordered_playlist: ", ordered_playlist[4999])
+    random_playlist = playlists['playlist_id'][5000:]
+    temp_list = []
+    # print(ordered_playlist)
+    for k in playlists['playlist_id']:
+        if k in ordered_playlist:
+            try:
+                playlist_to_order = test_data['track_id'].loc[test_data['playlist_id'] == k]
+                proper_order = full_data['track_id'].loc[full_data['playlist_id'] == k]
+
+                mask = np.in1d(proper_order, playlist_to_order)
+                proper_order_to_df = proper_order[mask]
+                for i in proper_order_to_df:
+                    temp_list.append([k, i])
+            except:
+                print('No such playlist, or other bad things happened while splitting the data')
+        else:  # we are in not ordered playlist, so we just add it to the dictionary
+            try:
+                playlist_to_order = test_data['track_id'].loc[test_data['playlist_id'] == k]
+                for i in playlist_to_order:
+                    temp_list.append([k, i])
+            except:
+                print("No such playlist, splitting the data")
+
+    # print(temp_dictionary)
+    test_data_proper = pd.DataFrame(temp_list, columns=['playlist_id', 'track_id'])
+    # print(test_data.head(5))
+    # print(test_data_proper.head(5))
+    print("Data correctly splitted")
+    '''
+    return train_data, test_data
 
 

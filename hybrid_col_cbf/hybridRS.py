@@ -36,30 +36,32 @@ class HybridRS:
         print("Sym mat completed")
 
 
-    def recommend(self, playlist_ids):
+    def recommend(self, playlist_ids, alpha):
         print("Recommending...")
 
         final_prediction = {}
         counter = 0
-        alpha = 0.7  # best until now
+        # alpha = 0.7  # best until now
 
         estimated_ratings_cbf = csr_matrix(self.urm.dot(self.sym_items))
         estimated_ratings_colf = csr_matrix(self.sym_users.dot(self.urm))
         estimated_ratings_final = estimated_ratings_colf.multiply(alpha) + estimated_ratings_cbf.multiply(1-alpha)
 
         for k in playlist_ids:
+            try:
+                row = estimated_ratings_final[k]
+                # aux contains the indices (track_id) of the most similar songs
+                indx = row.data.argsort()[::-1]
+                aux = row.indices[indx]
+                user_playlist = self.urm[k]
 
-            row = estimated_ratings_final[k]
-            # aux contains the indices (track_id) of the most similar songs
-            indx = row.data.argsort()[::-1]
-            aux = row.indices[indx]
-            user_playlist = self.urm[k]
+                aux = np.concatenate((aux, self.top_pop_songs), axis=None)
+                top_songs = filter_seen(aux, user_playlist)[:self.at]
 
-            aux = np.concatenate((aux, self.top_pop_songs), axis=None)
-            top_songs = filter_seen(aux, user_playlist)[:self.at]
-
-            string = ' '.join(str(e) for e in top_songs)
-            final_prediction.update({k: string})
+                string = ' '.join(str(e) for e in top_songs)
+                final_prediction.update({k: string})
+            except IndexError:
+                print("I don't have a value in the test_data")
 
             if (counter % 1000) == 0:
                 print("Playlist num", counter, "/10000")

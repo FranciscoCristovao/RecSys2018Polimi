@@ -51,11 +51,12 @@ class CbfRS:
         print("STARTING ESTIMATION")
         # add ravel() ?
         estimated_ratings = csr_matrix(self.urm.dot(self.sym))
+        print(estimated_ratings)
         counter = 0
         abc = 0
         for k in playlist_ids:
 
-            row = estimated_ratings[k]
+            row = estimated_ratings.getrow(k)  # [k]
 
             # aux contains the indices (track_id) of the most similar songs
             indx = row.data.argsort()[::-1]
@@ -90,8 +91,12 @@ class CbfRS:
         counter = 0
         abc = 0
         for k in playlist_ids:
+            try:
+                row = estimated_ratings[k]
+            except IndexError:
+                print("No row in the estimated_ratings")
+                continue
 
-            row = estimated_ratings[k]
             # aux contains the indices (track_id) of the most similar songs
 
             aux = row.argsort()[::-1]

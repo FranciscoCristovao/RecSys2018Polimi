@@ -90,8 +90,11 @@ class ColBfUURS:
         counter = 0
 
         for k in playlist_ids:
-
-            row = estimated_ratings[k]
+            try:
+                row = estimated_ratings[k]
+            except IndexError:
+                print("No row in the estimated_ratings")
+                continue
 
             # aux contains the indices (track_id) of the most similar songs
             aux = row.argsort()[::-1]
