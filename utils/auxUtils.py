@@ -195,13 +195,40 @@ def randomization_split(full_dataset, playlists, test_size):
     # select only target playlist data
     full_data = pd.merge(full_dataset, playlists, on='playlist_id')
 
-    train_data, test_data = train_test_split(full_data, test_size=test_size)
+    temp_train, test_data = train_test_split(full_data, test_size=test_size)
 
-    train_data = pd.concat([full_dataset, test_data, test_data]).drop_duplicates(keep=False)
     '''train_data = pd.merge(full_dataset, test_data, indicator=True, how='outer') \
         .query('_merge=="left_only"').drop('_merge', axis=1)
     '''
 
+    # take away last song in the playlist...
+    ordered_playlist = playlists['playlist_id'][:5000]
+    # print("Last element of ordered_playlist: ", ordered_playlist[4999])
+    random_playlist = playlists['playlist_id'][5000:]
+    temp_list = []
+    # print(ordered_playlist)
+    for k in playlists['playlist_id']:
+        if k in ordered_playlist:
+            try:
+                playlist_to_order_len = len(test_data['track_id'].loc[test_data['playlist_id'] == k])
+                proper_order = full_data['track_id'].loc[full_data['playlist_id'] == k]
+                songs_to_draw = proper_order[-playlist_to_order_len:][::-1]
+                for i in songs_to_draw:
+                    temp_list.append([k, i])
+            except:
+                print('No such playlist, or other bad things happened while splitting the data')
+        else:  # we are in not ordered playlist, so we just add it to the dictionary
+            try:
+                songs_to_draw = test_data['track_id'].loc[test_data['playlist_id'] == k]
+                for i in songs_to_draw:
+                    temp_list.append([k, i])
+            except:
+                print("No such playlist, splitting the data")
+
+    # print(temp_dictionary)
+    test_data = pd.DataFrame(temp_list, columns=['playlist_id', 'track_id'])
+
+    print(test_data.head(5))
     '''
     ordered_playlist = playlists['playlist_id'][:5000]
     # print("Last element of ordered_playlist: ", ordered_playlist[4999])
@@ -234,6 +261,9 @@ def randomization_split(full_dataset, playlists, test_size):
     # print(test_data_proper.head(5))
     print("Data correctly splitted")
     '''
+
+    train_data = pd.concat([full_dataset, test_data, test_data]).drop_duplicates(keep=False)
+
     return train_data, test_data
 
 

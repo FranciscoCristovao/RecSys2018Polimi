@@ -9,8 +9,8 @@ full_data = pd.read_csv('data/train.csv', sep=',')
 # train_data, test_data = train_test_split(full_data, test_size=0.2, random_state=12345)
 target_data = pd.read_csv('data/target_playlists.csv', sep=',')
 tracks_data = pd.read_csv('data/tracks.csv', sep=',')
-# train_data, test_data = train_test_split(full_data, test_size=0.2, shuffle=False)
-train_data, test_data = randomization_split(full_data, target_data, 0.2)
+train_data, test_data = train_test_split(full_data, test_size=0.2)
+# train_data, test_data = randomization_split(full_data, target_data, 0.2)
 
 # urm_full_data = pd.read_csv('data/URM.csv', sep=',')
 

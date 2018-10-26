@@ -34,5 +34,3 @@ evaluator = Evaluator()
 
 evaluator.evaluate(predictions, test_data)
 
-
-print("Loading..")
