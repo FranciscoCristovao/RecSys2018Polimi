@@ -11,7 +11,7 @@ class HybridRS:
     helper = Helper()
     train_data = pd.DataFrame()
 
-    def __init__(self, data, at, k=100, shrinkage=0, similarity='cosine'):
+    def __init__(self, data, at, k=200, shrinkage=0, similarity='cosine'):
 
         self.k = k
         self.at = at
@@ -34,7 +34,6 @@ class HybridRS:
         self.sym_users = check_matrix(self.cosine_colf.compute_similarity(), 'csr')
         # self.sym = check_matrix(self.cosine.compute(self.urm), 'csr')
         print("Sym mat completed")
-
 
     def recommend(self, playlist_ids, alpha):
         print("Recommending...")
