@@ -1,5 +1,15 @@
 
+Magic script for Cython:
+1)Compile inside the Cython repository with:
+python compile_cython.py file_name_cython.pyx build_ext --inplace
+2) Run your code as if it was normal python
+
+Caveat: Of course, each time you modify your python file you have to compile again
+        I had to modify a "long" value, into "long long"
+
 This is a todo file
 2) Check knn, shrink_value
 3) Look for TF_IDF
 4) Merge the tracks, artists albums ICM matrix properly in the collaborative filter
+
+python compile_cython.py Cosine_Similarity_Max.pyx build_ext --inplace

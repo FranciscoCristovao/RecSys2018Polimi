@@ -20,19 +20,18 @@ save_dataframe('output/submission_top_pop.csv', ',', predictions)
 # rs.fit(train_data)
 
 # Collaborative Filter User - User
-# rs = ColBfUURS(10, 200, 0)
+rs = ColBfUURS(10, 200, 0)
 
 #Hybrid (cbf - colf)
-
+'''
 rs = HybridRS(tracks_data, 10)
-
+'''
 rs.fit(train_data)
 
 # rs.fit(train_data)
-predictions = rs.recommend(target_data['playlist_id'], 0.8)
+predictions = rs.recommend(target_data['playlist_id'])
 
 evaluator = Evaluator()
 
 evaluator.evaluate(predictions, test_data)
-save_dataframe('output/submission_hybrid_0.8.csv', ',', predictions)
-
+save_dataframe('output/stnd_cosine.csv', ',', predictions)

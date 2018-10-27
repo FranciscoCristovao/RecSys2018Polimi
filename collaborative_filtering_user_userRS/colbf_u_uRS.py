@@ -3,7 +3,8 @@ import pandas as pd
 from scipy.sparse import csr_matrix
 from utils.auxUtils import Helper, filter_seen, filter_seen_array
 from utils.cosine_similarity_full import Compute_Similarity_Python, check_matrix
-
+from utils.Cython.Cosine_Similarity_Cython import Cosine_Similarity as Cosine_Worst
+from utils.Cython.Cosine_Similarity_Max import Cosine_Similarity as Cosine_Similarity
 
 class ColBfUURS:
 
@@ -12,7 +13,7 @@ class ColBfUURS:
     helper = Helper()
     train_data = pd.DataFrame()
 
-    def __init__(self, at, k, shrinkage, similarity='jaccard'):
+    def __init__(self, at, k, shrinkage, similarity='cosine'):
 
         self.k = k
         # self.cosine = Cosine()
@@ -27,7 +28,9 @@ class ColBfUURS:
         self.train_data = train_data
         self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values
         self.urm = self.helper.buildURMMatrix(train_data)
-        self.cosine = Compute_Similarity_Python(self.urm.T, self.k, self.shrinkage)
+        # self.cosine = Compute_Similarity_Python(self.urm.T, self.k, self.shrinkage)
+        # self.cosine = Cosine_Worst(self.urm.T, self.k)
+        self.cosine = Cosine_Similarity(self.urm.T, self.k, self.shrinkage)
         # self.sym = check_matrix(cosine_similarity(self.urm, dense_output=False), 'csr')
         self.sym = check_matrix(self.cosine.compute_similarity(), 'csr')
         # self.sym = check_matrix(self.cosine.compute(self.urm), 'csr')
