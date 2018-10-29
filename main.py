@@ -1,8 +1,10 @@
 from cbfRS.cbfRS import CbfRS
 from collaborative_filtering_RS.col_user_userRS import ColBfUURS
-from hybrid_col_cbf.hybridRS import HybridRS
+from hybrid_col_cbf_RS.hybridRS import HybridRS
+from slimRS.slimRS import SLIM_BPR_Recommender
 from loader.loader import save_dataframe, train_data, target_data, full_data, test_data, tracks_data
 from utils.auxUtils import Evaluator
+import pandas as pd
 import matplotlib.pyplot as plt
 
 # external libraries
@@ -25,13 +27,25 @@ rs = ColBfUURS(10, 200, 0)
 #Hybrid (cbf - colf)
 '''
 rs = HybridRS(tracks_data, 10)
-'''
 rs.fit(train_data)
-
-# rs.fit(train_data)
 predictions = rs.recommend(target_data['playlist_id'])
+'''
 
+# SLIM-BPR
+
+rs = SLIM_BPR_Recommender(train_data)
+rs.fit()
+
+final_prediction = {}
+
+for k in target_data['playlist_id']:
+    print("Recomending for playlist: ", k)
+    top_songs = rs.recommend(k, 10, True)
+    string = ' '.join(str(e) for e in top_songs)
+    final_prediction.update({k: string})
+
+predictions = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
 evaluator = Evaluator()
 
 evaluator.evaluate(predictions, test_data)
-save_dataframe('output/stnd_cosine.csv', ',', predictions)
+save_dataframe('output/slim_output.csv', ',', predictions)

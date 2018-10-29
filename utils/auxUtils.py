@@ -2,59 +2,56 @@ import pandas as pd
 import numpy as np
 from scipy.sparse import csr_matrix, coo_matrix
 import scipy.sparse as sps
+import time, sys
 import scipy
 from sklearn.model_selection import train_test_split
 
 
-class Helper:
+def buildURMMatrix(data):
 
-    def __init__(self):
-        print("Helper has been initialized")
-
-    def buildURMMatrix(self, data):
-
-        playlists = data["playlist_id"].values
-        tracks = data["track_id"].values
-        interaction = np.ones(len(tracks))
-        coo_urm = coo_matrix((interaction, (playlists, tracks)))
-        # print("This is the coo_urm", coo_urm)
-        return coo_urm.tocsr()
+    playlists = data["playlist_id"].values
+    tracks = data["track_id"].values
+    interaction = np.ones(len(tracks))
+    coo_urm = coo_matrix((interaction, (playlists, tracks)))
+    # print("This is the coo_urm", coo_urm)
+    return coo_urm.tocsr()
 
 
-    def buildICMMatrix(self, data):
+def buildICMMatrix(data):
 
-        '''
-        tracks = data["track_id"].values
-        artists = data["artist_id"].values
-        interaction = np.ones(len(tracks))
-        coo_icm = coo_matrix((interaction, (tracks, artists)))
+    '''
+    tracks = data["track_id"].values
+    artists = data["artist_id"].values
+    interaction = np.ones(len(tracks))
+    coo_icm = coo_matrix((interaction, (tracks, artists)))
 
 
-        print("Coo icm with artists correctly built.")  # , features_per_item.shape)
-        # print("Item per features: ", items_per_feature.shape)
+    print("Coo icm with artists correctly built.")  # , features_per_item.shape)
+    # print("Item per features: ", items_per_feature.shape)
 
-        return coo_icm.tocsr()
-        '''
-        '''
+    return coo_icm.tocsr()
+    '''
+    '''
 
-        tracks = data["track_id"].values
-        albums = data["album_id"].values
-        artists = data["artist_id"].values
-        features = np.concatenate([albums, artists])
-        tracks_sized = np.concatenate([tracks, tracks])
-        interaction = np.ones(len(features))
-        coo_icm = coo_matrix((interaction, (tracks_sized, features)))
-        return coo_icm.tocsr()
-        '''
+    tracks = data["track_id"].values
+    albums = data["album_id"].values
+    artists = data["artist_id"].values
+    features = np.concatenate([albums, artists])
+    tracks_sized = np.concatenate([tracks, tracks])
+    interaction = np.ones(len(features))
+    coo_icm = coo_matrix((interaction, (tracks_sized, features)))
+    return coo_icm.tocsr()
+    '''
 
-        frames = [pd.get_dummies(data['album_id']), pd.get_dummies(data['artist_id'])]
-        icm = pd.concat(frames, axis=1)
-        print("ICM with artists and albums correctly built.")
+    frames = [pd.get_dummies(data['album_id']), pd.get_dummies(data['artist_id'])]
+    icm = pd.concat(frames, axis=1)
+    print("ICM with artists and albums correctly built.")
 
-        return csr_matrix(icm)
+    return csr_matrix(icm)
 
-    def dataframeToCSR(self, data):
-        print(csr_matrix(data))
+
+def dataframeToCSR(data):
+    print(csr_matrix(data))
 
 
 class Cosine:
@@ -99,11 +96,9 @@ class Cosine:
 
 class Evaluator:
 
-    helper = Helper()
 
     def __init__(self):
         print("Evaluator has been initialized")
-        self.helper = Helper()
 
     def map(self, recommended_items, relevant_items):
 
@@ -131,7 +126,7 @@ class Evaluator:
         cumulative_map = 0.0
         num_eval = 0
         counter = 0
-        urm_test = self.helper.buildURMMatrix(test_data)
+        urm_test = buildURMMatrix(test_data)
 
         for i in recommended["playlist_id"]:
             try:
@@ -266,5 +261,92 @@ def randomization_split(full_dataset, playlists, test_size):
     train_data = pd.concat([full_dataset, test_data, test_data]).drop_duplicates(keep=False)
 
     return train_data, test_data
+
+
+def similarityMatrixTopK(item_weights, forceSparseOutput = True, k=100, verbose = False, inplace=True):
+    """
+    The function selects the TopK most similar elements, column-wise
+
+    :param item_weights:
+    :param forceSparseOutput:
+    :param k:
+    :param verbose:
+    :param inplace: Default True, WARNING matrix will be modified
+    :return:
+    """
+
+    assert (item_weights.shape[0] == item_weights.shape[1]), "selectTopK: ItemWeights is not a square matrix"
+
+    start_time = time.time()
+
+    if verbose:
+        print("Generating topK matrix")
+
+    nitems = item_weights.shape[1]
+    k = min(k, nitems)
+
+    # for each column, keep only the top-k scored items
+    sparse_weights = not isinstance(item_weights, np.ndarray)
+
+    if not sparse_weights:
+
+        idx_sorted = np.argsort(item_weights, axis=0)  # sort data inside each column
+
+        if inplace:
+            W = item_weights
+        else:
+            W = item_weights.copy()
+
+        # index of the items that don't belong to the top-k similar items of each column
+        not_top_k = idx_sorted[:-k, :]
+        # use numpy fancy indexing to zero-out the values in sim without using a for loop
+        W[not_top_k, np.arange(nitems)] = 0.0
+
+        if forceSparseOutput:
+            W_sparse = sps.csr_matrix(W, shape=(nitems, nitems))
+
+            if verbose:
+                print("Sparse TopK matrix generated in {:.2f} seconds".format(time.time() - start_time))
+
+            return W_sparse
+
+        if verbose:
+            print("Dense TopK matrix generated in {:.2f} seconds".format(time.time()-start_time))
+
+        return W
+
+    else:
+        # iterate over each column and keep only the top-k similar items
+        data, rows_indices, cols_indptr = [], [], []
+
+        item_weights = check_matrix(item_weights, format='csc', dtype=np.float32)
+
+        for item_idx in range(nitems):
+
+            cols_indptr.append(len(data))
+
+            start_position = item_weights.indptr[item_idx]
+            end_position = item_weights.indptr[item_idx+1]
+
+            column_data = item_weights.data[start_position:end_position]
+            column_row_index = item_weights.indices[start_position:end_position]
+
+            idx_sorted = np.argsort(column_data)  # sort by column
+            top_k_idx = idx_sorted[-k:]
+
+            data.extend(column_data[top_k_idx])
+            rows_indices.extend(column_row_index[top_k_idx])
+
+
+        cols_indptr.append(len(data))
+
+        # During testing CSR is faster
+        W_sparse = sps.csc_matrix((data, rows_indices, cols_indptr), shape=(nitems, nitems), dtype=np.float32)
+        W_sparse = W_sparse.tocsr()
+
+        if verbose:
+            print("Sparse TopK matrix generated in {:.2f} seconds".format(time.time() - start_time))
+
+        return W_sparse
 
 

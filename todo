@@ -1,7 +1,7 @@
 
 Magic script for Cython:
 1)Compile inside the Cython repository with:
-python compile_cython.py file_name_cython.pyx build_ext --inplace
+l
 2) Run your code as if it was normal python
 
 Caveat: Of course, each time you modify your python file you have to compile again

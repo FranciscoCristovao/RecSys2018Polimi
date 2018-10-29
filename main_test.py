@@ -6,7 +6,7 @@ from utils.auxUtils import Evaluator
 from collaborative_filtering_RS.col_user_userRS import ColBfUURS
 from collaborative_filtering_RS.col_item_itemRS import ColBfIIRS
 import matplotlib.pyplot as plt
-from slim.slimRS import SLIM_BPR
+from slimRS.slimRS import SLIM_BPR
 
 # SLIM
 '''

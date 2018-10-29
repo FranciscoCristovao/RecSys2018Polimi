@@ -2,13 +2,12 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sps
 from scipy.sparse import csr_matrix
-from utils.auxUtils import Helper, check_matrix, filter_seen
+from utils.auxUtils import check_matrix, filter_seen, buildICMMatrix, buildURMMatrix
 from utils.cosine_similarity_full import Compute_Similarity_Python
 
 
 class HybridRS:
 
-    helper = Helper()
     train_data = pd.DataFrame()
 
     def __init__(self, data, at, k=200, shrinkage=0, similarity='cosine'):
@@ -18,7 +17,7 @@ class HybridRS:
         self.shrinkage = shrinkage
         self.similarity_name = similarity
         data = data.drop(columns="duration_sec")
-        self.icm = self.helper.buildICMMatrix(data)
+        self.icm = buildICMMatrix(data)
         print("ICM loaded into the class")
 
     def fit(self, train_data):
@@ -26,7 +25,7 @@ class HybridRS:
 
         self.train_data = train_data
         self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values
-        self.urm = self.helper.buildURMMatrix(train_data)
+        self.urm = buildURMMatrix(train_data)
         self.cosine_cbf = Compute_Similarity_Python(self.icm.T, self.k, self.shrinkage)
         self.cosine_colf = Compute_Similarity_Python(self.urm.T, self.k, self.shrinkage)
         # self.sym = check_matrix(cosine_similarity(self.urm, dense_output=False), 'csr')
