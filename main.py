@@ -1,5 +1,5 @@
 from cbfRS.cbfRS import CbfRS
-from collaborative_filtering_user_userRS.colbf_u_uRS import ColBfUURS
+from collaborative_filtering_RS.col_user_userRS import ColBfUURS
 from hybrid_col_cbf.hybridRS import HybridRS
 from loader.loader import save_dataframe, train_data, target_data, full_data, test_data, tracks_data
 from utils.auxUtils import Evaluator

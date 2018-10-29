@@ -6,7 +6,7 @@ from utils.cosine_similarity_full import Compute_Similarity_Python, check_matrix
 from utils.Cython.Cosine_Similarity_Cython import Cosine_Similarity as Cosine_Worst
 from utils.Cython.Cosine_Similarity_Max import Cosine_Similarity as Cosine_Similarity
 
-class ColBfUURS:
+class ColBfIIRS:
 
     sym = pd.DataFrame()
     urm = pd.DataFrame()
@@ -30,7 +30,7 @@ class ColBfUURS:
         self.urm = self.helper.buildURMMatrix(train_data)
         # self.cosine = Compute_Similarity_Python(self.urm.T, self.k, self.shrinkage)
         # self.cosine = Cosine_Worst(self.urm.T, self.k)
-        self.cosine = Cosine_Similarity(self.urm.T, self.k, self.shrinkage)
+        self.cosine = Cosine_Similarity(self.urm, self.k, self.shrinkage)
         # self.sym = check_matrix(cosine_similarity(self.urm, dense_output=False), 'csr')
         self.sym = check_matrix(self.cosine.compute_similarity(), 'csr')
         # self.sym = check_matrix(self.cosine.compute(self.urm), 'csr')
@@ -41,7 +41,7 @@ class ColBfUURS:
         print("Recommending...")
 
         final_prediction = {}
-        estimated_ratings = csr_matrix(self.sym.dot(self.urm))
+        estimated_ratings = csr_matrix(self.urm.dot(self.sym))
         counter = 0
 
         for k in playlist_ids:

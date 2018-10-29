@@ -136,6 +136,7 @@ class Evaluator:
         for i in recommended["playlist_id"]:
             try:
                 relevant_items = urm_test[i].indices
+                # relevant_items = self.get_user_relevant_items(test_user)
             except IndexError:
                 print("No row in the test set")
                 continue
