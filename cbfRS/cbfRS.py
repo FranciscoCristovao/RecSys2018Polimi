@@ -2,13 +2,12 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sps
 from scipy.sparse import csr_matrix
-from utils.auxUtils import Helper, check_matrix, filter_seen, filter_seen_array
+from utils.auxUtils import check_matrix, filter_seen, filter_seen_array, buildICMMatrix
 from utils.cosine_similarity_full import Compute_Similarity_Python
 
 
 class CbfRS:
 
-    helper = Helper()
     train_data = pd.DataFrame()
 
     def __init__(self, data, at, k=100, shrinkage=0, similarity='cosine'):
@@ -19,7 +18,7 @@ class CbfRS:
         self.similarity_name = similarity
 
         data = data.drop(columns="duration_sec")
-        self.icm = self.helper.buildICMMatrix(data)
+        self.icm = buildICMMatrix(data)
 
         # print(self.icm.todense())
         print("ICM loaded into the class")
