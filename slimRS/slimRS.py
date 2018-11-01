@@ -2,10 +2,11 @@ import numpy as np
 import time
 from utils.auxUtils import similarityMatrixTopK, buildURMMatrix
 
+
 class SLIM_BPR_Recommender(object):
     """ SLIM_BPR recommender with cosine similarity and no shrinkage"""
 
-    def __init__(self, data, learning_rate=0.01, epochs=3):
+    def __init__(self, data, learning_rate=0.05, epochs=2):
         print("Slim initialized...")
         self.URM = buildURMMatrix(data)
         self.learning_rate = learning_rate
@@ -102,7 +103,7 @@ class SLIM_BPR_Recommender(object):
 
         self.similarity_matrix = similarityMatrixTopK(self.similarity_matrix, k=100)
 
-    def recommend(self, user_id, at=None, exclude_seen=True):
+    def recommend(self, user_id, at=10, exclude_seen=True):
 
         # compute the scores using the dot product
         user_profile = self.URM[user_id]
