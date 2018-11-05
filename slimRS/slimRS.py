@@ -101,7 +101,7 @@ class SLIM_BPR_Recommender(object):
 
         self.similarity_matrix = self.similarity_matrix.T
 
-        self.similarity_matrix = similarityMatrixTopK(self.similarity_matrix, k=100)
+        self.similarity_matrix = similarityMatrixTopK(self.similarity_matrix, k=200)
 
     def recommend(self, user_id, at=10, exclude_seen=True):
 
