@@ -104,6 +104,7 @@ cdef class Cosine_Similarity:
 
 
         self.TopK = min(topK, self.n_columns)
+
         self.this_item_weights = np.zeros(self.n_columns, dtype=np.float64)
         self.this_item_weights_id = np.zeros(self.n_columns, dtype=np.int32)
         self.this_item_weights_mask = np.zeros(self.n_columns, dtype=np.int32)

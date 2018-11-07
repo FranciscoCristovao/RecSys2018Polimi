@@ -4,6 +4,7 @@ from scipy.sparse import csr_matrix, coo_matrix
 import scipy.sparse as sps
 import time, sys
 import scipy
+import category_encoders as ce
 from sklearn.model_selection import train_test_split
 
 
@@ -186,6 +187,33 @@ def filter_seen_array(new_songs, playlist):
     return new_songs[unseen_mask]
 
 
+def split_data(full_data, playlists, test_size):
+    # take away last song in the playlist...
+    ordered_playlist = playlists['playlist_id'][:5000]
+    # print("Last element of ordered_playlist: ", ordered_playlist[4999])
+    random_playlist = playlists['playlist_id'][5000:]
+
+    train_data = pd.DataFrame(columns=['playlist_id', 'track_id'])
+    test_data = pd.DataFrame(columns=['playlist_id', 'track_id'])
+    for i in range(50445):
+        if i in ordered_playlist.values:
+            playlist_ordered = full_data.loc[full_data['playlist_id'] == i]
+            chunk_value = int(len(playlist_ordered)*(1-test_size))
+            train_single = playlist_ordered.iloc[:chunk_value]
+            test_single = playlist_ordered.iloc[chunk_value:]
+        else:
+            playlist_i = full_data.loc[full_data['playlist_id'] == i]
+            train_single, test_single = train_test_split(playlist_i, test_size=test_size)
+
+        if (i % 1000) == 0:
+            print("Splitting the dataframe...", i)
+
+        train_data = train_data.append(train_single)
+        test_data = test_data.append(test_single)
+
+    return train_data, test_data
+
+
 def randomization_split(full_dataset, playlists, test_size):
     # take the sequential order and make it random.
     # select only target playlist data
@@ -349,4 +377,37 @@ def similarityMatrixTopK(item_weights, forceSparseOutput = True, k=100, verbose 
 
         return W_sparse
 
+
+def buildICMMatrix_comeback(data):
+
+    '''
+    tracks = data["track_id"].values
+    artists = data["artist_id"].values
+    interaction = np.ones(len(tracks))
+    coo_icm = coo_matrix((interaction, (tracks, artists)))
+
+
+    print("Coo icm with artists correctly built.")  # , features_per_item.shape)
+    # print("Item per features: ", items_per_feature.shape)
+
+    return coo_icm.tocsr()
+    '''
+    '''
+
+    tracks = data["track_id"].values
+    albums = data["album_id"].values
+    artists = data["artist_id"].values
+    features = np.concatenate([albums, artists])
+    tracks_sized = np.concatenate([tracks, tracks])
+    interaction = np.ones(len(features))
+    coo_icm = coo_matrix((interaction, (tracks_sized, features)))
+    return coo_icm.tocsr()
+    '''
+    # frames = [pd.get_dummies(data['album_id']), pd.get_dummies(data['artist_id']), pd.get_dummies(data['duration_sec'])]
+    frames = [pd.get_dummies(data['album_id'])]
+    icm = pd.concat(frames, axis=1)
+
+    print("ICM with artists and albums correctly built.")
+
+    return csr_matrix(icm)
 

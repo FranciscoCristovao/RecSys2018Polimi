@@ -2,23 +2,25 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sps
 from scipy.sparse import csr_matrix
-from utils.auxUtils import check_matrix, filter_seen, filter_seen_array, buildICMMatrix
-from utils.cosine_similarity_full import Compute_Similarity_Python
+from utils.auxUtils import check_matrix, filter_seen, buildICMMatrix_comeback, buildICMMatrix, buildURMMatrix
+from utils.Cython.Cosine_Similarity_Max import Cosine_Similarity
+
 
 
 class CbfRS:
 
     train_data = pd.DataFrame()
 
-    def __init__(self, data, at, k=100, shrinkage=0, similarity='cosine'):
+    def __init__(self, data, at, k, shrinkage, similarity='cosine'):
 
         self.k = k
         self.at = at
         self.shrinkage = shrinkage
         self.similarity_name = similarity
 
-        data = data.drop(columns="duration_sec")
-        self.icm = buildICMMatrix(data)
+        # data = data.drop(columns="duration_sec")
+        # self.icm = buildICMMatrix(data)
+        self.icm = buildICMMatrix_comeback(data)
 
         # print(self.icm.todense())
         print("ICM loaded into the class")
@@ -29,7 +31,7 @@ class CbfRS:
 
         self.train_data = train_data
         self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values
-        self.cosine = Compute_Similarity_Python(self.icm.T, self.k, self.shrinkage)
+        self.cosine = Cosine_Similarity(self.icm.T, self.k, self.shrinkage)
         # it was a numpy array, i transformed it into a csr matrix
         # Here we have 3 different ways to compute the similarities
         # self.sym = csr_matrix(self.icm.dot(self.icm.T))
@@ -40,7 +42,7 @@ class CbfRS:
         # self.sym = csr_matrix(cosine_similarity(self.icm, self.icm))
         # print(self.sym)
         print("Sym correctly loaded")
-        self.urm = self.helper.buildURMMatrix(train_data)
+        self.urm = buildURMMatrix(train_data)
 
     def recommend(self, playlist_ids):
         print("Recommending...")
@@ -50,7 +52,7 @@ class CbfRS:
         print("STARTING ESTIMATION")
         # add ravel() ?
         estimated_ratings = csr_matrix(self.urm.dot(self.sym))
-        print(estimated_ratings)
+
         counter = 0
         abc = 0
         for k in playlist_ids:
@@ -68,13 +70,13 @@ class CbfRS:
             string = ' '.join(str(e) for e in top_songs)
             final_prediction.update({k: string})
 
-            if(counter % 1000) == 0:
+            if(counter % 5000) == 0:
                 print("Playlist num", counter, "/10000")
 
             counter += 1
 
         df = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
-        print("THEY ARE: ", abc)
+        # print("THEY ARE: ", abc)
         return df
 
     def recommend_slower(self, playlist_ids):
