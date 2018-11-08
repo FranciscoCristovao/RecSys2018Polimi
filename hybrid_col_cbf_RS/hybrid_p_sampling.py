@@ -47,7 +47,7 @@ class HybridRS:
         # self.sym = check_matrix(self.cosine.compute(self.urm), 'csr')
         print("Sym mat completed")
 
-    def recommend(self, playlist_ids, alpha, beta, gamma):
+    def recommend(self, playlist_ids, t, alpha, beta, gamma):
         print("Recommending...")
 
         final_prediction = {}
@@ -86,25 +86,32 @@ class HybridRS:
 
                 i = 0
                 j = 0
-                k = 0
+                m = 0
+                count = 0
                 top_songs = []
-
-                while i < len(aux_col_u_u) or j < len(aux_col_i_i) or k < len(aux_cbf):
-                    p = np.random.uniform(low=0.0, high=1.0)
-                    if p < 0.45:
+                t1 = t
+                # t2 = 6/11 + t1
+                while (i < len(aux_col_u_u) or j < len(aux_col_i_i) or m < len(aux_cbf)) and count < 100:
+                    #p = np.randomimp.uniform(low=0.0, high=1.0)
+                    p = np.random.normal(loc=0.5, scale=0.5, size=None)
+                    if 0 < p < 0.3 or t1 < p < 1:
                         if i < len(aux_col_u_u) and aux_col_u_u[i] not in top_songs:
                             top_songs.append(aux_col_u_u[i])
-                            i += 1
-                    elif p < 0.9:
+                        i += 1
+                    elif 0 < p < t1:
                         if j < len(aux_col_i_i) and aux_col_i_i[j] not in top_songs:
                             top_songs.append(aux_col_i_i[j])
-                            j += 1
+                        j += 1
                     else:
-                        if k < len(aux_cbf) and aux_cbf[k] not in top_songs:
-                            top_songs.append(aux_cbf[k])
-                            k += 1
+                        if m < len(aux_cbf) and aux_cbf[m] not in top_songs:
+                            top_songs.append(aux_cbf[m])
+                        m += 1
+                    count += 1
 
-                recommended_songs = filter_seen_array(np.array(top_songs), user_playlist.data)
+                recommended_songs = filter_seen_array(np.array(top_songs), user_playlist.data)[:self.at]
+
+                if len(recommended_songs) < 10:
+                    print("Francisco was right once")
 
                 string = ' '.join(str(e) for e in recommended_songs)
                 final_prediction.update({k: string})
