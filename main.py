@@ -4,9 +4,29 @@ from slimRS.slimRS import SLIM_BPR_Recommender
 from loader.loader import save_dataframe, train_data, target_data, full_data, test_data, tracks_data
 from utils.auxUtils import Evaluator, buildURMMatrix, filter_seen
 import pandas as pd
-from lightfm import LightFM
+# from lightfm import LightFM
+from cbfRS.cbfRS import CbfRS
+from collaborative_filtering_RS.col_user_userRS import ColBfUURS
+from collaborative_filtering_RS.col_item_itemRS import ColBfIIRS
+'''
+rs = CbfRS(tracks_data, 10, tf_idf=True)
+rs.fit(train_data)
 
+evaluator = Evaluator()
+predictions = rs.recommend(target_data["playlist_id"])
 
+evaluator.evaluate(predictions, test_data)
+save_dataframe('output/cbf_output.csv', ',', predictions)
+'''
+rs = ColBfIIRS(10, 200, 0, tf_idf=True)
+rs.fit(train_data)
+
+evaluator = Evaluator()
+predictions = rs.recommend(target_data["playlist_id"])
+
+evaluator.evaluate(predictions, test_data)
+save_dataframe('output/cb_u_u_output.csv', ',', predictions)
+'''
 # SLIM-BPR
 
 rs = SLIM_BPR_Recommender(train_data)
@@ -25,7 +45,7 @@ evaluator = Evaluator()
 
 evaluator.evaluate(predictions, test_data)
 save_dataframe('output/slim_output.csv', ',', predictions)
-
+'''
 '''
 rs = FunkSVD(train_data)
 rs.fit()

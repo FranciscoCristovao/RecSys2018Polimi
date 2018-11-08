@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix
-from utils.auxUtils import filter_seen, filter_seen_array, buildURMMatrix
+from utils.auxUtils import filter_seen, filter_seen_array, buildURMMatrix, normalize_tf_idf
 from utils.cosine_similarity_full import Compute_Similarity_Python, check_matrix
 # from utils.Cython.Cosine_Similarity_Cython import Cosine_Similarity as Cosine_Worst
 from utils.Cython.Cosine_Similarity_Max import Cosine_Similarity as Cosine_Similarity
@@ -12,13 +12,14 @@ class ColBfUURS:
     urm = pd.DataFrame()
     train_data = pd.DataFrame()
 
-    def __init__(self, at, k, shrinkage, similarity='cosine'):
+    def __init__(self, at, k, shrinkage, similarity='cosine', tf_idf=False):
 
         self.k = k
         # self.cosine = Cosine()
         self.shrinkage = shrinkage
         self.similarity_name = similarity
         self.at = at
+        self.tf_idf = tf_idf
 
     def fit(self, train_data):
 
@@ -27,8 +28,8 @@ class ColBfUURS:
         self.train_data = train_data
         self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values
         self.urm = buildURMMatrix(train_data)
-        # self.cosine = Compute_Similarity_Python(self.urm.T, self.k, self.shrinkage)
-        # self.cosine = Cosine_Worst(self.urm.T, self.k)
+        if self.tf_idf:
+            self.urm = normalize_tf_idf(self.urm.T).T
         self.cosine = Cosine_Similarity(self.urm.T, self.k, self.shrinkage)
         # self.sym = check_matrix(cosine_similarity(self.urm, dense_output=False), 'csr')
         self.sym = check_matrix(self.cosine.compute_similarity(), 'csr')
