@@ -78,7 +78,7 @@ class SLIM_BPR_Cython():
             self.runCompilationScript()
             print("Compilation Complete")
 
-    def fit(self, epochs=50, logFile=None, URM_test=None, filterTopPop=False, minRatingsPerUser=1,
+    def fit(self, epochs=30, logFile=None, URM_test=None, filterTopPop=False, minRatingsPerUser=1,
             batch_size=1000, lambda_i=0.0025, lambda_j=0.00025, learning_rate=1e-4, topK=200,
             sgd_mode='adagrad', gamma=0.995, beta_1=0.9, beta_2=0.999,
             stop_on_validation=False, lower_validatons_allowed=5, validation_metric="map",

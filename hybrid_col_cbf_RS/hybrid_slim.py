@@ -62,6 +62,17 @@ class HybridRS:
         e_r_col_u_u = csr_matrix(self.sym_u_u.dot(self.urm))
         e_r_col_i_i = csr_matrix(self.urm.dot(self.sym_i_i))
         e_r_slim_bpr = check_matrix(self.urm.dot(self.weights_slim), 'csr')
+        '''
+        print("slim: ", e_r_slim_bpr[7].data)
+        print("slim: ", e_r_slim_bpr[7].data.argsort()[::-1])
+        print("slim ordered data: ", e_r_slim_bpr[7].data[e_r_slim_bpr[7].data.argsort()[::-1]])
+        print("i i : ", e_r_col_i_i[7].data.argsort()[::-1])
+        print("i i ordered data: ", e_r_col_i_i[7].data[e_r_col_i_i[7].data.argsort()[::-1]])
+        print("u u : ", e_r_col_u_u[7].data.argsort()[::-1])
+        print("i i ordered data: ", e_r_col_u_u[7].data[e_r_col_u_u[7].data.argsort()[::-1]])
+        print("e_r_cbf : ", e_r_cbf[7].data.argsort()[::-1])
+        print("e_r_cbf ordered data: ", e_r_cbf[7].data[e_r_cbf[7].data.argsort()[::-1]])
+        '''
 
         estimated_ratings_final = e_r_col_u_u.multiply(alpha) + e_r_col_i_i.multiply(beta) + e_r_cbf.multiply(gamma)\
                                   + e_r_slim_bpr.multiply(delta)
