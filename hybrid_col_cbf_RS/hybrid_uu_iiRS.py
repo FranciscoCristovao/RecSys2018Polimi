@@ -11,7 +11,7 @@ class HybridRS:
     train_data = pd.DataFrame()
 
     def __init__(self, data, at, k_con=40, k_col_u_u=200, k_col_i_i=200,
-                 shrinkage_con=0, shrinkage_col_u_u=0, shrinkage_col_i_i=0, similarity='jaccard'):
+                 shrinkage_con=0, shrinkage_col_u_u=0, shrinkage_col_i_i=0, similarity='jaccard', idf=False):
 
         # hybrid parameters
         self.k_con = k_con
@@ -21,6 +21,7 @@ class HybridRS:
         self.shrinkage_col_u_u = shrinkage_col_u_u
         self.shrinkage_col_i_i = shrinkage_col_i_i
 
+        self.idf_flag = idf
         self.at = at
         self.similarity_name = similarity
         data = data.drop(columns="duration_sec")

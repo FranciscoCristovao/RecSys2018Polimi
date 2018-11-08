@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sps
 from scipy.sparse import csr_matrix
-from utils.auxUtils import check_matrix, filter_seen, buildICMMatrix, buildURMMatrix
+from utils.auxUtils import check_matrix, filter_seen, buildICMMatrix, buildURMMatrix, normalize_tf_idf
 from utils.Cython.Cosine_Similarity_Max import Cosine_Similarity
 from slimRS.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
 
@@ -12,7 +12,7 @@ class HybridRS:
     train_data = pd.DataFrame()
 
     def __init__(self, data, at, k_con=40, k_col_u_u=200, k_col_i_i=200,
-                 shrinkage_con=0, shrinkage_col_u_u=0, shrinkage_col_i_i=0, similarity='cosine'):
+                 shrinkage_con=0, shrinkage_col_u_u=0, shrinkage_col_i_i=0, similarity='cosine', tf_idf=False):
 
         # hybrid parameters
         self.k_con = k_con
@@ -21,6 +21,7 @@ class HybridRS:
         self.shrinkage_con = shrinkage_con
         self.shrinkage_col_u_u = shrinkage_col_u_u
         self.shrinkage_col_i_i = shrinkage_col_i_i
+        self.tf_idf = tf_idf
 
         self.at = at
         self.similarity_name = similarity
@@ -34,6 +35,10 @@ class HybridRS:
         self.train_data = train_data
         self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values
         self.urm = buildURMMatrix(train_data)
+        if self.tf_idf:
+            self.urm = normalize_tf_idf(self.urm.T).T
+        if self.tf_idf:
+            self.icm = normalize_tf_idf(self.icm)
         # from some tests, looks like k_con optimal = 40 with no particular shrink
         self.cosine_cbf = Cosine_Similarity(self.icm.T, self.k_con, self.shrinkage_con, normalize=True,
                                             mode=self.similarity_name, row_weights=None)

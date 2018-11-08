@@ -4,7 +4,6 @@ from scipy.sparse import csr_matrix, coo_matrix
 import scipy.sparse as sps
 import time, sys
 import scipy
-import category_encoders as ce
 from sklearn.model_selection import train_test_split
 
 
@@ -53,6 +52,25 @@ def buildICMMatrix(data):
 
 def dataframeToCSR(data):
     print(csr_matrix(data))
+
+
+def normalize_tf_idf(icm_all):
+    num_tot_items = icm_all.shape[0]
+
+    # count how many items have a certain feature
+    items_per_feature = (icm_all > 0).sum(axis=0)
+
+    idf = np.array(np.log(num_tot_items / items_per_feature))[0]
+
+    icm_idf = icm_all.copy()
+    # compute the number of non-zeros in each col
+    # NOTE: this works only if X is instance of sparse.csc_matrix
+    col_nnz = np.diff(sps.csc_matrix(icm_idf).indptr)
+
+    # normalize the values in each col
+    icm_idf.data = icm_idf.data * np.repeat(idf, col_nnz)
+
+    return icm_idf
 
 
 class Cosine:
@@ -370,40 +388,6 @@ def similarityMatrixTopK(item_weights, forceSparseOutput = True, k=100, verbose 
             print("Sparse TopK matrix generated in {:.2f} seconds".format(time.time() - start_time))
 
         return W_sparse
-
-
-def buildICMMatrix_comeback(data):
-
-    '''
-    tracks = data["track_id"].values
-    artists = data["artist_id"].values
-    interaction = np.ones(len(tracks))
-    coo_icm = coo_matrix((interaction, (tracks, artists)))
-
-
-    print("Coo icm with artists correctly built.")  # , features_per_item.shape)
-    # print("Item per features: ", items_per_feature.shape)
-
-    return coo_icm.tocsr()
-    '''
-    '''
-
-    tracks = data["track_id"].values
-    albums = data["album_id"].values
-    artists = data["artist_id"].values
-    features = np.concatenate([albums, artists])
-    tracks_sized = np.concatenate([tracks, tracks])
-    interaction = np.ones(len(features))
-    coo_icm = coo_matrix((interaction, (tracks_sized, features)))
-    return coo_icm.tocsr()
-    '''
-    # frames = [pd.get_dummies(data['album_id']), pd.get_dummies(data['artist_id']), pd.get_dummies(data['duration_sec'])]
-    frames = [pd.get_dummies(data['album_id'])]
-    icm = pd.concat(frames, axis=1)
-
-    print("ICM with artists and albums correctly built.")
-
-    return csr_matrix(icm)
 
 
 def similarityMatrixTopK(item_weights, forceSparseOutput=True, k=100, verbose=False, inplace=True):

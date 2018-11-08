@@ -5,7 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 #Hybrid (cbf - colf)
-rs = HybridRS(tracks_data, 10)
+rs = HybridRS(tracks_data, 10, tf_idf=False)
 evaluator = Evaluator()
 rs.fit(train_data)
 temp_res = []

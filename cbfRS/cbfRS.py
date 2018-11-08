@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sps
 from scipy.sparse import csr_matrix
-from utils.auxUtils import check_matrix, filter_seen, buildICMMatrix_comeback, buildICMMatrix, buildURMMatrix
+from utils.auxUtils import check_matrix, filter_seen, buildICMMatrix, buildURMMatrix, normalize_tf_idf
 from utils.Cython.Cosine_Similarity_Max import Cosine_Similarity
 
 
@@ -11,16 +11,17 @@ class CbfRS:
 
     train_data = pd.DataFrame()
 
-    def __init__(self, data, at, k, shrinkage, similarity='cosine'):
+    def __init__(self, train_data, at, k=40, shrinkage=0, similarity='cosine', tf_idf=False):
 
         self.k = k
         self.at = at
         self.shrinkage = shrinkage
         self.similarity_name = similarity
+        self.tf_idf = tf_idf
 
         # data = data.drop(columns="duration_sec")
         # self.icm = buildICMMatrix(data)
-        self.icm = buildICMMatrix_comeback(data)
+        self.icm = buildICMMatrix(train_data)
 
         # print(self.icm.todense())
         print("ICM loaded into the class")
@@ -29,18 +30,14 @@ class CbfRS:
 
         print("Fitting...")
 
+        if self.tf_idf:
+            self.icm = normalize_tf_idf(self.icm)
+
         self.train_data = train_data
         self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values
         self.cosine = Cosine_Similarity(self.icm.T, self.k, self.shrinkage)
-        # it was a numpy array, i transformed it into a csr matrix
-        # Here we have 3 different ways to compute the similarities
-        # self.sym = csr_matrix(self.icm.dot(self.icm.T))
         self.sym = check_matrix(self.cosine.compute_similarity(), 'csr')
 
-        # print(type(self.sym))
-        # self.sym = self.cos.compute(self.icm, 0)
-        # self.sym = csr_matrix(cosine_similarity(self.icm, self.icm))
-        # print(self.sym)
         print("Sym correctly loaded")
         self.urm = buildURMMatrix(train_data)
 
