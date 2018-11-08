@@ -79,10 +79,24 @@ class SLIM_BPR_Cython():
             print("Compilation Complete")
 
     def fit(self, epochs=50, logFile=None, URM_test=None, filterTopPop=False, minRatingsPerUser=1,
-            batch_size = 1000, lambda_i=0.0025, lambda_j=0.00025, learning_rate=1e-4, topK=200,
+            batch_size=1000, lambda_i=0.0025, lambda_j=0.00025, learning_rate=1e-4, topK=200,
             sgd_mode='adagrad', gamma=0.995, beta_1=0.9, beta_2=0.999,
             stop_on_validation=False, lower_validatons_allowed=5, validation_metric="map",
             validation_function=None, validation_every_n=1):
+        '''
+        :param epochs:
+        :param filterTopPop:
+        :param batch_size:
+        :param lambda_i: parameter for weighting the SLIM, proposed by paper: 0.0025
+        :param lambda_j: parameter for weighting the SLIM, proposed by paper: 0.00025
+        :param learning_rate: how much the algorighm is learning for each epoch
+        :param topK: knn similarity
+        :param sgd_mode: adagrad, rmsprop, adam, sgd
+        :param gamma: rmsprop value
+        :param beta_1: adam value proposed by paper: 0.9
+        :param beta_2: adam value proposed by paper: 0.999
+        '''
+
         print('Fitting..')
         # Import compiled module
         from slimRS.Cython.SLIM_BPR_Cython_Epoch import SLIM_BPR_Cython_Epoch
@@ -271,6 +285,16 @@ class SLIM_BPR_Cython():
                 self.W_sparse = similarityMatrixTopK(self.S_incremental, k=self.topK)
             else:
                 self.W = self.S_incremental
+
+    def get_weight_matrix(self):
+        if self.train_with_sparse_weights:
+            matrix_w = self.W_sparse
+        else:
+            if self.sparse_weights:
+                matrix_w = self.W_sparse
+            else:
+                matrix_w = self.W
+        return csr_matrix(matrix_w, shape=(self.n_songs, self.n_songs))
 
     def recommend(self, playlist_ids):
 
