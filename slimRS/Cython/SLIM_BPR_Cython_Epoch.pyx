@@ -600,7 +600,9 @@ cdef class Sparse_Matrix_Tree_CSR:
             raise ValueError("Cell is outside matrix. Matrix shape is ({},{}), coordinates given are ({},{})".format(
                 self.num_rows, self.num_cols, row, col))
 
-        cdef matrix_element_tree_s* current_element, new_element, * old_element
+        cdef matrix_element_tree_s* current_element
+        cdef matrix_element_tree_s* new_element
+        cdef matrix_element_tree_s** old_element
         cdef int stopSearch = False
 
 
@@ -811,7 +813,8 @@ cdef class Sparse_Matrix_Tree_CSR:
         if root == NULL:
             return NULL
 
-        cdef matrix_element_tree_s *flat_list_head, *current_element
+        cdef matrix_element_tree_s *flat_list_head
+        cdef matrix_element_tree_s *current_element
 
         # Flatten lower subtree
         flat_list_head = self.subtree_to_list_flat(root.lower)
@@ -910,7 +913,9 @@ cdef class Sparse_Matrix_Tree_CSR:
         cdef long list_length = 0
         cdef long middle_element_step = 0
 
-        cdef matrix_element_tree_s *current_element, *middleElement, *tree_root
+        cdef matrix_element_tree_s *current_element
+        cdef matrix_element_tree_s *middleElement
+        cdef matrix_element_tree_s *tree_root
 
         current_element = flat_list_head
         middleElement = flat_list_head
@@ -1045,8 +1050,10 @@ cdef class Sparse_Matrix_Tree_CSR:
         :param row: row to use for testing
         """
 
-        cdef matrix_element_tree_s *head, *tree_root
-        cdef matrix_element_tree_s *current_element, *previous_element
+        cdef matrix_element_tree_s *head
+        cdef matrix_element_tree_s *tree_root
+        cdef matrix_element_tree_s *current_element
+        cdef matrix_element_tree_s *previous_element
 
         head = self.subtree_to_list_flat(self.row_pointer[row].head)
         current_element = head
