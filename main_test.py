@@ -3,7 +3,7 @@ from loader.loader import save_dataframe, train_data, target_data, full_data, te
 from utils.auxUtils import Evaluator
 
 #Hybrid (cbf - colf)
-rs = HybridRS(tracks_data, 10)
+rs = HybridRS(tracks_data, 10, tf_idf=False)
 evaluator = Evaluator()
 rs.fit(train_data)
 max_res = rs.recommend(target_data['playlist_id'], 3, 6, 2, 20)
