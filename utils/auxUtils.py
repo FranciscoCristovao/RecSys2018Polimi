@@ -4,7 +4,6 @@ from scipy.sparse import csr_matrix, coo_matrix
 import scipy.sparse as sps
 import time, sys
 import scipy
-import category_encoders as ce
 from sklearn.model_selection import train_test_split
 
 
