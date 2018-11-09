@@ -156,24 +156,6 @@ cdef class MF_BPR_Cython_Epoch:
             sigmoid = 1 / (1 + exp(x_uij))
 
 
-            #   OLD CODE, YOU MAY TRY TO USE IT
-            #
-            # if self.useAdaGrad:
-            #     cacheUpdate = gradient ** 2
-            #
-            #     sgd_cache[i] += cacheUpdate
-            #     sgd_cache[j] += cacheUpdate
-            #
-            #     gradient = gradient / (sqrt(sgd_cache[i]) + 1e-8)
-            #
-            # elif self.rmsprop:
-            #     cacheUpdate = sgd_cache[i] * gamma + (1 - gamma) * gradient ** 2
-            #
-            #     sgd_cache[i] += cacheUpdate
-            #     sgd_cache[j] += cacheUpdate
-            #
-            #     gradient = gradient / (sqrt(sgd_cache[i]) + 1e-8)
-
 
             for index in range(self.num_factors):
 

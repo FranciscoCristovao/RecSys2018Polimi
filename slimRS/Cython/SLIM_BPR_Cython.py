@@ -78,8 +78,8 @@ class SLIM_BPR_Cython():
             self.runCompilationScript()
             print("Compilation Complete")
 
-    def fit(self, epochs=30, logFile=None, URM_test=None, filterTopPop=False, minRatingsPerUser=1,
-            batch_size=1000, lambda_i=0.0025, lambda_j=0.00025, learning_rate=1e-4, topK=200,
+    def fit(self, epochs=50, logFile=None, URM_test=None, filterTopPop=False, minRatingsPerUser=1,
+            batch_size=1000, lambda_i=0.0025, lambda_j=0.00025, learning_rate=0.001, topK=200,
             sgd_mode='adagrad', gamma=0.995, beta_1=0.9, beta_2=0.999,
             stop_on_validation=False, lower_validatons_allowed=5, validation_metric="map",
             validation_function=None, validation_every_n=1):
@@ -103,7 +103,7 @@ class SLIM_BPR_Cython():
         print('Cython module imported')
         # Select only positive interactions
         URM_train_positive = self.URM_train.copy()
-        URM_train_positive.data = URM_train_positive.data >= self.positive_threshold
+        # URM_train_positive.data = URM_train_positive.data >= self.positive_threshold
         URM_train_positive.eliminate_zeros()
 
         self.sgd_mode = sgd_mode
@@ -242,7 +242,7 @@ class SLIM_BPR_Cython():
 
         for fileToCompile in fileToCompile_list:
 
-            command = ['python',
+            command = ['python3',
                        'compileCython.py',
                        fileToCompile,
                        'build_ext',

@@ -10,8 +10,9 @@ from collaborative_filtering_RS.col_user_userRS import ColBfUURS
 from collaborative_filtering_RS.col_item_itemRS import ColBfIIRS
 from hybrid_col_cbf_RS.hybridRS import HybridRS
 from matrixFactorizationRS.matrix_factorizationRS import MF_BPR_Cython
+from slimRS.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
 
-
+'''
 rs = MF_BPR_Cython(train_data)
 rs.fit()
 
@@ -26,7 +27,18 @@ for k in target_data['playlist_id']:
 predictions = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
 
 evaluator.evaluate(predictions, test_data)
+'''
 
+rs = SLIM_BPR_Cython(train_data)
+rs.fit()
+
+evaluator = Evaluator()
+predictions = rs.recommend(target_data["playlist_id"])
+
+evaluator.evaluate(predictions, test_data)
+
+
+save_dataframe('output/slim_max.csv', ',', predictions)
 
 '''
 # Hybrid Coll_i_i CBF
