@@ -56,7 +56,7 @@ class HybridRS:
         rs.fit()
         self.weights_slim = rs.get_weight_matrix()
 
-    def recommend(self, playlist_ids, alpha, beta, gamma, delta):
+    def recommend(self, playlist_ids, alpha, beta, gamma, delta=0.9):
         print("Recommending...")
 
         final_prediction = {}
@@ -78,9 +78,12 @@ class HybridRS:
         print("e_r_cbf : ", e_r_cbf[7].data.argsort()[::-1])
         print("e_r_cbf ordered data: ", e_r_cbf[7].data[e_r_cbf[7].data.argsort()[::-1]])
         '''
-
+        '''
         estimated_ratings_final = e_r_col_u_u.multiply(alpha) + e_r_col_i_i.multiply(beta) + e_r_cbf.multiply(gamma)\
                                   + e_r_slim_bpr.multiply(delta)
+        '''
+
+        estimated_ratings_final = e_r_col_u_u.multiply(alpha) + e_r_col_i_i.multiply(beta) + e_r_cbf.multiply(gamma)
 
         for k in playlist_ids:
             try:
@@ -90,8 +93,21 @@ class HybridRS:
                 aux = row.indices[indx]
                 user_playlist = self.urm[k]
 
+                slim_bpr_row = e_r_slim_bpr[k]
+                slim_bpr_index = slim_bpr_row.data.argsort()[::-1]
+                slim_bpr_aux = slim_bpr_row.indices[slim_bpr_index]
+                slim_bpr_row_filtered = filter_seen(slim_bpr_aux, user_playlist)
+
                 aux = np.concatenate((aux, self.top_pop_songs), axis=None)
-                top_songs = filter_seen(aux, user_playlist)[:self.at]
+
+                top_songs = list(filter_seen(aux, user_playlist)[:int(self.at*delta)])
+
+                i = 0
+                while len(top_songs) < 10:
+                    el = slim_bpr_row_filtered[i]
+                    if el not in top_songs:
+                        top_songs.append(el)
+                    i += 1
 
                 string = ' '.join(str(e) for e in top_songs)
                 final_prediction.update({k: string})

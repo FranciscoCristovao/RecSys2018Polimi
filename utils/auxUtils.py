@@ -197,8 +197,10 @@ def filter_seen(new_songs, user_playlist):
 
 
 def filter_seen_array(new_songs, playlist):
+    # you need to pass to the playlist the indexes
     unseen_mask = np.in1d(new_songs, playlist, assume_unique=False, invert=True)
     return new_songs[unseen_mask]
+
 
 def split_data(full_data, playlists, test_size):
     # take away last song in the playlist...
