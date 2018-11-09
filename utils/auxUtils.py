@@ -55,6 +55,7 @@ def dataframeToCSR(data):
 
 
 def normalize_tf_idf(icm_all):
+
     num_tot_items = icm_all.shape[0]
 
     # count how many items have a certain feature

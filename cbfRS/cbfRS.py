@@ -11,7 +11,7 @@ class CbfRS:
 
     train_data = pd.DataFrame()
 
-    def __init__(self, train_data, at, k=40, shrinkage=0, similarity='cosine', tf_idf=False):
+    def __init__(self, tracks_data, at, k=40, shrinkage=0, similarity='cosine', tf_idf=False):
 
         self.k = k
         self.at = at
@@ -19,11 +19,9 @@ class CbfRS:
         self.similarity_name = similarity
         self.tf_idf = tf_idf
 
-        # data = data.drop(columns="duration_sec")
-        # self.icm = buildICMMatrix(data)
-        self.icm = buildICMMatrix(train_data)
+        data = tracks_data.drop(columns="duration_sec")
+        self.icm = buildICMMatrix(data)
 
-        # print(self.icm.todense())
         print("ICM loaded into the class")
 
     def fit(self, train_data):
@@ -51,7 +49,7 @@ class CbfRS:
         estimated_ratings = csr_matrix(self.urm.dot(self.sym))
 
         counter = 0
-        abc = 0
+
         for k in playlist_ids:
 
             row = estimated_ratings.getrow(k)  # [k]
@@ -76,49 +74,6 @@ class CbfRS:
         # print("THEY ARE: ", abc)
         return df
 
-    def recommend_slower(self, playlist_ids):
-
-        print("Recommending...")
-
-        print(self.top_pop_songs)
-        final_prediction = {}  # pd.DataFrame([])
-
-        print("STARTING ESTIMATION")
-        # add ravel() ?
-        estimated_ratings = csr_matrix(self.urm.dot(self.sym)).toarray()
-        counter = 0
-        abc = 0
-        for k in playlist_ids:
-            try:
-                row = estimated_ratings[k]
-            except IndexError:
-                print("No row in the estimated_ratings")
-                continue
-
-            # aux contains the indices (track_id) of the most similar songs
-
-            aux = row.argsort()[::-1]
-
-            user_playlist = self.urm[k]
-
-            top_songs = filter_seen(aux, user_playlist)[:self.at]
-
-
-            if len(top_songs) < self.at:
-                abc += 1
-                print("Francisco was right once at least")
-
-            string = ' '.join(str(e) for e in top_songs)
-            final_prediction.update({k: string})
-
-            if (counter % 1000) == 0:
-                print("Playlist num", counter, "/10000")
-
-            counter += 1
-
-        df = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
-        print("THEY ARE: ", abc)
-        return df
 
     def recommend_single(self, k):
         # print("Recommending...")
@@ -131,3 +86,6 @@ class CbfRS:
 
         top_songs = filter_seen(row, aux)[:self.at]
         return top_songs
+
+    def get_estimated_ratings(self):
+        return csr_matrix(self.urm.dot(self.sym))

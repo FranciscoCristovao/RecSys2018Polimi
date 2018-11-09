@@ -1,15 +1,10 @@
 import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix
-from utils.auxUtils import filter_seen, filter_seen_array, buildURMMatrix, normalize_tf_idf
-from utils.cosine_similarity_full import Compute_Similarity_Python, check_matrix
-from utils.Cython.Cosine_Similarity_Max import Cosine_Similarity as Cosine_Similarity
+from utils.auxUtils import filter_seen, buildURMMatrix, normalize_tf_idf, check_matrix
+from utils.Cython.Cosine_Similarity_Max import Cosine_Similarity
 
 class ColBfIIRS:
-
-    sym = pd.DataFrame()
-    urm = pd.DataFrame()
-    train_data = pd.DataFrame()
 
     def __init__(self, at, k, shrinkage, similarity='cosine', tf_idf=False):
 
@@ -30,9 +25,7 @@ class ColBfIIRS:
         if self.tf_idf:
             self.urm = normalize_tf_idf(self.urm.T).T
         self.cosine = Cosine_Similarity(self.urm, self.k, self.shrinkage)
-        # self.sym = check_matrix(cosine_similarity(self.urm, dense_output=False), 'csr')
         self.sym = check_matrix(self.cosine.compute_similarity(), 'csr')
-        # self.sym = check_matrix(self.cosine.compute(self.urm), 'csr')
         print("Sym mat completed")
 
     def recommend(self, playlist_ids):
@@ -83,62 +76,5 @@ class ColBfIIRS:
 
         return top_songs
 
-    def recommend_slower(self, playlist_ids):
-        print("Recommending...")
-
-        final_prediction = {}
-
-        estimated_ratings = csr_matrix(self.sym.dot(self.urm)).toarray()
-        counter = 0
-
-        for k in playlist_ids:
-            try:
-                row = estimated_ratings[k]
-            except IndexError:
-                print("No row in the estimated_ratings")
-                continue
-
-            # aux contains the indices (track_id) of the most similar songs
-            aux = row.argsort()[::-1]
-            user_playlist = self.urm[k]
-
-            top_songs = filter_seen(user_playlist, aux)[:self.at]
-
-            if len(top_songs) < self.at:
-                print("Francisco was right once at least")
-
-            string = ' '.join(str(e) for e in top_songs)
-            final_prediction.update({k: string})
-
-            if (counter % 1000) == 0:
-                print("Playlist num", counter, "/10000")
-
-            counter += 1
-
-        df = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
-        # print(df)
-        return df
-
-    '''
-        def recommend_slower(self, playlist_ids):
-        print("Recommending...")
-        final_prediction = {}
-        estimated_ratings = csr_matrix(self.sym.dot(self.urm)).toarray()
-        counter = 0
-        for k in playlist_ids:
-            row = estimated_ratings[k]
-            # aux contains the indices (track_id) of the most similar songs
-            aux = row.argsort()[::-1]
-            user_playlist = self.urm[k]
-            top_songs = filter_seen(user_playlist, aux)[:10]
-            if len(top_songs) < 10:
-                print("Francisco was right once at least")
-            string = ' '.join(str(e) for e in top_songs)
-            final_prediction.update({k: string})
-            if (counter % 1000) == 0:
-                print("Playlist num", counter, "/10000")
-            counter += 1
-        df = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
-        # print(df)
-        return df
-    '''
+    def get_estimated_ratings(self):
+        return csr_matrix(self.urm.dot(self.sym))

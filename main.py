@@ -8,24 +8,50 @@ import pandas as pd
 from cbfRS.cbfRS import CbfRS
 from collaborative_filtering_RS.col_user_userRS import ColBfUURS
 from collaborative_filtering_RS.col_item_itemRS import ColBfIIRS
+from hybrid_col_cbf_RS.hybridRS import HybridRS
+
 '''
-rs = CbfRS(tracks_data, 10, tf_idf=True)
+# Hybrid Coll_i_i CBF
+evaluator = Evaluator()
+i = 0
+
+rs = HybridRS(tracks_data, 10, 10, 300, 0, tf_idf=True)
+rs.fit(train_data)
+# best alpha=0.5
+
+predictions = rs.recommend(target_data["playlist_id"], 0.5)
+evaluator.evaluate(predictions, test_data)
+
+save_dataframe('output/hybrid_col_i_i_cbf.csv', ',', predictions)
+'''
+'''
+rs = CbfRS(tracks_data, 10, 10, tf_idf=True)
 rs.fit(train_data)
 
 evaluator = Evaluator()
 predictions = rs.recommend(target_data["playlist_id"])
 
 evaluator.evaluate(predictions, test_data)
+
+
 save_dataframe('output/cbf_output.csv', ',', predictions)
 '''
-rs = ColBfIIRS(10, 200, 0, tf_idf=True)
-rs.fit(train_data)
+'''
+k=20
 
-evaluator = Evaluator()
-predictions = rs.recommend(target_data["playlist_id"])
+while k < 400:
+    print("K: ", k)
+    rs = ColBfIIRS(10, k, 0, tf_idf=True)
+    rs.fit(train_data)
 
-evaluator.evaluate(predictions, test_data)
+    evaluator = Evaluator()
+    predictions = rs.recommend(target_data["playlist_id"])
+
+    evaluator.evaluate(predictions, test_data)
+    k+=20
+
 save_dataframe('output/cb_u_u_output.csv', ',', predictions)
+'''
 '''
 # SLIM-BPR
 

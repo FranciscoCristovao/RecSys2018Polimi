@@ -1,38 +1,31 @@
 import numpy as np
 import pandas as pd
-import scipy.sparse as sps
-from scipy.sparse import csr_matrix
-from utils.auxUtils import check_matrix, filter_seen, buildICMMatrix, buildURMMatrix
-from utils.cosine_similarity_full import Compute_Similarity_Python
+from utils.auxUtils import filter_seen, buildURMMatrix
+from cbfRS.cbfRS import CbfRS
+from collaborative_filtering_RS.col_item_itemRS import ColBfIIRS
 
 
 class HybridRS:
 
-    train_data = pd.DataFrame()
+    def __init__(self, tracks_data, at, k_cbf=40, k_collab=200, shrinkage=0, similarity='cosine', tf_idf=False):
 
-    def __init__(self, data, at, k=200, shrinkage=0, similarity='cosine'):
-
-        self.k = k
+        self.k_cbf = k_cbf
+        self.k_collab = k_collab
         self.at = at
         self.shrinkage = shrinkage
-        self.similarity_name = similarity
-        data = data.drop(columns="duration_sec")
-        self.icm = buildICMMatrix(data)
-        print("ICM loaded into the class")
+        self.similarity = similarity
+        self.tf_idf = tf_idf
+        self.cbf_recommender = CbfRS(tracks_data, self.at, self.k_cbf, self.shrinkage, tf_idf=self.tf_idf)
+        self.collab_recommender = ColBfIIRS(self.at, self.k_collab, self.shrinkage, tf_idf=self.tf_idf)
 
     def fit(self, train_data):
-        print('Fitting...')
 
-        self.train_data = train_data
-        self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values
         self.urm = buildURMMatrix(train_data)
-        self.cosine_cbf = Compute_Similarity_Python(self.icm.T, self.k, self.shrinkage)
-        self.cosine_colf = Compute_Similarity_Python(self.urm.T, self.k, self.shrinkage)
-        # self.sym = check_matrix(cosine_similarity(self.urm, dense_output=False), 'csr')
-        self.sym_items = check_matrix(self.cosine_cbf.compute_similarity(), 'csr')
-        self.sym_users = check_matrix(self.cosine_colf.compute_similarity(), 'csr')
-        # self.sym = check_matrix(self.cosine.compute(self.urm), 'csr')
-        print("Sym mat completed")
+        self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values
+        self.collab_recommender.fit(train_data)
+        self.cbf_recommender.fit(train_data)
+
+        print("All systems are fitted")
 
     def recommend(self, playlist_ids, alpha):
         print("Recommending...")
@@ -41,8 +34,8 @@ class HybridRS:
         counter = 0
         # alpha = 0.7  # best until now
 
-        estimated_ratings_cbf = csr_matrix(self.urm.dot(self.sym_items))
-        estimated_ratings_colf = csr_matrix(self.sym_users.dot(self.urm))
+        estimated_ratings_cbf = self.cbf_recommender.get_estimated_ratings()
+        estimated_ratings_colf = self.collab_recommender.get_estimated_ratings()
         estimated_ratings_final = estimated_ratings_colf.multiply(alpha) + estimated_ratings_cbf.multiply(1-alpha)
 
         for k in playlist_ids:
