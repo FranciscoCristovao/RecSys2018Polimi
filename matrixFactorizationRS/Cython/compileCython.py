@@ -3,7 +3,7 @@
 """
 Created on 16/07/2017
 
-@author: Maurizio Ferrari Dacrema, Adapted
+@author: Maurizio Ferrari Dacrema
 """
 
 
@@ -16,7 +16,10 @@ except ImportError:
 
 
 from Cython.Distutils import build_ext
+
+
 import numpy
+
 import sys
 import re
 
@@ -25,9 +28,10 @@ if len(sys.argv) != 4:
     raise ValueError("Wrong number of paramethers received. Expected 4, got {}".format(sys.argv))
 
 
+#fileToCompile = 'MF_BPR_Cython_Epoch.pyx'
+
 # Get the name of the file to compile
 fileToCompile = sys.argv[1]
-
 # Remove the argument from sys argv in order for it to contain only what setup needs
 del sys.argv[1]
 
@@ -44,3 +48,4 @@ setup(
     cmdclass={'build_ext': build_ext},
     ext_modules=[ext_modules]
 )
+
