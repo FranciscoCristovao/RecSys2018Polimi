@@ -242,7 +242,7 @@ class SLIM_BPR_Cython():
 
         for fileToCompile in fileToCompile_list:
 
-            command = ['python3',
+            command = ['python',
                        'compileCython.py',
                        fileToCompile,
                        'build_ext',

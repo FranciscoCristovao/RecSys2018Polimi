@@ -62,7 +62,6 @@ class HybridRS:
         print('CuuF: ', e_r_cbf.getrow(7))
         print('CiiF: ', e_r_cbf.getrow(7))
         '''
-        # todo: sample alternatively from u_u, i_i
         # estimated_ratings_final = e_r_col_u_u.multiply(alpha) + e_r_col_i_i.multiply(beta) + e_r_cbf.multiply(gamma)
 
         for k in playlist_ids:
@@ -91,15 +90,16 @@ class HybridRS:
                 top_songs = []
                 t1 = t
                 # t2 = 6/11 + t1
+                # if t1 = 0 => item item, if t1 = 1, => user user
                 while (i < len(aux_col_u_u) or j < len(aux_col_i_i) or m < len(aux_cbf)) and count < 100:
-                    #p = np.randomimp.uniform(low=0.0, high=1.0)
-                    p = np.random.normal(loc=0.5, scale=0.5, size=None)
-                    if 0 < p < 0.3 or t1 < p < 1:
+                    # p = np.random.uniform(low=0.0, high=1.0)
+                    p = np.random.normal(loc=0.0, scale=1, size=None)
+                    if -2 < p < t1:
                         if i < len(aux_col_u_u) and aux_col_u_u[i] not in top_songs:
                             top_songs.append(aux_col_u_u[i])
                         i += 1
-                    elif 0 < p < t1:
-                        if j < len(aux_col_i_i) and aux_col_i_i[j] not in top_songs:
+                    elif t1 < p < 2:
+                        if j < len(aux_col_i_i) and (aux_col_i_i[j] not in top_songs):
                             top_songs.append(aux_col_i_i[j])
                         j += 1
                     else:
@@ -108,7 +108,7 @@ class HybridRS:
                         m += 1
                     count += 1
 
-                recommended_songs = filter_seen_array(np.array(top_songs), user_playlist.data)[:self.at]
+                recommended_songs = filter_seen_array(np.array(top_songs), user_playlist.indices)[:self.at]
 
                 if len(recommended_songs) < 10:
                     print("Francisco was right once")
