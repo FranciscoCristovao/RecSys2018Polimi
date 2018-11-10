@@ -5,9 +5,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-df = pd.DataFrame([[0, 0, 0]], columns=['alpha', 'beta', 'gamma', 'delta', 'map', 'map_p'])
-top_50 = pd.DataFrame([[0, 0, 0]], columns=['alpha', 'beta', 'gamma', 'delta', 'map', 'map_p'])
-top_50_p = pd.DataFrame([[0, 0, 0]], columns=['alpha', 'beta', 'gamma', 'delta', 'map', 'map_p'])
+df = pd.DataFrame([[0, 0, 0, 0, 0, 0]], columns=['alpha', 'beta', 'gamma', 'delta', 'map', 'map_p'])
+top_50 = pd.DataFrame([[0, 0, 0, 0, 0, 0]], columns=['alpha', 'beta', 'gamma', 'delta', 'map', 'map_p'])
+top_50_p = pd.DataFrame([[0, 0, 0, 0, 0, 0]], columns=['alpha', 'beta', 'gamma', 'delta', 'map', 'map_p'])
 
 # Hybrid (cbf - colf)
 rs = HybridRS(tracks_data, 10, tf_idf=True)
@@ -36,6 +36,8 @@ while alpha <= 10:
 
                 delta += 0.1
             print(top_50)
+            print("Top 50 prob: ")
+            print(top_50_p)
             save_dataframe('output/hybrid_par_tuning.csv', ',', df)
             gamma += 1
 
