@@ -13,7 +13,7 @@ Created on 07/09/17
 from utils.auxUtils import check_matrix, filter_seen, buildURMMatrix, similarityMatrixTopK
 
 import subprocess
-import os, sys, time
+import os, sys, time, platform
 
 import numpy as np
 import pandas as pd
@@ -241,8 +241,12 @@ class SLIM_BPR_Cython():
         fileToCompile_list = ['SLIM_BPR_Cython_Epoch.pyx']
 
         for fileToCompile in fileToCompile_list:
+            if platform.system() == 'Windows':
+                cmd = 'python'
+            else:
+                cmd = 'python3'
 
-            command = ['python3',
+            command = [cmd,
                        'compileCython.py',
                        fileToCompile,
                        'build_ext',
