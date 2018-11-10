@@ -9,7 +9,7 @@ from cbfRS.cbfRS import CbfRS
 from collaborative_filtering_RS.col_user_userRS import ColBfUURS
 from collaborative_filtering_RS.col_item_itemRS import ColBfIIRS
 from hybrid_col_cbf_RS.hybridRS import HybridRS
-# from matrixFactorizationRS.matrix_factorizationRS import MF_BPR_Cython
+from matrixFactorizationRS.matrix_factorizationRS import MF_BPR_Cython
 from slimRS.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
 
 '''

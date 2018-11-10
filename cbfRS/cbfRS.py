@@ -74,7 +74,6 @@ class CbfRS:
         # print("THEY ARE: ", abc)
         return df
 
-
     def recommend_single(self, k):
         # print("Recommending...")
         # add ravel() ?

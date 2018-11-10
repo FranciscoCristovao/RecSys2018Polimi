@@ -9,6 +9,7 @@ import time
 import numpy as np
 from utils.auxUtils import buildURMMatrix
 from matrixFactorizationRS.Cython.MF_BPR_Cython_Epoch import MF_BPR_Cython_Epoch
+import platform
 
 
 class MF_BPR_Cython():
@@ -121,8 +122,12 @@ class MF_BPR_Cython():
         fileToCompile_list = ['MF_BPR_Cython_Epoch.pyx']
 
         for fileToCompile in fileToCompile_list:
+            if platform.system() == 'Windows':
+                cmd = 'python'
+            else:
+                cmd = 'python3'
 
-            command = ['python',
+            command = [cmd,
                        'compileCython.py',
                        fileToCompile,
                        'build_ext',
