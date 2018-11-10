@@ -73,10 +73,10 @@ class HybridRS:
 
                 aux = np.concatenate((aux, self.top_pop_songs), axis=None)
 
-                top_songs = list(filter_seen(aux, user_playlist)[:int(self.at*delta)])
+                top_songs = list(filter_seen(aux, user_playlist)[:int(round(self.at*delta))])
 
                 i = 0
-                while len(top_songs) < 10:
+                while len(top_songs) < 10 and i < len(slim_bpr_row_filtered):
                     el = slim_bpr_row_filtered[i]
                     if el not in top_songs:
                         top_songs.append(el)
