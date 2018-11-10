@@ -4,18 +4,46 @@ from utils.auxUtils import Evaluator
 import pandas as pd
 import matplotlib.pyplot as plt
 
+
+df = pd.DataFrame([[0, 0, 0]], columns=['alpha', 'beta', 'gamma', 'delta', 'map', 'map_p'])
+top_50 = pd.DataFrame([[0, 0, 0]], columns=['alpha', 'beta', 'gamma', 'delta', 'map', 'map_p'])
+top_50_p = pd.DataFrame([[0, 0, 0]], columns=['alpha', 'beta', 'gamma', 'delta', 'map', 'map_p'])
+
 # Hybrid (cbf - colf)
 rs = HybridRS(tracks_data, 10, tf_idf=True)
 evaluator = Evaluator()
 rs.fit(train_data)
-i = 7
-while i <= 10:
-    slim = rs.recommend(target_data['playlist_id'], 3, 6, 2, i/10)
-    print("delta: ", i/10)
-    evaluator.evaluate(slim, test_data)
-    i += 1
+
+alpha = 0
+while alpha <= 10:
+    beta = 0
+    while beta <= 10:
+        gamma = 0
+        while gamma <= 10:
+            # tuning probability / best_drawing
+            delta = 0.5
+            while delta <= 1:
+                slim_p = rs.recommend_probability(target_data['playlist_id'], alpha, beta, gamma, p_treshold=delta)
+                slim = rs.recommend(target_data['playlist_id'], alpha, beta, gamma, delta=delta)
+                print("Alpha: ", alpha, " Beta: ", beta, "Gamma: ", gamma, " Delta: ", delta)
+                temp_map_p = evaluator.evaluate(slim_p, test_data)
+                temp_map = evaluator.evaluate(slim, test_data)
+
+                df = df.append(pd.DataFrame([[alpha, beta, gamma, delta, temp_map, temp_map_p]],
+                                            columns=['alpha', 'beta', 'gamma', 'delta', 'map', 'map_p']))
+                top_50 = df.sort_values(by=['map']).tail(50)
+                top_50_p = df.sort_values(by=['map_p']).tail(50)
+
+                delta += 0.1
+            print(top_50)
+            save_dataframe('output/hybrid_par_tuning.csv', ',', df)
+            gamma += 1
+
+        beta += 1
+    alpha += 1
 
 # print(df)
-save_dataframe('output/hybrid_slim1.csv', ',', slim)
-
-
+print(top_50)
+print("Top 50 prob: ")
+print(top_50_p)
+save_dataframe('output/hybrid_slim2.csv', ',', df)

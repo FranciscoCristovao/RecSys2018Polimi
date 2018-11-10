@@ -1,18 +1,18 @@
 import numpy as np
 import pandas as pd
-import scipy.sparse as sps
-from scipy.sparse import csr_matrix
-from utils.auxUtils import check_matrix, filter_seen, buildICMMatrix, buildURMMatrix, normalize_tf_idf
-from utils.Cython.Cosine_Similarity_Max import Cosine_Similarity
+from utils.auxUtils import check_matrix, filter_seen, buildICMMatrix, buildURMMatrix
 from slimRS.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
+from cbfRS.cbfRS import CbfRS
+from collaborative_filtering_RS.col_item_itemRS import ColBfIIRS
+from collaborative_filtering_RS.col_user_userRS import ColBfUURS
 
 
 class HybridRS:
 
     train_data = pd.DataFrame()
 
-    def __init__(self, data, at, k_con=40, k_col_u_u=200, k_col_i_i=200,
-                 shrinkage_con=0, shrinkage_col_u_u=0, shrinkage_col_i_i=0, similarity='cosine', tf_idf=False):
+    def __init__(self, tracks_data, at, k_con=40, k_col_u_u=200, k_col_i_i=200,
+                 shrinkage_con=0, shrinkage_col_u_u=0, shrinkage_col_i_i=0, similarity='cosine', tf_idf=True):
 
         # hybrid parameters
         self.k_con = k_con
@@ -25,63 +25,36 @@ class HybridRS:
 
         self.at = at
         self.similarity_name = similarity
-        data = data.drop(columns="duration_sec")
-        self.icm = buildICMMatrix(data)
+
+        self.cbf_recommender = CbfRS(tracks_data, self.at, self.k_con, self.shrinkage_con, tf_idf=self.tf_idf)
+        self.collab_recommender = ColBfIIRS(self.at, self.k_col_i_i, self.shrinkage_col_i_i, tf_idf=self.tf_idf)
+        self.colluu_recommender = ColBfUURS(self.at, self.k_col_u_u, shrinkage_col_u_u, tf_idf=self.tf_idf)
+
         print("ICM loaded into the class")
 
     def fit(self, train_data):
         print('Fitting...')
 
-        self.train_data = train_data
-        self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values
         self.urm = buildURMMatrix(train_data)
-        if self.tf_idf:
-            self.urm = normalize_tf_idf(self.urm.T).T
-        if self.tf_idf:
-            self.icm = normalize_tf_idf(self.icm)
-        # from some tests, looks like k_con optimal = 40 with no particular shrink
-        self.cosine_cbf = Cosine_Similarity(self.icm.T, self.k_con, self.shrinkage_con, normalize=True,
-                                            mode=self.similarity_name, row_weights=None)
-        self.cosine_col_u_u = Cosine_Similarity(self.urm.T, self.k_col_u_u, self.shrinkage_col_u_u, normalize=True,
-                                                mode=self.similarity_name, row_weights=None)
-        self.cosine_col_i_i = Cosine_Similarity(self.urm, self.k_col_i_i, self.shrinkage_col_i_i, normalize=True,
-                                                mode=self.similarity_name, row_weights=None)
-        # self.sym = check_matrix(cosine_similarity(self.urm, dense_output=False), 'csr')
-        self.sym_cbf = check_matrix(self.cosine_cbf.compute_similarity(), 'csr')
-        self.sym_u_u = check_matrix(self.cosine_col_u_u.compute_similarity(), 'csr')
-        self.sym_i_i = check_matrix(self.cosine_col_i_i.compute_similarity(), 'csr')
-        # self.sym = check_matrix(self.cosine.compute(self.urm), 'csr')
-        print("Sym mat completed")
-        rs = SLIM_BPR_Cython(train_data)
-        rs.fit()
-        self.weights_slim = rs.get_weight_matrix()
+        self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values
+        self.collab_recommender.fit(train_data)
+        self.cbf_recommender.fit(train_data)
+        self.colluu_recommender.fit(train_data)
+        # todo: handle slim init inside init
+        self.slim_rs = SLIM_BPR_Cython(train_data)
+        self.slim_rs.fit()
 
     def recommend(self, playlist_ids, alpha, beta, gamma, delta=0.9):
         print("Recommending...")
 
         final_prediction = {}
         counter = 0
-        # alpha = 0.7  # best until now
+
         # e_r_ stands for estimated rating
-        e_r_cbf = csr_matrix(self.urm.dot(self.sym_cbf))
-        e_r_col_u_u = csr_matrix(self.sym_u_u.dot(self.urm))
-        e_r_col_i_i = csr_matrix(self.urm.dot(self.sym_i_i))
-        e_r_slim_bpr = check_matrix(self.urm.dot(self.weights_slim), 'csr')
-        '''
-        print("slim: ", e_r_slim_bpr[7].data)
-        print("slim: ", e_r_slim_bpr[7].data.argsort()[::-1])
-        print("slim ordered data: ", e_r_slim_bpr[7].data[e_r_slim_bpr[7].data.argsort()[::-1]])
-        print("i i : ", e_r_col_i_i[7].data.argsort()[::-1])
-        print("i i ordered data: ", e_r_col_i_i[7].data[e_r_col_i_i[7].data.argsort()[::-1]])
-        print("u u : ", e_r_col_u_u[7].data.argsort()[::-1])
-        print("i i ordered data: ", e_r_col_u_u[7].data[e_r_col_u_u[7].data.argsort()[::-1]])
-        print("e_r_cbf : ", e_r_cbf[7].data.argsort()[::-1])
-        print("e_r_cbf ordered data: ", e_r_cbf[7].data[e_r_cbf[7].data.argsort()[::-1]])
-        '''
-        '''
-        estimated_ratings_final = e_r_col_u_u.multiply(alpha) + e_r_col_i_i.multiply(beta) + e_r_cbf.multiply(gamma)\
-                                  + e_r_slim_bpr.multiply(delta)
-        '''
+        e_r_cbf = self.cbf_recommender.get_estimated_ratings()
+        e_r_col_i_i = self.collab_recommender.get_estimated_ratings()
+        e_r_col_u_u = self.colluu_recommender.get_estimated_ratings()
+        e_r_slim_bpr = self.slim_rs.get_estimated_ratings()
 
         estimated_ratings_final = e_r_col_u_u.multiply(alpha) + e_r_col_i_i.multiply(beta) + e_r_cbf.multiply(gamma)
 
@@ -123,16 +96,17 @@ class HybridRS:
         # print(df)
         return df
 
-    def recommend_noslim(self, playlist_ids, alpha, beta, gamma):
+    def recommend_probability(self, playlist_ids, alpha, beta, gamma, p_treshold=0.9):
         print("Recommending...")
 
         final_prediction = {}
         counter = 0
-        # alpha = 0.7  # best until now
+
         # e_r_ stands for estimated rating
-        e_r_cbf = csr_matrix(self.urm.dot(self.sym_cbf))
-        e_r_col_u_u = csr_matrix(self.sym_u_u.dot(self.urm))
-        e_r_col_i_i = csr_matrix(self.urm.dot(self.sym_i_i))
+        e_r_cbf = self.cbf_recommender.get_estimated_ratings()
+        e_r_col_i_i = self.collab_recommender.get_estimated_ratings()
+        e_r_col_u_u = self.colluu_recommender.get_estimated_ratings()
+        e_r_slim_bpr = self.slim_rs.get_estimated_ratings()
 
         estimated_ratings_final = e_r_col_u_u.multiply(alpha) + e_r_col_i_i.multiply(beta) + e_r_cbf.multiply(gamma)
 
@@ -144,8 +118,31 @@ class HybridRS:
                 aux = row.indices[indx]
                 user_playlist = self.urm[k]
 
+                slim_bpr_row = e_r_slim_bpr[k]
+                slim_bpr_index = slim_bpr_row.data.argsort()[::-1]
+                slim_bpr_aux = slim_bpr_row.indices[slim_bpr_index]
+                slim_bpr_row_filtered = filter_seen(slim_bpr_aux, user_playlist)
+
                 aux = np.concatenate((aux, self.top_pop_songs), axis=None)
-                top_songs = filter_seen(aux, user_playlist)[:self.at]
+
+                temp_top_songs = list(filter_seen(aux, user_playlist)[:self.at])
+
+                i = 0
+                m = 0
+                top_songs = []
+                while len(top_songs) < self.at:
+                    # todo: we could try using more sophisticated distribution
+                    p = np.random.uniform(low=0.0, high=1.0)
+                    if p < p_treshold:
+                        if i < len(temp_top_songs) and temp_top_songs[i] not in top_songs:
+                            top_songs.append(temp_top_songs[i])
+                        i += 1
+                    else:
+                        if m < len(slim_bpr_row_filtered) and slim_bpr_row_filtered[m] not in top_songs:
+                            top_songs.append(slim_bpr_row_filtered[m])
+                        m += 1
+
+                # no need to filter playlist songs ( already did) nor to take top k songs ( while assures 10 )
 
                 string = ' '.join(str(e) for e in top_songs)
                 final_prediction.update({k: string})

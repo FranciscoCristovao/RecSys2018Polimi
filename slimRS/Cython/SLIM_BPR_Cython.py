@@ -300,6 +300,10 @@ class SLIM_BPR_Cython():
                 matrix_w = self.W
         return csr_matrix(matrix_w, shape=(self.n_songs, self.n_songs))
 
+    def get_estimated_ratings(self):
+        matrix_W = self.get_weight_matrix()
+        return check_matrix(self.URM_train.dot(matrix_W), 'csr')
+
     def recommend(self, playlist_ids):
 
         print("Recommending...")
