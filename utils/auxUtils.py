@@ -12,7 +12,7 @@ def buildURMMatrix(data):
     playlists = data["playlist_id"].values
     tracks = data["track_id"].values
     interaction = np.ones(len(tracks))
-    coo_urm = coo_matrix((interaction, (playlists, tracks)))
+    coo_urm = coo_matrix((interaction, (playlists, tracks)), shape=(50446, 20635))
     # print("This is the coo_urm", coo_urm)
     return coo_urm.tocsr()
 
@@ -202,32 +202,52 @@ def filter_seen_array(new_songs, playlist):
     return new_songs[unseen_mask]
 
 
-def split_data(full_data, playlists, test_size):
+def split_data(full_data, sequential_data, target_data, test_size):
     # take away last song in the playlist...
-    ordered_playlist = playlists['playlist_id'][:5000]
-    # print("Last element of ordered_playlist: ", ordered_playlist[4999])
-    random_playlist = playlists['playlist_id'][5000:]
 
-    train_data = pd.DataFrame(columns=['playlist_id', 'track_id'])
-    test_data = pd.DataFrame(columns=['playlist_id', 'track_id'])
+    ordered_playlists = target_data['playlist_id'][:5000]
+    # print("Last element of ordered_playlist: ", ordered_playlist[4999])
+    random_playlists = target_data['playlist_id'][5000:]
+
+    # no_test = False
+    train_dict = {"playlist_id": np.array([]), "track_id": np.array([])}
+    test_dict = {"playlist_id": np.array([]), "track_id": np.array([])}
+
     for i in range(50445):
-        if i in ordered_playlist.values:
-            playlist_ordered = full_data.loc[full_data['playlist_id'] == i]
-            chunk_value = int(len(playlist_ordered)*(1-test_size))
+
+        if i in ordered_playlists.values:
+            playlist_ordered = sequential_data.loc[sequential_data['playlist_id'] == i]
+            chunk_value = int(len(playlist_ordered) * (1 - test_size))
             train_single = playlist_ordered.iloc[:chunk_value]
             test_single = playlist_ordered.iloc[chunk_value:]
+
         else:
             playlist_i = full_data.loc[full_data['playlist_id'] == i]
             train_single, test_single = train_test_split(playlist_i, test_size=test_size)
+        '''
+        else:
+            train_single = full_data.loc[full_data['playlist_id'] == i]
+            no_test = True
+        '''
 
         if (i % 1000) == 0:
-            print("Splitting the dataframe...", i)
+            print("Splitting the dataframe: " + str(i) + "/" + str(50445))
 
-        train_data = train_data.append(train_single)
-        test_data = test_data.append(test_single)
+        train_dict["playlist_id"] = np.append(train_dict["playlist_id"], train_single["playlist_id"])
+        train_dict["track_id"] = np.append(train_dict["track_id"], train_single["track_id"])
+
+        # if not no_test:
+        test_dict["playlist_id"] = np.append(test_dict["playlist_id"], test_single["playlist_id"])
+        test_dict["track_id"] = np.append(test_dict["track_id"], test_single["track_id"])
+
+        # no_test = False
+
+    train_data = pd.DataFrame.from_dict(train_dict, dtype=np.int32)
+    test_data = pd.DataFrame.from_dict(test_dict, dtype=np.int32)
+    print(train_data)
+    print(test_data)
 
     return train_data, test_data
-
 
 def randomization_split(full_dataset, playlists, test_size):
     # take the sequential order and make it random.

@@ -12,6 +12,18 @@ from hybrid_col_cbf_RS.hybridRS import HybridRS
 from matrixFactorizationRS.matrix_factorizationRS import MF_BPR_Cython
 from slimRS.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
 
+
+rs = CbfRS(tracks_data, 10, 10, tf_idf=True)
+rs.fit(train_data)
+
+evaluator = Evaluator()
+predictions = rs.recommend(target_data["playlist_id"])
+
+evaluator.evaluate(predictions, test_data)
+
+
+save_dataframe('output/cbf_output.csv', ',', predictions)
+
 '''
 rs = MF_BPR_Cython(train_data)
 rs.fit()
@@ -28,7 +40,7 @@ predictions = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id
 
 evaluator.evaluate(predictions, test_data)
 '''
-
+'''
 rs = SLIM_BPR_Cython(train_data)
 rs.fit()
 
@@ -39,7 +51,7 @@ evaluator.evaluate(predictions, test_data)
 
 
 save_dataframe('output/slim_cython.csv', ',', predictions)
-
+'''
 '''
 # Hybrid Coll_i_i CBF
 evaluator = Evaluator()
@@ -54,18 +66,7 @@ evaluator.evaluate(predictions, test_data)
 
 save_dataframe('output/hybrid_col_i_i_cbf.csv', ',', predictions)
 '''
-'''
-rs = CbfRS(tracks_data, 10, 10, tf_idf=True)
-rs.fit(train_data)
 
-evaluator = Evaluator()
-predictions = rs.recommend(target_data["playlist_id"])
-
-evaluator.evaluate(predictions, test_data)
-
-
-save_dataframe('output/cbf_output.csv', ',', predictions)
-'''
 '''
 k=20
 
