@@ -11,8 +11,8 @@ class HybridRS:
 
     train_data = pd.DataFrame()
 
-    def __init__(self, tracks_data, at, k_con=10, k_col_u_u=200, k_col_i_i=200,
-                 shrinkage_con=10, shrinkage_col_u_u=50, shrinkage_col_i_i=225, similarity='cosine', tf_idf=True):
+    def __init__(self, tracks_data, at, k_con=10, k_col_u_u=200, k_col_i_i=700,
+                 shrinkage_con=10, shrinkage_col_u_u=50, shrinkage_col_i_i=450, similarity='cosine', tf_idf=True):
 
         # hybrid parameters
         self.k_con = k_con

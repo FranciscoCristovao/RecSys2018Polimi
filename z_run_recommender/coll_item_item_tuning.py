@@ -10,12 +10,12 @@ df = pd.DataFrame([[0, 0, 0]], columns=['knn', 'map', 'shr'])
 top_50 = pd.DataFrame([[0, 0, 0]], columns=['knn', 'map', 'shr'])
 
 plot_graph = False
-shrinkage = 0
+shrinkage = 350
 
-while shrinkage < 300:
+while shrinkage < 800:
     map_list = []
     knn_list = []
-    k = 50
+    k = 100
     while k <= 800:
         rs = ColBfIIRS(10, k, shrinkage, tf_idf=True)
         rs.fit(train_data)
@@ -29,13 +29,13 @@ while shrinkage < 300:
         k += 50
 
     print(top_50)
-    shrinkage += 25
+    shrinkage += 50
     if plot_graph:
         plt.plot(knn_list, map_list, 'bs')
         plt.title(shrinkage)
         plt.show()
 
-    save_dataframe('../output/coll_item_item_tuning.csv', ',', top_50)
+    save_dataframe('../output/coll_item_item_tuning_2.csv', ',', top_50)
 
 print(top_50)
 print("End of parameter tuning")
