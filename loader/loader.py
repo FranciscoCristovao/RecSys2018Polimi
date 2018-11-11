@@ -5,12 +5,13 @@ from sklearn.model_selection import train_test_split
 from utils.auxUtils import split_data
 # Load data
 full_data = pd.read_csv('data/train.csv', sep=',')
+full_data_sequential = pd.read_csv('data/train_sequential.csv', sep=',')
 # added random state to have consistent output over songs
-train_data, test_data = train_test_split(full_data, test_size=0.2, random_state=12835)
+# train_data, test_data = train_test_split(full_data, test_size=0.2, random_state=12835)
 target_data = pd.read_csv('data/target_playlists.csv', sep=',')
 tracks_data = pd.read_csv('data/tracks.csv', sep=',')
-# train_data, test_data = train_test_split(full_data, test_size=0.2)
-# train_data, test_data = split_data(full_data, target_data, 0.2)
+#train_data, test_data = train_test_split(full_data, test_size=0.2)
+train_data, test_data = split_data(full_data, full_data_sequential, target_data, test_size=0.2)
 
 # urm_full_data = pd.read_csv('data/URM.csv', sep=',')
 
