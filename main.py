@@ -11,10 +11,18 @@ from collaborative_filtering_RS.col_item_itemRS import ColBfIIRS
 from hybrid_col_cbf_RS.hybridRS import HybridRS
 from matrixFactorizationRS.matrix_factorizationRS import MF_BPR_Cython
 from slimRS.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
+'''
+rs = HybridRS(tracks_data, 10, tf_idf=True)
+evaluator = Evaluator()
+rs.fit(full_data)
+predictions = rs.recommend(target_data["playlist_id"], 0.8)
 
+evaluator.evaluate(predictions, test_data)
+save_dataframe('output/hybrid_output.csv', ',', predictions)
+'''
 
 rs = CbfRS(tracks_data, 10, 10, tf_idf=True)
-rs.fit(train_data)
+rs.fit(full_data)
 
 evaluator = Evaluator()
 predictions = rs.recommend(target_data["playlist_id"])
