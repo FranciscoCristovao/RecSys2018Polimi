@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix
-from utils.auxUtils import filter_seen, filter_seen_array, buildURMMatrix, normalize_tf_idf
-from utils.cosine_similarity_full import Compute_Similarity_Python, check_matrix
+from utils.auxUtils import filter_seen, buildURMMatrix, normalize_tf_idf, check_matrix
+from utils.cosine_similarity import Compute_Similarity_Python
 # from utils.Cython.Cosine_Similarity_Cython import Cosine_Similarity as Cosine_Worst
 from utils.Cython.Cosine_Similarity_Max import Cosine_Similarity as Cosine_Similarity
 
@@ -12,7 +12,7 @@ class ColBfUURS:
     urm = pd.DataFrame()
     train_data = pd.DataFrame()
 
-    def __init__(self, at, k, shrinkage, similarity='cosine', tf_idf=False):
+    def __init__(self, at, k=200, shrinkage=0, similarity='cosine', tf_idf=False):
 
         self.k = k
         # self.cosine = Cosine()

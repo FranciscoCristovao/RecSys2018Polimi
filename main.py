@@ -11,27 +11,41 @@ from collaborative_filtering_RS.col_item_itemRS import ColBfIIRS
 from hybrid_col_cbf_RS.hybridRS import HybridRS
 from matrixFactorizationRS.matrix_factorizationRS import MF_BPR_Cython
 from slimRS.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
-'''
-rs = HybridRS(tracks_data, 10, tf_idf=True)
+
+
+rs = HybridRS(tracks_data, tf_idf=True)
 evaluator = Evaluator()
-rs.fit(full_data)
-predictions = rs.recommend(target_data["playlist_id"], 0.8)
+rs.fit(train_data)
+predictions = rs.recommend(target_data["playlist_id"])
 
 evaluator.evaluate(predictions, test_data)
 save_dataframe('output/hybrid_output.csv', ',', predictions)
-'''
 
-rs = CbfRS(tracks_data, 10, 10, tf_idf=True)
-rs.fit(full_data)
+'''
+rs = CbfRS(tracks_data, 10, 10, 10, tf_idf=True)
+rs.fit(train_data)
 
 evaluator = Evaluator()
 predictions = rs.recommend(target_data["playlist_id"])
-
 evaluator.evaluate(predictions, test_data)
 
 
 save_dataframe('output/cbf_output.csv', ',', predictions)
+'''
+'''
+values = [20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300]
+for i in values:
+    print("Shrink: ", i)
+    rs = ColBfIIRS(10, k=280, shrinkage=i, tf_idf=True)
+    rs.fit(train_data)
 
+    evaluator = Evaluator()
+    predictions = rs.recommend(target_data["playlist_id"])
+    evaluator.evaluate(predictions, test_data)
+
+
+save_dataframe('output/col_i_i_output.csv', ',', predictions)
+'''
 '''
 rs = MF_BPR_Cython(train_data)
 rs.fit()

@@ -3,20 +3,26 @@ import pandas as pd
 from utils.auxUtils import filter_seen, buildURMMatrix
 from cbfRS.cbfRS import CbfRS
 from collaborative_filtering_RS.col_item_itemRS import ColBfIIRS
+from collaborative_filtering_RS.col_user_userRS import ColBfUURS
 
 
 class HybridRS:
 
-    def __init__(self, tracks_data, at, k_cbf=40, k_collab=200, shrinkage=0, similarity='cosine', tf_idf=False):
+    def __init__(self, tracks_data, at=10, k_cbf=10, shrinkage_cbf=10, k_i_i=200, shrinkage_i_i=100,\
+                k_u_u=200, shrinkage_u_u=100, similarity='cosine', tf_idf=False):
 
         self.k_cbf = k_cbf
-        self.k_collab = k_collab
+        self.k_i_i = k_i_i
+        self.k_u_u = k_u_u
         self.at = at
-        self.shrinkage = shrinkage
+        self.shrinkage_cbf = shrinkage_cbf
+        self.shrinkage_i_i = shrinkage_i_i
+        self.shrinkage_u_u = shrinkage_u_u
         self.similarity = similarity
         self.tf_idf = tf_idf
-        self.cbf_recommender = CbfRS(tracks_data, self.at, self.k_cbf, self.shrinkage, tf_idf=self.tf_idf)
-        self.collab_recommender = ColBfIIRS(self.at, self.k_collab, self.shrinkage, tf_idf=self.tf_idf)
+        self.cbf_recommender = CbfRS(tracks_data, self.at, self.k_cbf, self.shrinkage_cbf, tf_idf=self.tf_idf)
+        self.col_i_i_recommender = ColBfIIRS(self.at, self.k_i_i, self.shrinkage_i_i, tf_idf=self.tf_idf)
+        self.col_u_u_recommender = ColBfUURS(self.at, self.k_u_u, self.shrinkage_u_u, tf_idf=self.tf_idf)
 
     def fit(self, train_data):
 
@@ -27,7 +33,7 @@ class HybridRS:
 
         print("All systems are fitted")
 
-    def recommend(self, playlist_ids, alpha):
+    def recommend(self, playlist_ids, alfa=0, beta=0.8, gamma=0.2):
         print("Recommending...")
 
         final_prediction = {}
@@ -36,7 +42,7 @@ class HybridRS:
 
         estimated_ratings_cbf = self.cbf_recommender.get_estimated_ratings()
         estimated_ratings_colf = self.collab_recommender.get_estimated_ratings()
-        estimated_ratings_final = estimated_ratings_colf.multiply(alpha) + estimated_ratings_cbf.multiply(1-alpha)
+        estimated_ratings_final = estimated_ratings_colf.multiply(gamma) + estimated_ratings_cbf.multiply(beta)
 
         for k in playlist_ids:
             try:
