@@ -11,8 +11,8 @@ class HybridRS:
 
     train_data = pd.DataFrame()
 
-    def __init__(self, tracks_data, at, k_con=40, k_col_u_u=200, k_col_i_i=200,
-                 shrinkage_con=0, shrinkage_col_u_u=0, shrinkage_col_i_i=0, similarity='cosine', tf_idf=True):
+    def __init__(self, tracks_data, at, k_con=10, k_col_u_u=200, k_col_i_i=700,
+                 shrinkage_con=10, shrinkage_col_u_u=50, shrinkage_col_i_i=450, similarity='cosine', tf_idf=True):
 
         # hybrid parameters
         self.k_con = k_con
@@ -55,6 +55,10 @@ class HybridRS:
         e_r_col_i_i = self.collab_recommender.get_estimated_ratings()
         e_r_col_u_u = self.colluu_recommender.get_estimated_ratings()
         e_r_slim_bpr = self.slim_rs.get_estimated_ratings()
+
+        print(e_r_cbf[7].data[e_r_cbf[7].data.argsort()[::-1]])
+        print(e_r_col_i_i[7].data[e_r_col_i_i[7].data.argsort()[::-1]])
+        print(e_r_col_u_u[7].data[e_r_col_u_u[7].data.argsort()[::-1]])
 
         estimated_ratings_final = e_r_col_u_u.multiply(alpha) + e_r_col_i_i.multiply(beta) + e_r_cbf.multiply(gamma)
 

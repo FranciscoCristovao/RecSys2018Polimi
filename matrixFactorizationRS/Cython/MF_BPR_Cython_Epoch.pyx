@@ -42,7 +42,7 @@ cdef class MF_BPR_Cython_Epoch:
 
     cdef int batch_size, sparse_weights
 
-    cdef long[:] eligibleUsers
+    cdef long long[:] eligibleUsers
     cdef long numEligibleUsers
 
     cdef int[:] seenItemsSampledUser

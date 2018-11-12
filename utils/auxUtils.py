@@ -244,9 +244,10 @@ def split_data(full_data, sequential_data, target_data, test_size):
 
     train_data = pd.DataFrame.from_dict(train_dict, dtype=np.int32)
     test_data = pd.DataFrame.from_dict(test_dict, dtype=np.int32)
+    '''
     print(train_data)
     print(test_data)
-
+    '''
     return train_data, test_data
 
 def randomization_split(full_dataset, playlists, test_size):

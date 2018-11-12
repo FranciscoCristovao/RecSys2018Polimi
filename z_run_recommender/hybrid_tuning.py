@@ -23,19 +23,11 @@ while alpha <= 10:
     beta = 1
     while beta <= 10:
 
-        if alpha/beta in already_seen_ratio_alpha_beta:
-            alpha += 1
-            continue
-
         gamma = 1
         while gamma <= 19:
 
-            if beta / gamma in already_seen_ratio_beta_gamma:
-                gamma += 2
-                continue
-
             # tuning probability / best_drawing
-            delta = 0.7
+            delta = 0.8
 
             while delta <= 1:
 
@@ -54,9 +46,6 @@ while alpha <= 10:
                 top_50 = df.sort_values(by=['map']).tail(50)
                 top_50_p = df.sort_values(by=['map_p']).tail(50)
 
-                if gamma > 0:
-                    already_seen_ratio_gamma_delta.append(gamma/delta)
-
                 delta += 0.1
 
             print(top_50)
@@ -64,13 +53,7 @@ while alpha <= 10:
             print(top_50_p)
             save_dataframe('output/hybrid_par_tuning3.csv', ',', df)
 
-            if beta > 0:
-                already_seen_ratio_beta_gamma.append(beta / gamma)
-
             gamma += 1
-
-        if alpha > 0:
-            already_seen_ratio_beta_gamma.append(beta / gamma)
 
         beta += 1
     alpha += 1

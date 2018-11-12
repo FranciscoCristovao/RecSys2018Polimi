@@ -33,7 +33,7 @@ class CbfRS:
 
         self.train_data = train_data
         self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values
-        self.cosine = Cosine_Similarity(self.icm.T, self.k, self.shrinkage)
+        self.cosine = Cosine_Similarity(self.icm.T, self.k, self.shrinkage, normalize=True)
         self.sym = check_matrix(self.cosine.compute_similarity(), 'csr')
 
         print("Sym correctly loaded")

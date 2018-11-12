@@ -30,7 +30,7 @@ class ColBfUURS:
         self.urm = buildURMMatrix(train_data)
         if self.tf_idf:
             self.urm = normalize_tf_idf(self.urm.T).T
-        self.cosine = Cosine_Similarity(self.urm.T, self.k, self.shrinkage)
+        self.cosine = Cosine_Similarity(self.urm.T, self.k, self.shrinkage, normalize=True)
         # self.sym = check_matrix(cosine_similarity(self.urm, dense_output=False), 'csr')
         self.sym = check_matrix(self.cosine.compute_similarity(), 'csr')
         # self.sym = check_matrix(self.cosine.compute(self.urm), 'csr')

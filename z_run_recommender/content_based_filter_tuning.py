@@ -12,11 +12,11 @@ shrinkage = 0
 
 plot_graph = False
 
-while shrinkage < 100:
+while shrinkage < 50:
     map_list = []
     knn_list = []
-    k = 5
-    while k < 100:
+    k = 10
+    while k < 60:
         rs = CbfRS(tracks_data, 10, k, shrinkage, tf_idf=True)
         rs.fit(train_data)
         print('knn: ', k, ' shrinkage: ', shrinkage)
@@ -26,7 +26,7 @@ while shrinkage < 100:
         df = df.append(pd.DataFrame([[k, map_, shrinkage]], columns=['knn', 'map', 'shr']))
         top_50 = df.sort_values(by=['map']).tail(50)
         knn_list.append(k)
-        k += 5
+        k += 10
 
     print(top_50)
     if plot_graph:
@@ -35,6 +35,6 @@ while shrinkage < 100:
         plt.show()
     save_dataframe('../output/content_w_tuning.csv', ',', top_50)
 
-    shrinkage += 5
+    shrinkage += 10
 print(top_50)
 print('End of parameter tuning')
