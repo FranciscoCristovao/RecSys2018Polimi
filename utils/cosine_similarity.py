@@ -9,30 +9,11 @@ Created on 23/10/17
 import numpy as np
 import time, sys
 import scipy.sparse as sps
-
-
-def check_matrix(X, format='csc', dtype=np.float32):
-    if format == 'csc' and not isinstance(X, sps.csc_matrix):
-        return X.tocsc().astype(dtype)
-    elif format == 'csr' and not isinstance(X, sps.csr_matrix):
-        return X.tocsr().astype(dtype)
-    elif format == 'coo' and not isinstance(X, sps.coo_matrix):
-        return X.tocoo().astype(dtype)
-    elif format == 'dok' and not isinstance(X, sps.dok_matrix):
-        return X.todok().astype(dtype)
-    elif format == 'bsr' and not isinstance(X, sps.bsr_matrix):
-        return X.tobsr().astype(dtype)
-    elif format == 'dia' and not isinstance(X, sps.dia_matrix):
-        return X.todia().astype(dtype)
-    elif format == 'lil' and not isinstance(X, sps.lil_matrix):
-        return X.tolil().astype(dtype)
-    else:
-        return X.astype(dtype)
-
+from utils.auxUtils import check_matrix
 
 class Compute_Similarity_Python:
 
-    def __init__(self, dataMatrix, topK=100, shrink=0, normalize=True,
+    def __init__(self, dataMatrix, topK=10, shrink=10, normalize=False,
                  asymmetric_alpha=0.5, tversky_alpha=1.0, tversky_beta=1.0,
                  similarity="cosine", row_weights=None):
         """
@@ -61,8 +42,7 @@ class Compute_Similarity_Python:
 
         """
 
-        super(Compute_Similarity_Python, self).__init__()
-
+        # super(Compute_Similarity_Python, self).__init__()
         self.TopK = topK
         self.shrink = shrink
         self.normalize = normalize

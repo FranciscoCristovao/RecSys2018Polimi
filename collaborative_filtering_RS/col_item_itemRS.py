@@ -3,10 +3,12 @@ import pandas as pd
 from scipy.sparse import csr_matrix
 from utils.auxUtils import filter_seen, buildURMMatrix, normalize_tf_idf, check_matrix
 from utils.Cython.Cosine_Similarity_Max import Cosine_Similarity
+# from utils.cosine_similarity import Compute_Similarity_Python
+
 
 class ColBfIIRS:
 
-    def __init__(self, at, k, shrinkage, similarity='cosine', tf_idf=False):
+    def __init__(self, at, k=200, shrinkage=0, similarity='cosine', tf_idf=False):
 
         self.k = k
         # self.cosine = Cosine()
@@ -24,15 +26,17 @@ class ColBfIIRS:
         self.urm = buildURMMatrix(train_data)
         if self.tf_idf:
             self.urm = normalize_tf_idf(self.urm.T).T
-        self.cosine = Cosine_Similarity(self.urm, self.k, self.shrinkage, normalize=True)
+        self.cosine = Cosine_Similarity(self.urm, self.k, self.shrinkage, normalize = True)
+        # self.cosine = Compute_Similarity_Python(self.urm, self.k, self.shrinkage, normalize=True)
         self.sym = check_matrix(self.cosine.compute_similarity(), 'csr')
-        print("Sym mat completed")
 
     def recommend(self, playlist_ids):
 
         print("Recommending...")
 
         final_prediction = {}
+        print(self.urm.shape)
+        print(self.sym.shape)
         estimated_ratings = csr_matrix(self.urm.dot(self.sym))
         counter = 0
 

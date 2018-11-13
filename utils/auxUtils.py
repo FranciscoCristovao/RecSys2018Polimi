@@ -13,8 +13,8 @@ def buildURMMatrix(data):
     playlists = data["playlist_id"].values
     tracks = data["track_id"].values
     interaction = np.ones(len(tracks))
-    coo_urm = coo_matrix((interaction, (playlists, tracks)), shape=(50446, 20635))
-    # print("This is the coo_urm", coo_urm)
+    coo_urm = coo_matrix((interaction, (playlists, tracks)))
+
     return coo_urm.tocsr()
 
 
