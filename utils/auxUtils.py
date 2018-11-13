@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from sklearn.utils import shuffle
 from scipy.sparse import csr_matrix, coo_matrix
 import scipy.sparse as sps
 import time, sys
@@ -249,6 +250,32 @@ def split_data(full_data, sequential_data, target_data, test_size):
     print(test_data)
     '''
     return train_data, test_data
+
+
+def split_data_fast(full_data, sequential_data, target_data, test_size):
+    # items_threshold is the minimum number of tracks to be in a playilist
+    data = full_data
+    grouped = data.groupby('playlist_id', as_index=True).apply(lambda x: list(x['track_id']))
+    sequential_index = target_data[:5000]
+    random_index = grouped[~sequential_index]
+    # seq = grouped[[e for e in sequential_index['playlist_id']]]
+    # seq = grouped[[e for e in sequential_index['playlist_id']]].index
+    # sequential = full_data_sequential.groupby('playlist_id', as_index=True).apply(lambda x: list(x['track_id']))
+
+    # todo: consider also the ordered ones
+    split_index = int(test_size * len(grouped))
+    #
+    filtered_idx = grouped[[len(g) > items_threshold for g in grouped]].index
+    test_idx = shuffle(filtered_idx)[:split_index]
+    test_mask = data['playlist_id'].isin(test_idx)
+    test_data = data[test_mask]
+    train_data = data[~test_mask]
+    test_data_target = test_data.groupby('playlist_id').apply(lambda x: x['track_id'].sample(n_to_remove))
+    test_data_target = test_data_target.reset_index(level=0)
+    test_data = test_data.drop(test_data_target.index)
+
+    return train_data, test_data
+
 
 def randomization_split(full_dataset, playlists, test_size):
     # take the sequential order and make it random.

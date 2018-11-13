@@ -16,7 +16,7 @@ while shrinkage < 50:
     map_list = []
     knn_list = []
     k = 10
-    while k < 60:
+    while k < 100:
         rs = CbfRS(tracks_data, 10, k, shrinkage, tf_idf=True)
         rs.fit(train_data)
         print('knn: ', k, ' shrinkage: ', shrinkage)
@@ -33,7 +33,7 @@ while shrinkage < 50:
         plt.plot(knn_list, map_list, 'bs')
         plt.title(shrinkage)
         plt.show()
-    save_dataframe('../output/content_w_tuning.csv', ',', top_50)
+    save_dataframe('../output/content_w_tuning_df.csv', ',', df)
 
     shrinkage += 10
 print(top_50)

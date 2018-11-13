@@ -4,7 +4,7 @@ import scipy.sparse as sps
 from scipy.sparse import csr_matrix
 from utils.auxUtils import check_matrix, filter_seen, buildICMMatrix, buildURMMatrix, normalize_tf_idf
 from utils.Cython.Cosine_Similarity_Max import Cosine_Similarity
-
+from sklearn.preprocessing import normalize
 
 
 class CbfRS:
@@ -30,6 +30,8 @@ class CbfRS:
 
         if self.tf_idf:
             self.icm = normalize_tf_idf(self.icm)
+
+        self.icm = normalize(self.icm, norm='l2', axis=1)
 
         self.train_data = train_data
         self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values

@@ -55,11 +55,11 @@ class HybridRS:
         e_r_col_i_i = self.collab_recommender.get_estimated_ratings()
         e_r_col_u_u = self.colluu_recommender.get_estimated_ratings()
         e_r_slim_bpr = self.slim_rs.get_estimated_ratings()
-
+        '''
         print(e_r_cbf[7].data[e_r_cbf[7].data.argsort()[::-1]])
         print(e_r_col_i_i[7].data[e_r_col_i_i[7].data.argsort()[::-1]])
         print(e_r_col_u_u[7].data[e_r_col_u_u[7].data.argsort()[::-1]])
-
+        '''
         estimated_ratings_final = e_r_col_u_u.multiply(alpha) + e_r_col_i_i.multiply(beta) + e_r_cbf.multiply(gamma)
 
         for k in playlist_ids:
@@ -161,5 +161,3 @@ class HybridRS:
         df = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
         # print(df)
         return df
-
-

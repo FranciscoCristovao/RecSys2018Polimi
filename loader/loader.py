@@ -13,8 +13,8 @@ tracks_data = pd.read_csv('data/tracks.csv', sep=',')
 # train_data, test_data = train_test_split(full_data, test_size=0.2)
 # train_data, test_data = split_data(full_data, full_data_sequential, target_data, test_size=0.2)
 # '''
-train_data = pd.read_csv('data/train_4.csv', sep=',')
-test_data = pd.read_csv('data/test_4.csv', sep=',')
+train_data = pd.read_csv('data/train_3.csv', sep=',')
+test_data = pd.read_csv('data/test_3.csv', sep=',')
 # '''
 # urm_full_data = pd.read_csv('data/URM.csv', sep=',')
 

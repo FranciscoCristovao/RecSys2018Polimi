@@ -24,7 +24,7 @@ class ColBfIIRS:
         self.urm = buildURMMatrix(train_data)
         if self.tf_idf:
             self.urm = normalize_tf_idf(self.urm.T).T
-        self.cosine = Cosine_Similarity(self.urm, self.k, self.shrinkage, normalize = True)
+        self.cosine = Cosine_Similarity(self.urm, self.k, self.shrinkage, normalize=True)
         self.sym = check_matrix(self.cosine.compute_similarity(), 'csr')
         print("Sym mat completed")
 

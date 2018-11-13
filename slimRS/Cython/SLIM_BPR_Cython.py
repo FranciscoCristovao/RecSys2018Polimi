@@ -236,7 +236,7 @@ class SLIM_BPR_Cython():
         # Run compile script setting the working directory to ensure the compiled file are contained in the
         # appropriate subfolder and not the project root
 
-        compiledModuleSubfolder = "/slimRS/Cython"
+        compiledModuleSubfolder = "../slimRS/Cython"
         #fileToCompile_list = ['Sparse_Matrix_CSR.pyx', 'SLIM_BPR_Cython_Epoch.pyx']
         fileToCompile_list = ['SLIM_BPR_Cython_Epoch.pyx']
 
@@ -252,7 +252,6 @@ class SLIM_BPR_Cython():
                        'build_ext',
                        '--inplace'
                        ]
-
 
             output = subprocess.check_output(' '.join(command), shell=True, cwd=os.getcwd() + compiledModuleSubfolder)
 
