@@ -5,9 +5,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-df = pd.DataFrame([[0, 0, 0, 0, 0, 0]], columns=['alpha', 'beta', 'gamma', 'map'])
-top_50 = pd.DataFrame([[0, 0, 0, 0, 0, 0]], columns=['alpha', 'beta', 'gamma', 'map'])
-top_50_p = pd.DataFrame([[0, 0, 0, 0, 0, 0]], columns=['alpha', 'beta', 'gamma', 'map'])
+df = pd.DataFrame([[0, 0, 0, 0]], columns=['alpha', 'beta', 'gamma', 'map'])
+top_50 = pd.DataFrame([[0, 0, 0, 0]], columns=['alpha', 'beta', 'gamma', 'map'])
+top_50_p = pd.DataFrame([[0, 0, 0, 0]], columns=['alpha', 'beta', 'gamma', 'map'])
 
 # Hybrid (cbf - colf)
 rs = HybridRS(tracks_data, 10, tf_idf=True)
@@ -33,7 +33,7 @@ while alpha <= 10:
 
             gamma += 1
 
-        print(top_10)
+            print(top_10)
 
         beta += 1
     alpha += 1

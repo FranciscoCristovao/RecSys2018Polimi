@@ -3,8 +3,8 @@ import pandas as pd
 import scipy.sparse as sps
 from scipy.sparse import csr_matrix
 from utils.auxUtils import check_matrix, filter_seen, buildICMMatrix, buildURMMatrix, normalize_tf_idf
-# from utils.Cython.Cosine_Similarity_Max import Cosine_Similarity
-from utils.cosine_similarity import Compute_Similarity_Python
+from utils.Cython.Cosine_Similarity_Max import Cosine_Similarity
+# from utils.cosine_similarity import Compute_Similarity_Python
 from sklearn.preprocessing import normalize
 
 
@@ -36,8 +36,8 @@ class CbfRS:
 
         self.train_data = train_data
         self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values
-        # self.cosine = Cosine_Similarity(self.icm.T, self.k, self.shrinkage, normalize=True)
-        self.cosine = Compute_Similarity_Python(self.icm.T, self.k, self.shrinkage, normalize=True)
+        self.cosine = Cosine_Similarity(self.icm.T, self.k, self.shrinkage, normalize=True)
+        # self.cosine = Compute_Similarity_Python(self.icm.T, self.k, self.shrinkage, normalize=True)
         self.sym = check_matrix(self.cosine.compute_similarity(), 'csr')
         self.urm = buildURMMatrix(train_data)
 

@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix
 from utils.auxUtils import filter_seen, buildURMMatrix, normalize_tf_idf, check_matrix
-# from utils.Cython.Cosine_Similarity_Max import Cosine_Similarity
-from utils.cosine_similarity import Compute_Similarity_Python
+from utils.Cython.Cosine_Similarity_Max import Cosine_Similarity
+# from utils.cosine_similarity import Compute_Similarity_Python
 
 
 class ColBfIIRS:
@@ -26,8 +26,8 @@ class ColBfIIRS:
         self.urm = buildURMMatrix(train_data)
         if self.tf_idf:
             self.urm = normalize_tf_idf(self.urm.T).T
-        # self.cosine = Cosine_Similarity(self.urm, self.k, self.shrinkage, normalize = True)
-        self.cosine = Compute_Similarity_Python(self.urm, self.k, self.shrinkage, normalize=True)
+        self.cosine = Cosine_Similarity(self.urm, self.k, self.shrinkage, normalize = True)
+        # self.cosine = Compute_Similarity_Python(self.urm, self.k, self.shrinkage, normalize=True)
         self.sym = check_matrix(self.cosine.compute_similarity(), 'csr')
 
     def recommend(self, playlist_ids):

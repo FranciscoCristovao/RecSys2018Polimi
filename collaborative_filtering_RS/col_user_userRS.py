@@ -3,7 +3,6 @@ import pandas as pd
 from scipy.sparse import csr_matrix
 from utils.auxUtils import filter_seen, buildURMMatrix, normalize_tf_idf, check_matrix
 from utils.cosine_similarity import Compute_Similarity_Python
-# from utils.Cython.Cosine_Similarity_Cython import Cosine_Similarity as Cosine_Worst
 from utils.Cython.Cosine_Similarity_Max import Cosine_Similarity as Cosine_Similarity
 
 class ColBfUURS:

@@ -8,8 +8,8 @@ from collaborative_filtering_RS.col_user_userRS import ColBfUURS
 
 class HybridRS:
 
-    def __init__(self, tracks_data, at=10, k_cbf=10, shrinkage_cbf=10, k_i_i=200, shrinkage_i_i=100,\
-                k_u_u=200, shrinkage_u_u=100, similarity='cosine', tf_idf=False):
+    def __init__(self, tracks_data, at=10, k_cbf=10, shrinkage_cbf=10, k_i_i=700, shrinkage_i_i=200,\
+                k_u_u=200, shrinkage_u_u=50, similarity='cosine', tf_idf=False):
 
         self.k_cbf = k_cbf
         self.k_i_i = k_i_i
@@ -28,12 +28,13 @@ class HybridRS:
 
         self.urm = buildURMMatrix(train_data)
         self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values
-        self.collab_recommender.fit(train_data)
+        self.col_i_i_recommender.fit(train_data)
+        self.col_u_u_recommender.fit(train_data)
         self.cbf_recommender.fit(train_data)
 
         print("All systems are fitted")
 
-    def recommend(self, playlist_ids, alfa=0, beta=0.8, gamma=0.2):
+    def recommend(self, playlist_ids, alpha=1, beta=4, gamma=4):
         print("Recommending...")
 
         final_prediction = {}
@@ -41,8 +42,11 @@ class HybridRS:
         # alpha = 0.7  # best until now
 
         estimated_ratings_cbf = self.cbf_recommender.get_estimated_ratings()
-        estimated_ratings_colf = self.collab_recommender.get_estimated_ratings()
-        estimated_ratings_final = estimated_ratings_colf.multiply(gamma) + estimated_ratings_cbf.multiply(beta)
+        estimated_ratings_col_i_i = self.col_i_i_recommender.get_estimated_ratings()
+        estimated_ratings_col_u_u = self.col_u_u_recommender.get_estimated_ratings()
+        estimated_ratings_final = estimated_ratings_col_u_u.multiply(alpha)\
+                                + estimated_ratings_col_i_i.multiply(beta)\
+                                + estimated_ratings_cbf.multiply(gamma)
 
         for k in playlist_ids:
             try:
