@@ -13,3 +13,4 @@ This is a todo file
 4) Merge the tracks, artists albums ICM matrix properly in the collaborative filter
 
 python3 compileCython.py MF_BPR_Cython_Epoch.pyx build_ext --inplace
+python compileCython.py Cosine_Similarity_Cython.pyx build_ext --inplace

@@ -23,8 +23,6 @@ from cpython.array cimport array, clone
 
 from libc.math cimport sqrt
 
-
-
 import scipy.sparse as sps
 from utils.auxUtils import check_matrix
 

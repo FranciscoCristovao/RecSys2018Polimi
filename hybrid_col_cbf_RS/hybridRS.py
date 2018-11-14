@@ -9,7 +9,7 @@ from collaborative_filtering_RS.col_user_userRS import ColBfUURS
 class HybridRS:
 
     def __init__(self, tracks_data, at=10, k_cbf=10, shrinkage_cbf=10, k_i_i=700, shrinkage_i_i=200,\
-                k_u_u=200, shrinkage_u_u=50, similarity='cosine', tf_idf=False):
+                k_u_u=200, shrinkage_u_u=50, similarity='cosine', tf_idf=True):
 
         self.k_cbf = k_cbf
         self.k_i_i = k_i_i

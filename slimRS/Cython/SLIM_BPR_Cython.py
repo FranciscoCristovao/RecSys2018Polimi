@@ -79,8 +79,8 @@ class SLIM_BPR_Cython():
             print("Compilation Complete")
 
     def fit(self, epochs=50, logFile=None, URM_test=None, filterTopPop=False, minRatingsPerUser=1,
-            batch_size=1000, lambda_i=0.0025, lambda_j=0.00025, learning_rate=0.001, topK=200,
-            sgd_mode='adagrad', gamma=0.995, beta_1=0.9, beta_2=0.999,
+            batch_size=1000, lambda_i=0.0024, lambda_j=0.00025, learning_rate=0.001, topK=600,
+            sgd_mode='sgd', gamma=0.995, beta_1=0.9, beta_2=0.999,
             stop_on_validation=False, lower_validatons_allowed=5, validation_metric="map",
             validation_function=None, validation_every_n=1):
         '''
@@ -236,7 +236,7 @@ class SLIM_BPR_Cython():
         # Run compile script setting the working directory to ensure the compiled file are contained in the
         # appropriate subfolder and not the project root
 
-        compiledModuleSubfolder = "../slimRS/Cython"
+        compiledModuleSubfolder = "/slimRS/Cython"
         #fileToCompile_list = ['Sparse_Matrix_CSR.pyx', 'SLIM_BPR_Cython_Epoch.pyx']
         fileToCompile_list = ['SLIM_BPR_Cython_Epoch.pyx']
 
