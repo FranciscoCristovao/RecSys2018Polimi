@@ -9,7 +9,7 @@ from collaborative_filtering_RS.col_user_userRS import ColBfUURS
 class HybridRS:
 
     def __init__(self, tracks_data, at=10, k_cbf=10, shrinkage_cbf=10, k_i_i=700, shrinkage_i_i=200,
-                 k_u_u=200, shrinkage_u_u=50, similarity='cosine', tf_idf=True):
+                 k_u_u=200, shrinkage_u_u=50, similarity='tanimoto', tf_idf=True):
 
         self.k_cbf = k_cbf
         self.k_i_i = k_i_i
@@ -28,7 +28,7 @@ class HybridRS:
     def fit(self, train_data):
 
         self.urm = buildURMMatrix(train_data)
-        self.top_pop_songs = train_data['track_id'].value_counts().head(10).index.values
+        self.top_pop_songs = train_data['track_id'].value_counts().head(5).index.values
         self.col_i_i_recommender.fit(train_data)
         self.col_u_u_recommender.fit(train_data)
         self.cbf_recommender.fit(train_data)
@@ -61,7 +61,6 @@ class HybridRS:
                 top_songs = filter_seen(aux, user_playlist)
 
                 if filter_top_pop:
-                    print(type(top_songs))
                     top_songs = filter_seen_array(top_songs, self.top_pop_songs)[:self.at]
                 else:
                     top_songs = top_songs[:self.at]

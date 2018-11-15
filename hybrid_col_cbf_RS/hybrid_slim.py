@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import gc
-from utils.auxUtils import check_matrix, filter_seen, buildICMMatrix, buildURMMatrix
+from utils.auxUtils import check_matrix, filter_seen, filter_seen_array, buildICMMatrix, buildURMMatrix
 from slimRS.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
 from cbfRS.cbfRS import CbfRS
 from collaborative_filtering_RS.col_item_itemRS import ColBfIIRS
@@ -33,7 +33,7 @@ class HybridRS:
 
         print("ICM loaded into the class")
 
-    def fit(self, train_data):
+    def fit(self, train_data, sgd_mode='sgd'):
         print('Fitting...')
 
         self.urm = buildURMMatrix(train_data)
@@ -44,10 +44,10 @@ class HybridRS:
 
         # todo: handle slim init inside init
         self.slim_rs = SLIM_BPR_Cython(train_data)
-        self.slim_rs.fit()
+        self.slim_rs.fit(sgd_mode=sgd_mode)
 
-    def recommend(self, playlist_ids, alpha=1, beta=5, gamma=7, delta=0.9):
-        print("Recommending...")
+    def recommend(self, playlist_ids, alpha=1, beta=5, gamma=7, delta=0.9, filter_top_pop=True):
+        print("Recommending... Am I filtering top_top songs?", filter_top_pop)
 
         final_prediction = {}
         counter = 0
@@ -79,7 +79,12 @@ class HybridRS:
 
                 aux = np.concatenate((aux, self.top_pop_songs), axis=None)
 
-                top_songs = list(filter_seen(aux, user_playlist)[:int(round(self.at*delta))])
+                top_songs = filter_seen(aux, user_playlist)
+
+                if filter_top_pop:
+                    top_songs = list(filter_seen_array(top_songs, self.top_pop_songs)[:int(round(self.at*delta))])
+                else:
+                    top_songs = list(top_songs[:int(round(self.at*delta))])
 
                 i = 0
                 while len(top_songs) < 10 and i < len(slim_bpr_row_filtered):

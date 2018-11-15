@@ -1,12 +1,10 @@
 import pandas as pd
 import numpy as np
-from sklearn.utils import shuffle
 from scipy.sparse import csr_matrix, coo_matrix
 import scipy.sparse as sps
 import time, sys
 import scipy
 from sklearn.model_selection import train_test_split
-from random import shuffle
 
 
 def buildURMMatrix(data):
@@ -263,6 +261,7 @@ def split_data(full_data, sequential_data, target_data, test_size):
 
 
 def split_data_fast(full_data, sequential_data, target_data, test_size):
+
     # items_threshold is the minimum number of tracks to be in a playilist
     data = full_data
 

@@ -1,14 +1,18 @@
-from cbfRS.cbfRS import CbfRS
 from loader.loader import save_dataframe, train_data, target_data, full_data, test_data, tracks_data
 from utils.auxUtils import Evaluator
-import pandas as pd
-import matplotlib.pyplot as plt
+from hybrid_col_cbf_RS.hybridRS import HybridRS
 
+# Hybrid (cbf - colf)
+# provo sgd, rms prop per vedere qual è il migliore
+rs = HybridRS(tracks_data, 10, tf_idf=True)
 evaluator = Evaluator()
-rs = CbfRS(tracks_data, 10, 10, 10, tf_idf=True,
-           weight_album=3, weight_artist=1, use_duration=False)
-rs.fit(train_data)
-predictions = rs.recommend(target_data['playlist_id'])
-map_ = (evaluator.evaluate(predictions, test_data))
+rs.fit(full_data)
 
-save_dataframe('output/content_w_tuning.csv', ',', predictions)
+alpha = 1
+beta = 5
+gamma = 7
+
+predictions = rs.recommend(target_data['playlist_id'], alpha, beta, gamma, delta=0.9)
+evaluator.evaluate(predictions, test_data)
+
+save_dataframe('output/hybrid_adam.csv', ',', predictions)
