@@ -265,49 +265,31 @@ def split_data(full_data, sequential_data, target_data, test_size):
 def split_data_fast(full_data, sequential_data, target_data, test_size):
     # items_threshold is the minimum number of tracks to be in a playilist
     data = full_data
-    grouped = data.groupby('playlist_id', as_index=True).apply(lambda x: list(x['track_id']))
 
     sequential_index = target_data[:5000]['playlist_id'].values
-    # sequential_mask = data['playlist_id'].isin(sequential_index)
     sequential_mask = data['playlist_id'].isin(sequential_index)  # .reset_index()['playlist_id']
 
     random_data = data[~sequential_mask]
-    sequential_data = data[sequential_mask]
 
     # not so good, list / len does not work
-    train_data_sequential = sequential_data.groupby('playlist_id').\
-        apply(lambda x: list(x['track_id'])[:int(len(x['track_id'])*(1 - test_size))])
 
-    ''' il problema nel fare così è che siccome raggruppi, hai un solo 7
-    train_data_sequential = sequential_data.groupby('playlist_id').\
-        apply(lambda x: (x['track_id'])[:int(len(x['track_id']*(1 - test_size)))])
-    '''
+    train_data_sequential = sequential_data.groupby('playlist_id', as_index=False).\
+        apply(lambda x: x[:int(len(x)*(1 - test_size))]).reset_index(drop=True)
 
-    test_data_sequential = sequential_data.groupby('playlist_id').\
-        apply(lambda x: list(x['track_id'])[int(len(x['track_id'])*(1 - test_size)):])
+    test_data_sequential = sequential_data.groupby('playlist_id', as_index=False).\
+        apply(lambda x: x[int(len(x)*(1 - test_size)):]).reset_index(drop=True)
 
-    random_data_shuffled = random_data.groupby('playlist_id').apply(lambda x: x['track_id'].sample(len(x)))
+    random_data_shuffled = random_data.sample(frac=1)
+    # random_data.groupby('playlist_id').apply(lambda x: x['track_id'].sample(len(x)))
 
-    train_data = random_data.groupby('playlist_id').apply(
-        lambda x: x['track_id'][(int(len(x['track_id']*(1 - test_size))))])
+    train_data_shuffled = random_data_shuffled.groupby('playlist_id', as_index=False).\
+        apply(lambda x: x[:(int(len(x)*(1 - test_size)))]).reset_index(drop=True)
+    # with list it's faster
+    test_data_shuffled = random_data_shuffled.groupby('playlist_id', as_index=False).\
+        apply(lambda x: x[(int(len(x)*(1 - test_size))):]).reset_index(drop=True)
 
-    # test_data = random_index.groupby('playlist_id').apply(lambda x: x['track_id'].sample(int(len(x['track_id'])*0.8)))
-
-    # seq = grouped[[e for e in sequential_index['playlist_id']]]
-    # seq = grouped[[e for e in sequential_index['playlist_id']]].index
-    # sequential = full_data_sequential.groupby('playlist_id', as_index=True).apply(lambda x: list(x['track_id']))
-
-    # todo: consider also the ordered ones
-    split_index = int(test_size * len(grouped))
-    #
-    filtered_idx = grouped[[len(g) > items_threshold for g in grouped]].index
-    test_idx = shuffle(filtered_idx)[:split_index]
-    test_mask = data['playlist_id'].isin(test_idx)
-    test_data = data[test_mask]
-    train_data = data[~test_mask]
-    test_data_target = test_data.groupby('playlist_id').apply(lambda x: x['track_id'].sample(n_to_remove))
-    test_data_target = test_data_target.reset_index(level=0)
-    test_data = test_data.drop(test_data_target.index)
+    test_data = test_data_shuffled.append(test_data_sequential)
+    train_data = train_data_shuffled.append(train_data_sequential)
 
     return train_data, test_data
 
