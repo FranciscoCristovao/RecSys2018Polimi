@@ -8,8 +8,8 @@ from collaborative_filtering_RS.col_user_userRS import ColBfUURS
 
 class HybridRS:
 
-    def __init__(self, tracks_data, at=10, k_cbf=10, shrinkage_cbf=10, k_i_i=700, shrinkage_i_i=200,\
-                k_u_u=200, shrinkage_u_u=50, similarity='cosine', tf_idf=True):
+    def __init__(self, tracks_data, at=10, k_cbf=10, shrinkage_cbf=10, k_i_i=700, shrinkage_i_i=200,
+                 k_u_u=200, shrinkage_u_u=50, similarity='cosine', tf_idf=True):
 
         self.k_cbf = k_cbf
         self.k_i_i = k_i_i
@@ -20,7 +20,8 @@ class HybridRS:
         self.shrinkage_u_u = shrinkage_u_u
         self.similarity = similarity
         self.tf_idf = tf_idf
-        self.cbf_recommender = CbfRS(tracks_data, self.at, self.k_cbf, self.shrinkage_cbf, tf_idf=self.tf_idf)
+        self.cbf_recommender = CbfRS(tracks_data, self.at, self.k_cbf, self.shrinkage_cbf, tf_idf=self.tf_idf,
+                                     weight_album=1, weight_artist=1)
         self.col_i_i_recommender = ColBfIIRS(self.at, self.k_i_i, self.shrinkage_i_i, tf_idf=self.tf_idf)
         self.col_u_u_recommender = ColBfUURS(self.at, self.k_u_u, self.shrinkage_u_u, tf_idf=self.tf_idf)
 
@@ -34,7 +35,7 @@ class HybridRS:
 
         print("All systems are fitted")
 
-    def recommend(self, playlist_ids, alpha=1, beta=4, gamma=4, filter_top_pop=False):
+    def recommend(self, playlist_ids, alpha=1, beta=5, gamma=7, filter_top_pop=False):
         print("Recommending...")
 
         final_prediction = {}

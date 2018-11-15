@@ -1,20 +1,29 @@
 from loader.loader import save_dataframe, train_data, target_data, full_data, test_data, tracks_data
 from utils.auxUtils import Evaluator
-from matrixFactorizationRS.matrix_factorizationRS import MF_BPR_Cython
-import pandas as pd
-# SLIM_ MAX
-rs = MF_BPR_Cython(train_data)
-rs.fit()
-final_prediction = {}
+from hybrid_col_cbf_RS.hybridRS import HybridRS
 
-for k in target_data['playlist_id']:
-    # train_data.loc[train_data['playlist_id'] == k]
-    prediction = rs.recommend(k)
-    string = ' '.join(str(e) for e in prediction)
-    final_prediction.update({k: string})
+# Hybrid (cbf - colf)
 
-df = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
+rs = HybridRS(tracks_data, 10, tf_idf=True)
 evaluator = Evaluator()
-evaluator.evaluate(df, test_data)
+rs.fit(train_data)
 
-save_dataframe('output/slim_bpr_max2.csv', ',', df)
+alpha = 1
+beta = 5
+gamma = 7
+
+# train 4, a = 1, b = 5, c = 7, d = 0.8, map = 0.0778/0.0771
+# train 4, a = 1, b = 5, c = 7, d = 0.9, map = 0.0782/0.0780 (knn200, 800, 500)
+# train 4, a = 1, b = 5, c = 7, d = 0.9, map = 0.0783 knn_slim = 600
+
+predictions = rs.recommend(target_data['playlist_id'], alpha, beta, gamma)
+evaluator.evaluate(predictions, test_data)
+'''
+predictions = rs.recommend_reverse(target_data['playlist_id'], alpha, beta, gamma, delta=0.9)
+evaluator.evaluate(predictions, test_data)
+
+predictions = rs.recommend_probability(target_data['playlist_id'], alpha, beta, gamma, p_treshold=0.9)
+evaluator.evaluate(predictions, test_data)
+'''
+
+save_dataframe('output/hybrid_output_slim_09.csv', ',', predictions)

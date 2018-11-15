@@ -19,7 +19,7 @@ def buildURMMatrix(data):
     return coo_urm.tocsr()
 
 
-def buildICMMatrix(data):
+def buildICMMatrix(data, w_album, w_artist, w_duration=0.001, use_tracks_duration=False):
 
     '''
     tracks = data["track_id"].values
@@ -44,11 +44,18 @@ def buildICMMatrix(data):
     coo_icm = coo_matrix((interaction, (tracks_sized, features)))
     return coo_icm.tocsr()
     '''
+    if use_tracks_duration:
+        print('Careful! You are using tracks duration')
+        data = data.apply(lambda x: cluster_duration(x), axis=1)
+        frames = [(pd.get_dummies(data['album_id']))*w_album, (pd.get_dummies(data['artist_id']))*w_artist,
+                  (pd.get_dummies(data['cluster_dur']))*w_duration]
+    else:
+        print('Not using track duration')
+        frames = [(pd.get_dummies(data['album_id'])) * w_album, (pd.get_dummies(data['artist_id'])) * w_artist]
 
-    frames = [pd.get_dummies(data['album_id']), pd.get_dummies(data['artist_id'])]
     icm = pd.concat(frames, axis=1)
     print("ICM with artists and albums correctly built.")
-
+    # print(icm)
     return csr_matrix(icm)
 
 
@@ -523,3 +530,13 @@ def similarityMatrixTopK(item_weights, forceSparseOutput=True, k=100, verbose=Fa
 
         return W_sparse
 
+
+def cluster_duration(row):
+    if row['duration_sec'] < 60:
+        d = 0
+    elif row['duration_sec'] < 300:
+        d = 1
+    else:
+        d = 2
+    row['cluster_dur'] = d
+    return row
