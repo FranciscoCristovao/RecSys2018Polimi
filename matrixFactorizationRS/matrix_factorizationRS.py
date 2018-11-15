@@ -29,11 +29,9 @@ class MF_BPR_Cython():
             self.runCompilationScript()
             print("Compilation Complete")
 
-
-
-    def fit(self, epochs=50, logFile=None, URM_test=None, filterTopPop = False, filterCustomItems = np.array([], dtype=np.int), minRatingsPerUser=1,
+    def fit(self, epochs=200, logFile=None, URM_test=None, filterTopPop = False, filterCustomItems = np.array([], dtype=np.int), minRatingsPerUser=1,
             batch_size=1000, validate_every_N_epochs=1, start_validation_after_N_epochs=0,
-            learning_rate=0.05, sgd_mode='sgd', user_reg=0.0, positive_reg=0.0, negative_reg=0.0):
+            learning_rate=0.01, sgd_mode='sgd', user_reg=0.0, positive_reg=0.0, negative_reg=0.0):
 
 
         self.eligibleUsers = []

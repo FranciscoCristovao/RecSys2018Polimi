@@ -6,6 +6,7 @@ import scipy.sparse as sps
 import time, sys
 import scipy
 from sklearn.model_selection import train_test_split
+from random import shuffle
 
 
 def buildURMMatrix(data):
@@ -215,7 +216,6 @@ def split_data(full_data, sequential_data, target_data, test_size):
     test_dict = {"playlist_id": np.array([]), "track_id": np.array([])}
 
     for i in range(50445):
-
         if i in ordered_playlists.values:
             playlist_ordered = sequential_data.loc[sequential_data['playlist_id'] == i]
             chunk_value = int(len(playlist_ordered) * (1 - test_size))
@@ -224,7 +224,10 @@ def split_data(full_data, sequential_data, target_data, test_size):
 
         else:
             playlist_i = full_data.loc[full_data['playlist_id'] == i]
+            # chunk_value = int(len(playlist_i* test_size)
+            # test_single = random_index.groupby('playlist_id').apply(lambda x: x['track_id'].sample(chunk_value))
             train_single, test_single = train_test_split(playlist_i, test_size=test_size)
+
         '''
         else:
             train_single = full_data.loc[full_data['playlist_id'] == i]
@@ -256,8 +259,33 @@ def split_data_fast(full_data, sequential_data, target_data, test_size):
     # items_threshold is the minimum number of tracks to be in a playilist
     data = full_data
     grouped = data.groupby('playlist_id', as_index=True).apply(lambda x: list(x['track_id']))
-    sequential_index = target_data[:5000]
-    random_index = grouped[~sequential_index]
+
+    sequential_index = target_data[:5000]['playlist_id'].values
+    # sequential_mask = data['playlist_id'].isin(sequential_index)
+    sequential_mask = data['playlist_id'].isin(sequential_index)  # .reset_index()['playlist_id']
+
+    random_data = data[~sequential_mask]
+    sequential_data = data[sequential_mask]
+
+    # not so good, list / len does not work
+    train_data_sequential = sequential_data.groupby('playlist_id').\
+        apply(lambda x: list(x['track_id'])[:int(len(x['track_id'])*(1 - test_size))])
+
+    ''' il problema nel fare così è che siccome raggruppi, hai un solo 7
+    train_data_sequential = sequential_data.groupby('playlist_id').\
+        apply(lambda x: (x['track_id'])[:int(len(x['track_id']*(1 - test_size)))])
+    '''
+
+    test_data_sequential = sequential_data.groupby('playlist_id').\
+        apply(lambda x: list(x['track_id'])[int(len(x['track_id'])*(1 - test_size)):])
+
+    random_data_shuffled = random_data.groupby('playlist_id').apply(lambda x: x['track_id'].sample(len(x)))
+
+    train_data = random_data.groupby('playlist_id').apply(
+        lambda x: x['track_id'][(int(len(x['track_id']*(1 - test_size))))])
+
+    # test_data = random_index.groupby('playlist_id').apply(lambda x: x['track_id'].sample(int(len(x['track_id'])*0.8)))
+
     # seq = grouped[[e for e in sequential_index['playlist_id']]]
     # seq = grouped[[e for e in sequential_index['playlist_id']]].index
     # sequential = full_data_sequential.groupby('playlist_id', as_index=True).apply(lambda x: list(x['track_id']))
@@ -316,38 +344,6 @@ def randomization_split(full_dataset, playlists, test_size):
     test_data = pd.DataFrame(temp_list, columns=['playlist_id', 'track_id'])
 
     print(test_data.head(5))
-    '''
-    ordered_playlist = playlists['playlist_id'][:5000]
-    # print("Last element of ordered_playlist: ", ordered_playlist[4999])
-    random_playlist = playlists['playlist_id'][5000:]
-    temp_list = []
-    # print(ordered_playlist)
-    for k in playlists['playlist_id']:
-        if k in ordered_playlist:
-            try:
-                playlist_to_order = test_data['track_id'].loc[test_data['playlist_id'] == k]
-                proper_order = full_data['track_id'].loc[full_data['playlist_id'] == k]
-
-                mask = np.in1d(proper_order, playlist_to_order)
-                proper_order_to_df = proper_order[mask]
-                for i in proper_order_to_df:
-                    temp_list.append([k, i])
-            except:
-                print('No such playlist, or other bad things happened while splitting the data')
-        else:  # we are in not ordered playlist, so we just add it to the dictionary
-            try:
-                playlist_to_order = test_data['track_id'].loc[test_data['playlist_id'] == k]
-                for i in playlist_to_order:
-                    temp_list.append([k, i])
-            except:
-                print("No such playlist, splitting the data")
-
-    # print(temp_dictionary)
-    test_data_proper = pd.DataFrame(temp_list, columns=['playlist_id', 'track_id'])
-    # print(test_data.head(5))
-    # print(test_data_proper.head(5))
-    print("Data correctly splitted")
-    '''
 
     train_data = pd.concat([full_dataset, test_data, test_data]).drop_duplicates(keep=False)
 

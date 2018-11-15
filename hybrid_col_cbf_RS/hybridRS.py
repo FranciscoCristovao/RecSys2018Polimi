@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from utils.auxUtils import filter_seen, buildURMMatrix
+from utils.auxUtils import filter_seen, filter_seen_array, buildURMMatrix
 from cbfRS.cbfRS import CbfRS
 from collaborative_filtering_RS.col_item_itemRS import ColBfIIRS
 from collaborative_filtering_RS.col_user_userRS import ColBfUURS
@@ -27,14 +27,14 @@ class HybridRS:
     def fit(self, train_data):
 
         self.urm = buildURMMatrix(train_data)
-        self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values
+        self.top_pop_songs = train_data['track_id'].value_counts().head(10).index.values
         self.col_i_i_recommender.fit(train_data)
         self.col_u_u_recommender.fit(train_data)
         self.cbf_recommender.fit(train_data)
 
         print("All systems are fitted")
 
-    def recommend(self, playlist_ids, alpha=1, beta=4, gamma=4):
+    def recommend(self, playlist_ids, alpha=1, beta=4, gamma=4, filter_top_pop=False):
         print("Recommending...")
 
         final_prediction = {}
@@ -57,7 +57,13 @@ class HybridRS:
                 user_playlist = self.urm[k]
 
                 aux = np.concatenate((aux, self.top_pop_songs), axis=None)
-                top_songs = filter_seen(aux, user_playlist)[:self.at]
+                top_songs = filter_seen(aux, user_playlist)
+
+                if filter_top_pop:
+                    print(type(top_songs))
+                    top_songs = filter_seen_array(top_songs, self.top_pop_songs)[:self.at]
+                else:
+                    top_songs = top_songs[:self.at]
 
                 string = ' '.join(str(e) for e in top_songs)
                 final_prediction.update({k: string})
