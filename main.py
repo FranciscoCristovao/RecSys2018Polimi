@@ -11,21 +11,51 @@ from collaborative_filtering_RS.col_item_itemRS import ColBfIIRS
 from hybrid_col_cbf_RS.hybridRS import HybridRS
 from matrixFactorizationRS.matrix_factorizationRS import MF_BPR_Cython
 from slimRS.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
+import matplotlib.pyplot as plt
 
+'''
 # Hybrid (cbf - colf)
 
 rs = HybridRS(tracks_data, 10, tf_idf=True)
 evaluator = Evaluator()
-rs.fit(full_data)
+rs.fit(train_data)
 
+predictions = rs.recommend(target_data['playlist_id'], 1, 5, 7)
+evaluator.evaluate(predictions, test_data)
+
+save_dataframe('output/hybrid_output.csv', ',', predictions)
+'''
+
+rs = HybridRS(tracks_data, 10, tf_idf=True)
+evaluator = Evaluator()
+rs.fit(train_data)
+
+df = pd.DataFrame([[0, 0, 0, 0]], columns=['alpha', 'beta', 'gamma', 'map'])
 alpha = 1
-beta = 5
-gamma = 6
+beta = 1
+gamma = 1
+
+while beta <= 10:
+    gamma = 1
+    while gamma <= 10:
+        alpha = 1
+        beta = 5
+        gamma = 7
+        hybrid = rs.recommend(target_data['playlist_id'], alpha, beta, gamma)
+        print("Alpha: ", alpha, " Beta: ", beta, "Gamma: ", gamma)
+        temp_map = evaluator.evaluate(hybrid, test_data)
+
+        df = df.append(pd.DataFrame([[alpha, beta, gamma, temp_map]],
+                                    columns=['alpha', 'beta', 'gamma', 'map']))
+        top_20 = df.sort_values(by=['map']).tail(20)
+
+        gamma += 1
+
+        print(top_20)
+    beta += 1
 
 predictions = rs.recommend(target_data['playlist_id'], alpha, beta, gamma)
 temp_map = evaluator.evaluate(predictions, test_data)
-
-save_dataframe('output/hybrid_output.csv', ',', predictions)
 
 '''
 rs = HybridRS(tracks_data, tf_idf=True)

@@ -11,7 +11,7 @@ class ColBfUURS:
     urm = pd.DataFrame()
     train_data = pd.DataFrame()
 
-    def __init__(self, at, k=200, shrinkage=0, similarity='cosine', tf_idf=False):
+    def __init__(self, at, k=200, shrinkage=50, similarity='cosine', tf_idf=False):
 
         self.k = k
         # self.cosine = Cosine()

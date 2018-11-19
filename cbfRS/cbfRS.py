@@ -12,7 +12,7 @@ class CbfRS:
 
     train_data = pd.DataFrame()
 
-    def __init__(self, tracks_data, at, k=40, shrinkage=0, similarity='cosine', tf_idf=False):
+    def __init__(self, tracks_data, at, k=10, shrinkage=10, similarity='cosine', tf_idf=False):
 
         self.k = k
         self.at = at
@@ -48,7 +48,7 @@ class CbfRS:
 
         print("STARTING ESTIMATION")
         # add ravel() ?
-        # estimated_ratings = csr_matrix(self.urm.dot(self.sym))
+        estimated_ratings = csr_matrix(self.urm.dot(self.sym))
 
         counter = 0
 

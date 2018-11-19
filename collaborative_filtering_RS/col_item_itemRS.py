@@ -8,7 +8,7 @@ from utils.Cython.Cosine_Similarity_Max import Cosine_Similarity
 
 class ColBfIIRS:
 
-    def __init__(self, at, k=200, shrinkage=0, similarity='cosine', tf_idf=False):
+    def __init__(self, at, k=350, shrinkage=400, similarity='cosine', tf_idf=False):
 
         self.k = k
         # self.cosine = Cosine()
@@ -35,8 +35,6 @@ class ColBfIIRS:
         print("Recommending...")
 
         final_prediction = {}
-        print(self.urm.shape)
-        print(self.sym.shape)
         estimated_ratings = csr_matrix(self.urm.dot(self.sym))
         counter = 0
 
