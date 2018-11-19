@@ -17,7 +17,7 @@ def buildURMMatrix(data):
     return coo_urm.tocsr()
 
 
-def buildICMMatrix(data):
+def buildICMMatrix(data, w_album, w_artist, w_duration=0.001, use_tracks_duration=False):
 
     '''
     tracks = data["track_id"].values
@@ -42,11 +42,18 @@ def buildICMMatrix(data):
     coo_icm = coo_matrix((interaction, (tracks_sized, features)))
     return coo_icm.tocsr()
     '''
+    if use_tracks_duration:
+        print('Careful! You are using tracks duration')
+        data = data.apply(lambda x: cluster_duration(x), axis=1)
+        frames = [(pd.get_dummies(data['album_id']))*w_album, (pd.get_dummies(data['artist_id']))*w_artist,
+                  (pd.get_dummies(data['cluster_dur']))*w_duration]
+    else:
+        print('Not using track duration')
+        frames = [(pd.get_dummies(data['album_id'])) * w_album, (pd.get_dummies(data['artist_id'])) * w_artist]
 
-    frames = [pd.get_dummies(data['album_id']), pd.get_dummies(data['artist_id'])]
     icm = pd.concat(frames, axis=1)
     print("ICM with artists and albums correctly built.")
-
+    # print(icm)
     return csr_matrix(icm)
 
 
@@ -214,7 +221,6 @@ def split_data(full_data, sequential_data, target_data, test_size):
     test_dict = {"playlist_id": np.array([]), "track_id": np.array([])}
 
     for i in range(50445):
-
         if i in ordered_playlists.values:
             playlist_ordered = sequential_data.loc[sequential_data['playlist_id'] == i]
             chunk_value = int(len(playlist_ordered) * (1 - test_size))
@@ -223,7 +229,10 @@ def split_data(full_data, sequential_data, target_data, test_size):
 
         else:
             playlist_i = full_data.loc[full_data['playlist_id'] == i]
+            # chunk_value = int(len(playlist_i* test_size)
+            # test_single = random_index.groupby('playlist_id').apply(lambda x: x['track_id'].sample(chunk_value))
             train_single, test_single = train_test_split(playlist_i, test_size=test_size)
+
         '''
         else:
             train_single = full_data.loc[full_data['playlist_id'] == i]
@@ -249,6 +258,40 @@ def split_data(full_data, sequential_data, target_data, test_size):
     print(test_data)
     '''
     return train_data, test_data
+
+
+def split_data_fast(full_data, sequential_data, target_data, test_size):
+
+    # items_threshold is the minimum number of tracks to be in a playilist
+    data = full_data
+
+    sequential_index = target_data[:5000]['playlist_id'].values
+    sequential_mask = data['playlist_id'].isin(sequential_index)  # .reset_index()['playlist_id']
+
+    random_data = data[~sequential_mask]
+
+    # not so good, list / len does not work
+
+    train_data_sequential = sequential_data.groupby('playlist_id', as_index=False).\
+        apply(lambda x: x[:int(len(x)*(1 - test_size))]).reset_index(drop=True)
+
+    test_data_sequential = sequential_data.groupby('playlist_id', as_index=False).\
+        apply(lambda x: x[int(len(x)*(1 - test_size)):]).reset_index(drop=True)
+
+    random_data_shuffled = random_data.sample(frac=1)
+    # random_data.groupby('playlist_id').apply(lambda x: x['track_id'].sample(len(x)))
+
+    train_data_shuffled = random_data_shuffled.groupby('playlist_id', as_index=False).\
+        apply(lambda x: x[:(int(len(x)*(1 - test_size)))]).reset_index(drop=True)
+    # with list it's faster
+    test_data_shuffled = random_data_shuffled.groupby('playlist_id', as_index=False).\
+        apply(lambda x: x[(int(len(x)*(1 - test_size))):]).reset_index(drop=True)
+
+    test_data = test_data_shuffled.append(test_data_sequential)
+    train_data = train_data_shuffled.append(train_data_sequential)
+
+    return train_data, test_data
+
 
 def randomization_split(full_dataset, playlists, test_size):
     # take the sequential order and make it random.
@@ -289,38 +332,6 @@ def randomization_split(full_dataset, playlists, test_size):
     test_data = pd.DataFrame(temp_list, columns=['playlist_id', 'track_id'])
 
     print(test_data.head(5))
-    '''
-    ordered_playlist = playlists['playlist_id'][:5000]
-    # print("Last element of ordered_playlist: ", ordered_playlist[4999])
-    random_playlist = playlists['playlist_id'][5000:]
-    temp_list = []
-    # print(ordered_playlist)
-    for k in playlists['playlist_id']:
-        if k in ordered_playlist:
-            try:
-                playlist_to_order = test_data['track_id'].loc[test_data['playlist_id'] == k]
-                proper_order = full_data['track_id'].loc[full_data['playlist_id'] == k]
-
-                mask = np.in1d(proper_order, playlist_to_order)
-                proper_order_to_df = proper_order[mask]
-                for i in proper_order_to_df:
-                    temp_list.append([k, i])
-            except:
-                print('No such playlist, or other bad things happened while splitting the data')
-        else:  # we are in not ordered playlist, so we just add it to the dictionary
-            try:
-                playlist_to_order = test_data['track_id'].loc[test_data['playlist_id'] == k]
-                for i in playlist_to_order:
-                    temp_list.append([k, i])
-            except:
-                print("No such playlist, splitting the data")
-
-    # print(temp_dictionary)
-    test_data_proper = pd.DataFrame(temp_list, columns=['playlist_id', 'track_id'])
-    # print(test_data.head(5))
-    # print(test_data_proper.head(5))
-    print("Data correctly splitted")
-    '''
 
     train_data = pd.concat([full_dataset, test_data, test_data]).drop_duplicates(keep=False)
 
@@ -500,3 +511,13 @@ def similarityMatrixTopK(item_weights, forceSparseOutput=True, k=100, verbose=Fa
 
         return W_sparse
 
+
+def cluster_duration(row):
+    if row['duration_sec'] < 60:
+        d = 0
+    elif row['duration_sec'] < 300:
+        d = 1
+    else:
+        d = 2
+    row['cluster_dur'] = d
+    return row

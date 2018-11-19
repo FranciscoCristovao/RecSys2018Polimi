@@ -10,9 +10,9 @@ df = pd.DataFrame([[0, 0, 0]], columns=['knn', 'map', 'shr'])
 top_50 = pd.DataFrame([[0, 0, 0]], columns=['knn', 'map', 'shr'])
 
 plot_graph = False
-shrinkage = 350
+shrinkage = 0
 
-while shrinkage < 800:
+while shrinkage < 600:
     map_list = []
     knn_list = []
     k = 100
@@ -35,7 +35,7 @@ while shrinkage < 800:
         plt.title(shrinkage)
         plt.show()
 
-    save_dataframe('../output/coll_item_item_tuning_2.csv', ',', top_50)
+    save_dataframe('../output/coll_item_item_tuning_df.csv', ',', df)
 
 print(top_50)
 print("End of parameter tuning")

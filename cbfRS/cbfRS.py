@@ -12,7 +12,8 @@ class CbfRS:
 
     train_data = pd.DataFrame()
 
-    def __init__(self, tracks_data, at, k=10, shrinkage=10, similarity='cosine', tf_idf=False):
+    def __init__(self, tracks_data, at, k=10, shrinkage=10, similarity='cosine', tf_idf=True,
+                 weight_album=3, weight_artist=1, use_duration=False, weight_duration=0, num_clusters_duration=3):
 
         self.k = k
         self.at = at
@@ -20,13 +21,21 @@ class CbfRS:
         self.similarity_name = similarity
         self.tf_idf = tf_idf
 
-        data = tracks_data.drop(columns="duration_sec")
-        self.icm = buildICMMatrix(data)
+        # data = tracks_data.drop(columns="duration_sec")
+        # len should be faster, according to this:
+        #  https://stackoverflow.com/questions/15943769/how-do-i-get-the-row-count-of-a-pandas-dataframe
+        self.num_album = len(tracks_data['album_id'].drop_duplicates(keep='first'))
+        self.num_artists = len(tracks_data['artist_id'].drop_duplicates(keep='first'))
+        # num_clusters_duration is decided a priori
+        self.num_cluster_dur = num_clusters_duration
+        self.use_track_duration = use_duration
 
-        print("ICM loaded into the class")
+        self.icm = buildICMMatrix(tracks_data, 1, 1, use_tracks_duration=self.use_track_duration)
+        self.weight_album = weight_album
+        self.weight_artist = weight_artist
+        self.weight_dur = weight_duration
 
     def fit(self, train_data):
-
         print("Fitting...")
 
         if self.tf_idf:
@@ -36,7 +45,18 @@ class CbfRS:
 
         self.train_data = train_data
         self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values
-        self.cosine = Cosine_Similarity(self.icm.T, self.k, self.shrinkage, normalize=True)
+
+        # calculating the row weights for the similarity...
+        weights_album = np.full(self.num_album, self.weight_album)
+        weights_artist = np.full(self.num_artists, self.weight_artist)
+        row_weights = np.concatenate((weights_album, weights_artist), axis=0)
+
+        if self.use_track_duration:
+            weights_clust = np.full(self.num_cluster_dur, self.weight_dur)
+            row_weights = np.concatenate((row_weights, weights_clust), axis=0)
+
+        self.cosine = Cosine_Similarity(self.icm.T, self.k, self.shrinkage, normalize=True,
+                                        row_weights=row_weights)
         # self.cosine = Compute_Similarity_Python(self.icm.T, self.k, self.shrinkage, normalize=True)
         self.sym = check_matrix(self.cosine.compute_similarity(), 'csr')
         self.urm = buildURMMatrix(train_data)
@@ -48,7 +68,7 @@ class CbfRS:
 
         print("STARTING ESTIMATION")
         # add ravel() ?
-        estimated_ratings = csr_matrix(self.urm.dot(self.sym))
+        estimated_ratings = self.get_estimated_ratings()
 
         counter = 0
 

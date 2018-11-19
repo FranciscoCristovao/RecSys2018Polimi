@@ -16,7 +16,7 @@ while shrinkage < 50:
     map_list = []
     knn_list = []
     k = 10
-    while k < 60:
+    while k < 100:
         rs = CbfRS(tracks_data, 10, k, shrinkage, tf_idf=True)
         rs.fit(train_data)
         print('knn: ', k, ' shrinkage: ', shrinkage)
@@ -33,8 +33,34 @@ while shrinkage < 50:
         plt.plot(knn_list, map_list, 'bs')
         plt.title(shrinkage)
         plt.show()
-    save_dataframe('../output/content_w_tuning.csv', ',', top_50)
+    save_dataframe('../output/content_w_tuning_df.csv', ',', df)
 
     shrinkage += 10
 print(top_50)
 print('End of parameter tuning')
+
+
+'''
+from cbfRS.cbfRS import CbfRS
+from loader.loader import save_dataframe, train_data, target_data, full_data, test_data, tracks_data
+from utils.auxUtils import Evaluator
+
+
+evaluator = Evaluator()
+i = 0
+list_map = []
+
+while i < 6:
+    print(i)
+    rs = CbfRS(tracks_data, 10, 10, 10, tf_idf=True, weight_album=i, weight_artist=1)
+    rs.fit(train_data)
+    predictions = rs.recommend(target_data['playlist_id'])
+    map_ = (evaluator.evaluate(predictions, test_data))
+    list_map.append(map_)
+    i += 1
+
+print(list_map)
+save_dataframe('output/content_w_tuning.csv', ',', predictions)
+
+
+'''
