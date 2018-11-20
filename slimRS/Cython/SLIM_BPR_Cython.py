@@ -6,10 +6,6 @@ Created on 07/09/17
 @author: Maurizio Ferrari Dacrema
 """
 
-
-# from Base.Recommender import Recommender
-# from Base.Similarity_Matrix_Recommender import Similarity_Matrix_Recommender
-# from Base.Recommender_utils import similarityMatrixTopK
 from utils.auxUtils import check_matrix, filter_seen, buildURMMatrix, similarityMatrixTopK
 
 import subprocess
@@ -27,9 +23,7 @@ def default_validation_function(self):
 # class SLIM_BPR_Cython(Similarity_Matrix_Recommender, Recommender):
 class SLIM_BPR_Cython():
 
-    RECOMMENDER_NAME = "SLIM_BPR_Recommender"
-
-    def __init__(self, train_data, positive_threshold=1, URM_validation = None,
+    def __init__(self, train_data, URM_validation = None,
                  recompile_cython=True, final_model_sparse_weights=True, train_with_sparse_weights=False,
                  symmetric=True):
 
@@ -39,11 +33,8 @@ class SLIM_BPR_Cython():
         self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values
 
         self.n_users = self.URM_train.shape[0]
-        # todo: modify
         self.n_items = self.URM_train.shape[1]
-        self.n_songs = self.URM_train.shape[1]
         self.normalize = False
-        self.positive_threshold = positive_threshold
 
         self.train_with_sparse_weights = train_with_sparse_weights
         self.sparse_weights = final_model_sparse_weights
@@ -58,7 +49,6 @@ class SLIM_BPR_Cython():
 
         self.URM_mask = self.URM_train.copy()
 
-        # self.URM_mask.data = self.URM_mask.data >= self.positive_threshold
         self.URM_mask.eliminate_zeros()
 
         self.symmetric = symmetric
@@ -78,8 +68,8 @@ class SLIM_BPR_Cython():
             self.runCompilationScript()
             print("Compilation Complete")
 
-    def fit(self, epochs=50, logFile=None, URM_test=None, filterTopPop=False, minRatingsPerUser=1,
-            batch_size=1000, lambda_i=0.0024, lambda_j=0.00025, learning_rate=0.001, topK=600,
+    def fit(self, epochs=30, logFile=None, URM_test=None, filterTopPop=False,
+            batch_size=1000, lambda_i=0.0025, lambda_j=0.00025, learning_rate=0.001, topK=600,
             sgd_mode='sgd', gamma=0.995, beta_1=0.9, beta_2=0.999,
             stop_on_validation=False, lower_validatons_allowed=5, validation_metric="map",
             validation_function=None, validation_every_n=1):
@@ -103,7 +93,6 @@ class SLIM_BPR_Cython():
         print('Cython module imported')
         # Select only positive interactions
         URM_train_positive = self.URM_train.copy()
-        # URM_train_positive.data = URM_train_positive.data >= self.positive_threshold
         URM_train_positive.eliminate_zeros()
 
         self.sgd_mode = sgd_mode
@@ -297,7 +286,7 @@ class SLIM_BPR_Cython():
                 matrix_w = self.W_sparse
             else:
                 matrix_w = self.W
-        return csr_matrix(matrix_w, shape=(self.n_songs, self.n_songs))
+        return csr_matrix(matrix_w, shape=(self.n_items, self.n_items))
 
     def get_estimated_ratings(self):
         matrix_W = self.get_weight_matrix()
@@ -318,7 +307,7 @@ class SLIM_BPR_Cython():
                 matrix_W = self.W
 
         # what dimension does W have?
-        self.W = csr_matrix(matrix_W, shape=(self.n_songs, self.n_songs))
+        self.W = csr_matrix(matrix_W, shape=(self.n_items, self.n_items))
         estimated_ratings = check_matrix(self.URM_train.dot(self.W), 'csr')
 
         counter = 0

@@ -34,7 +34,7 @@ class HybridRS:
 
         print("All systems are fitted")
 
-    def recommend(self, playlist_ids, alpha=1, beta=4, gamma=4):
+    def recommend(self, playlist_ids, alpha=1, beta=5, gamma=7):
         print("Recommending...")
 
         final_prediction = {}

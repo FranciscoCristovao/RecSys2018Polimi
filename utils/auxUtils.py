@@ -406,11 +406,13 @@ def similarityMatrixTopK(item_weights, forceSparseOutput = True, k=100, verbose 
             column_data = item_weights.data[start_position:end_position]
             column_row_index = item_weights.indices[start_position:end_position]
 
-            idx_sorted = np.argsort(column_data)  # sort by column
+            non_zero_data = column_data!=0
+
+            idx_sorted = np.argsort(column_data[non_zero_data])  # sort by column
             top_k_idx = idx_sorted[-k:]
 
-            data.extend(column_data[top_k_idx])
-            rows_indices.extend(column_row_index[top_k_idx])
+            data.extend(column_data[non_zero_data][top_k_idx])
+            rows_indices.extend(column_row_index[non_zero_data][top_k_idx])
 
 
         cols_indptr.append(len(data))

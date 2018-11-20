@@ -13,6 +13,28 @@ from matrixFactorizationRS.matrix_factorizationRS import MF_BPR_Cython
 from slimRS.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
 import matplotlib.pyplot as plt
 
+map_list = []
+epoch_list = []
+epochs = [100, 130, 160, 190]
+rs = SLIM_BPR_Cython(train_data)
+for e in epochs:
+    rs.fit(epochs=e)
+    evaluator = Evaluator()
+    predictions = rs.recommend(target_data["playlist_id"])
+    map_ = evaluator.evaluate(predictions, test_data)
+    map_list.append(map_)
+    epoch_list.append(e)
+# save_dataframe('output/slim_cython.csv', ',', predictions)
+
+plt.plot(epoch_list, map_list)
+
+plt.xlabel('epochs')
+plt.ylabel('map')
+plt.title('Epochs Tunning')
+plt.grid(True)
+plt.show()
+
+
 '''
 # Hybrid (cbf - colf)
 
@@ -25,7 +47,7 @@ evaluator.evaluate(predictions, test_data)
 
 save_dataframe('output/hybrid_output.csv', ',', predictions)
 '''
-
+'''
 rs = HybridRS(tracks_data, 10, tf_idf=True)
 evaluator = Evaluator()
 rs.fit(train_data)
@@ -56,7 +78,7 @@ while beta <= 10:
 
 predictions = rs.recommend(target_data['playlist_id'], alpha, beta, gamma)
 temp_map = evaluator.evaluate(predictions, test_data)
-
+'''
 '''
 rs = HybridRS(tracks_data, tf_idf=True)
 evaluator = Evaluator()
@@ -102,14 +124,6 @@ for k in target_data['playlist_id']:
     final_prediction.update({k: string})
 predictions = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
 evaluator.evaluate(predictions, test_data)
-'''
-'''
-rs = SLIM_BPR_Cython(train_data)
-rs.fit()
-evaluator = Evaluator()
-predictions = rs.recommend(target_data["playlist_id"])
-evaluator.evaluate(predictions, test_data)
-save_dataframe('output/slim_cython.csv', ',', predictions)
 '''
 '''
 # Hybrid Coll_i_i CBF
