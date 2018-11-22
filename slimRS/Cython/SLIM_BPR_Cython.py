@@ -15,10 +15,8 @@ import os, sys, time, platform
 import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix
-
-
-def default_validation_function(self):
-    return self.evaluateRecommendations(self.URM_validation)
+from utils.auxUtils import Evaluator
+# from slimRS.recommender import Recommender
 
 
 # class SLIM_BPR_Cython(Similarity_Matrix_Recommender, Recommender):
@@ -69,11 +67,11 @@ class SLIM_BPR_Cython():
             self.runCompilationScript()
             print("Compilation Complete")
 
-    def fit(self, epochs=160, logFile=None, URM_test=None, filterTopPop=False,
+    def fit(self, epochs=160, logFile=None, playlist_ids=None, filterTopPop=False,
             batch_size=1000, lambda_i=0.0025, lambda_j=0.00025, learning_rate=0.001, topK=200,
             sgd_mode='sgd', gamma=0.995, beta_1=0.9, beta_2=0.999,
-            stop_on_validation=False, lower_validatons_allowed=5, validation_metric="map",
-            validation_function=None, validation_every_n=1):
+            stop_on_validation=False, lower_validatons_allowed=10, validation_metric="map",
+            validation_function=None, validation_every_n=10):
         '''
         :param epochs:
         :param filterTopPop:
@@ -124,7 +122,7 @@ class SLIM_BPR_Cython():
             self.validation_every_n = np.inf
 
         if validation_function is None:
-            validation_function = default_validation_function
+            validation_function = self.default_validation_function
 
         print('After validation')
 
@@ -161,7 +159,7 @@ class SLIM_BPR_Cython():
 
                 self.get_S_incremental_and_set_W()
 
-                results_run = validation_function(self)
+                results_run = validation_function(playlist_ids)
 
                 print("SLIM_BPR_Cython: {}".format(results_run))
 
@@ -169,7 +167,7 @@ class SLIM_BPR_Cython():
                 # If validation is required, check whether result is better
                 if stop_on_validation:
 
-                    current_metric_value = results_run[validation_metric]
+                    current_metric_value = results_run  # results_run[validation_metric]
 
                     if best_validation_metric is None or best_validation_metric < current_metric_value:
 
@@ -199,7 +197,6 @@ class SLIM_BPR_Cython():
         print('Finishing...')
         sys.stdout.flush()
 
-
     def writeCurrentConfig(self, currentEpoch, results_run, logFile):
 
         current_config = {'lambda_i': self.lambda_i,
@@ -218,8 +215,6 @@ class SLIM_BPR_Cython():
             logFile.write("Test case: {}, Results {}\n".format(current_config, results_run))
             # logFile.write("Weights: {}\n".format(str(list(self.weights))))
             logFile.flush()
-
-
 
     def runCompilationScript(self):
 
@@ -335,6 +330,10 @@ class SLIM_BPR_Cython():
         df = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
         # print(df)
         return df
+
+    def default_validation_function(self, playlist_ids):
+        e = Evaluator()
+        return e.evaluate(self.recommend(playlist_ids), self.URM_validation)
 
     def evaluateRecommendations(self, URM_test, at=10, minRatingsPerUser=1, exclude_seen=True,
                                 mode='parallel', filterTopPop = False,
