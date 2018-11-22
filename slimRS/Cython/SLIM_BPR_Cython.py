@@ -80,7 +80,7 @@ class SLIM_BPR_Cython():
         :param batch_size:
         :param lambda_i: parameter for weighting the SLIM, proposed by paper: 0.0025
         :param lambda_j: parameter for weighting the SLIM, proposed by paper: 0.00025
-        :param learning_rate: how much the algorighm is learning for each epoch
+        :param learning_rate: how much the algorithm is learning for each epoch
         :param topK: knn similarity
         :param sgd_mode: adagrad, rmsprop, adam, sgd
         :param gamma: rmsprop value

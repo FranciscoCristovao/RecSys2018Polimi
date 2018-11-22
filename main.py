@@ -16,30 +16,26 @@ import matplotlib.pyplot as plt
 
 
 map_list = []
-d_list = []
-delta = [1, 1.5, 2, 3, 4, 6, 10]
+t_list = []
 evaluator = Evaluator()
 rs = HybridRS(tracks_data)
-rs.fit(full_data)
-predictions = rs.recommend(target_data["playlist_id"])
-evaluator.evaluate(predictions, test_data)
-save_dataframe('output/hybrid_slim_cython.csv', ',', predictions)
-'''
-for d in delta:
-    predictions = rs.recommend(target_data["playlist_id"], delta=d)
+rs.fit(train_data)
+theta = [0.5, 0.8, 1, 1.2, 1.4, 1.6, 2, 5]
+for t in theta:
+    predictions = rs.recommend(target_data["playlist_id"], theta=t)
     map_ = evaluator.evaluate(predictions, test_data)
-    print("DELTA: ", d)
+    print("THETA: ", t)
     print("map: ", map_)
     map_list.append(map_)
-    d_list.append(d)
+    t_list.append(t)
 
-plt.plot(d_list, map_list)
-plt.xlabel('Delta')
+plt.plot(t_list, map_list)
+plt.xlabel('Theta')
 plt.ylabel('map')
-plt.title('Delta Tunning')
+plt.title('Theta Tuning')
 plt.grid(True)
 plt.show()
-'''
+
 '''
 for b in beta:
     print("Beta: ", b)

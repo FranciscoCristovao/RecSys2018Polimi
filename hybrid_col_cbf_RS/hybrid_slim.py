@@ -28,7 +28,7 @@ class HybridRS:
         self.col_i_i_recommender = ColBfIIRS(self.at, self.k_i_i, self.shrinkage_i_i, tf_idf=self.tf_idf)
         self.col_u_u_recommender = ColBfUURS(self.at, self.k_u_u, self.shrinkage_u_u, tf_idf=self.tf_idf)
 
-    def fit(self, train_data, lambda_i=0.0025, lambda_j=0.00025, topK=200, sgd_mode='sgd'):
+    def fit(self, train_data, lambda_i=0.001, lambda_j=0.001, topK=200, sgd_mode='sgd'):
         print('Fitting...')
 
         self.urm = buildURMMatrix(train_data)
@@ -37,9 +37,9 @@ class HybridRS:
         self.col_u_u_recommender.fit(train_data)
         self.cbf_recommender.fit(train_data)
         self.slim_recommender = SLIM_BPR_Cython(train_data)
-        self.slim_recommender.fit(lambda_i=0.001, lambda_j=0.001, topK=200, sgd_mode=sgd_mode)
+        self.slim_recommender.fit(lambda_i=lambda_i, lambda_j=lambda_j, topK=topK, sgd_mode=sgd_mode)
 
-    def recommend(self, playlist_ids, alpha=1, beta=5, gamma=7, delta=1, filter_top_pop=False):
+    def recommend(self, playlist_ids, alpha=1, beta=5, gamma=7, theta=1, delta=10, filter_top_pop=False):
         print("Recommending... Am I filtering top_top songs?", filter_top_pop)
 
         final_prediction = {}
@@ -51,12 +51,24 @@ class HybridRS:
         e_r_col_u_u = self.col_u_u_recommender.get_estimated_ratings()
         e_r_slim_bpr = self.slim_recommender.get_estimated_ratings()
         '''
+        print("CBF")
         print(e_r_cbf[7].data[e_r_cbf[7].data.argsort()[::-1]])
+        print("COL_I_I")
         print(e_r_col_i_i[7].data[e_r_col_i_i[7].data.argsort()[::-1]])
+        print("COL_U_U")
         print(e_r_col_u_u[7].data[e_r_col_u_u[7].data.argsort()[::-1]])
+        print("SLIM")
+        print(e_r_slim_bpr[7].data[e_r_slim_bpr[7].data.argsort()[::-1]])
         '''
         estimated_ratings_final = e_r_col_u_u.multiply(alpha) + e_r_col_i_i.multiply(beta) + e_r_cbf.multiply(gamma)
-        estimated_ratings_final = estimated_ratings_final.multiply(0.1) + e_r_slim_bpr.multiply(delta)
+
+        # print("Hybrid")
+        # print(estimated_ratings_final[7].data[estimated_ratings_final[7].data.argsort()[::-1]])
+
+        estimated_ratings_final = estimated_ratings_final.multiply(theta) + e_r_slim_bpr.multiply(delta)
+
+        # print("FINAL")
+        # print(estimated_ratings_final[7].data[estimated_ratings_final[7].data.argsort()[::-1]])
 
         for k in playlist_ids:
             try:
