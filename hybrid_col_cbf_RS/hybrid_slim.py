@@ -56,7 +56,7 @@ class HybridRS:
         print(e_r_col_u_u[7].data[e_r_col_u_u[7].data.argsort()[::-1]])
         '''
         estimated_ratings_final = e_r_col_u_u.multiply(alpha) + e_r_col_i_i.multiply(beta) + e_r_cbf.multiply(gamma)
-        estimated_ratings_final = estimated_ratings_final.multiply(0.1) + e_r_slim_bpr.multiply(delta)
+        estimated_ratings_final = estimated_ratings_final.multiply(1) + e_r_slim_bpr.multiply(10)
 
         for k in playlist_ids:
             try:
