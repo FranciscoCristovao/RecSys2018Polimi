@@ -12,28 +12,23 @@ class HybridRS:
 
     train_data = pd.DataFrame()
 
-    def __init__(self, tracks_data, at, k_con=10, k_col_u_u=200, k_col_i_i=700,
-                 shrinkage_con=10, shrinkage_col_u_u=50, shrinkage_col_i_i=450, similarity='cosine', tf_idf=True):
+    def __init__(self, tracks_data, at=10, k_cbf=10, shrinkage_cbf=10, k_i_i=700, shrinkage_i_i=200,\
+                k_u_u=200, shrinkage_u_u=50, similarity='cosine', tf_idf=True):
 
-        # hybrid parameters
-        self.k_con = k_con
-        self.k_col_u_u = k_col_u_u
-        self.k_col_i_i = k_col_i_i
-        self.shrinkage_con = shrinkage_con
-        self.shrinkage_col_u_u = shrinkage_col_u_u
-        self.shrinkage_col_i_i = shrinkage_col_i_i
-        self.tf_idf = tf_idf
-
+        self.k_cbf = k_cbf
+        self.k_i_i = k_i_i
+        self.k_u_u = k_u_u
         self.at = at
-        self.similarity_name = similarity
+        self.shrinkage_cbf = shrinkage_cbf
+        self.shrinkage_i_i = shrinkage_i_i
+        self.shrinkage_u_u = shrinkage_u_u
+        self.similarity = similarity
+        self.tf_idf = tf_idf
+        self.cbf_recommender = CbfRS(tracks_data, self.at, self.k_cbf, self.shrinkage_cbf, tf_idf=self.tf_idf)
+        self.col_i_i_recommender = ColBfIIRS(self.at, self.k_i_i, self.shrinkage_i_i, tf_idf=self.tf_idf)
+        self.col_u_u_recommender = ColBfUURS(self.at, self.k_u_u, self.shrinkage_u_u, tf_idf=self.tf_idf)
 
-        self.cbf_recommender = CbfRS(tracks_data, self.at, self.k_con, self.shrinkage_con, tf_idf=self.tf_idf)
-        self.col_i_i_recommender = ColBfIIRS(self.at, self.k_col_i_i, self.shrinkage_col_i_i, tf_idf=self.tf_idf)
-        self.col_u_u_recommender = ColBfUURS(self.at, self.k_col_u_u, shrinkage_col_u_u, tf_idf=self.tf_idf)
-
-        print("ICM loaded into the class")
-
-    def fit(self, train_data, sgd_mode='sgd'):
+    def fit(self, train_data, lambda_i=0.0025, lambda_j=0.00025, topK=200, sgd_mode='sgd'):
         print('Fitting...')
 
         self.urm = buildURMMatrix(train_data)
@@ -41,12 +36,10 @@ class HybridRS:
         self.col_i_i_recommender.fit(train_data)
         self.col_u_u_recommender.fit(train_data)
         self.cbf_recommender.fit(train_data)
+        self.slim_recommender = SLIM_BPR_Cython(train_data)
+        self.slim_recommender.fit(lambda_i=0.001, lambda_j=0.001, topK=200, sgd_mode=sgd_mode)
 
-        # todo: handle slim init inside init
-        self.slim_rs = SLIM_BPR_Cython(train_data)
-        self.slim_rs.fit(sgd_mode=sgd_mode)
-
-    def recommend(self, playlist_ids, alpha=1, beta=5, gamma=7, delta=0.9, filter_top_pop=True):
+    def recommend(self, playlist_ids, alpha=1, beta=5, gamma=7, delta=1, filter_top_pop=False):
         print("Recommending... Am I filtering top_top songs?", filter_top_pop)
 
         final_prediction = {}
@@ -56,13 +49,14 @@ class HybridRS:
         e_r_cbf = self.cbf_recommender.get_estimated_ratings()
         e_r_col_i_i = self.col_i_i_recommender.get_estimated_ratings()
         e_r_col_u_u = self.col_u_u_recommender.get_estimated_ratings()
-        e_r_slim_bpr = self.slim_rs.get_estimated_ratings()
+        e_r_slim_bpr = self.slim_recommender.get_estimated_ratings()
         '''
         print(e_r_cbf[7].data[e_r_cbf[7].data.argsort()[::-1]])
         print(e_r_col_i_i[7].data[e_r_col_i_i[7].data.argsort()[::-1]])
         print(e_r_col_u_u[7].data[e_r_col_u_u[7].data.argsort()[::-1]])
         '''
         estimated_ratings_final = e_r_col_u_u.multiply(alpha) + e_r_col_i_i.multiply(beta) + e_r_cbf.multiply(gamma)
+        estimated_ratings_final = estimated_ratings_final.multiply(0.1) + e_r_slim_bpr.multiply(delta)
 
         for k in playlist_ids:
             try:
@@ -72,26 +66,8 @@ class HybridRS:
                 aux = row.indices[indx]
                 user_playlist = self.urm[k]
 
-                slim_bpr_row = e_r_slim_bpr[k]
-                slim_bpr_index = slim_bpr_row.data.argsort()[::-1]
-                slim_bpr_aux = slim_bpr_row.indices[slim_bpr_index]
-                slim_bpr_row_filtered = filter_seen(slim_bpr_aux, user_playlist)
-
                 aux = np.concatenate((aux, self.top_pop_songs), axis=None)
-
-                top_songs = filter_seen(aux, user_playlist)
-
-                if filter_top_pop:
-                    top_songs = list(filter_seen_array(top_songs, self.top_pop_songs)[:int(round(self.at*delta))])
-                else:
-                    top_songs = list(top_songs[:int(round(self.at*delta))])
-
-                i = 0
-                while len(top_songs) < 10 and i < len(slim_bpr_row_filtered):
-                    el = slim_bpr_row_filtered[i]
-                    if el not in top_songs:
-                        top_songs.append(el)
-                    i += 1
+                top_songs = filter_seen(aux, user_playlist)[:self.at]
 
                 string = ' '.join(str(e) for e in top_songs)
                 final_prediction.update({k: string})
@@ -117,7 +93,7 @@ class HybridRS:
         e_r_cbf = self.cbf_recommender.get_estimated_ratings()
         e_r_col_i_i = self.col_i_i_recommender.get_estimated_ratings()
         e_r_col_u_u = self.col_u_u_recommender.get_estimated_ratings()
-        e_r_slim_bpr = self.slim_rs.get_estimated_ratings()
+        e_r_slim_bpr = self.slim_recommender.get_estimated_ratings()
 
         estimated_ratings_final = e_r_col_u_u.multiply(alpha) + e_r_col_i_i.multiply(beta) + e_r_cbf.multiply(gamma)
 
@@ -191,7 +167,7 @@ class HybridRS:
 
         e_r_cbf = []
         gc.collect()
-        e_r_slim_bpr = self.slim_rs.get_estimated_ratings()
+        e_r_slim_bpr = self.slim_recommender.get_estimated_ratings()
         '''
         print(e_r_cbf[7].data[e_r_cbf[7].data.argsort()[::-1]])
         print(e_r_col_i_i[7].data[e_r_col_i_i[7].data.argsort()[::-1]])

@@ -5,8 +5,9 @@ Created on 07/09/17
 
 @author: Maurizio Ferrari Dacrema
 """
+import multiprocessing
 
-from utils.auxUtils import check_matrix, filter_seen, buildURMMatrix, similarityMatrixTopK
+from utils.auxUtils import check_matrix, filter_seen, buildURMMatrix, similarityMatrixTopK, Evaluator
 
 import subprocess
 import os, sys, time, platform
@@ -68,8 +69,8 @@ class SLIM_BPR_Cython():
             self.runCompilationScript()
             print("Compilation Complete")
 
-    def fit(self, epochs=30, logFile=None, URM_test=None, filterTopPop=False,
-            batch_size=1000, lambda_i=0.0025, lambda_j=0.00025, learning_rate=0.001, topK=600,
+    def fit(self, epochs=160, logFile=None, URM_test=None, filterTopPop=False,
+            batch_size=1000, lambda_i=0.0025, lambda_j=0.00025, learning_rate=0.001, topK=200,
             sgd_mode='sgd', gamma=0.995, beta_1=0.9, beta_2=0.999,
             stop_on_validation=False, lower_validatons_allowed=5, validation_metric="map",
             validation_function=None, validation_every_n=1):
@@ -335,3 +336,136 @@ class SLIM_BPR_Cython():
         # print(df)
         return df
 
+    def evaluateRecommendations(self, URM_test, at=10, minRatingsPerUser=1, exclude_seen=True,
+                                mode='parallel', filterTopPop = False,
+                                filterCustomItems = np.array([], dtype=np.int),
+                                filterCustomUsers = np.array([], dtype=np.int)):
+        """
+        Speed info:
+        - Sparse weights: batch mode is 2x faster than sequential
+        - Dense weights: batch and sequential speed are equivalent
+
+
+        :param URM_test_new:            URM to be used for testing
+        :param at: 10                   Length of the recommended items
+        :param minRatingsPerUser: 1     Users with less than this number of interactions will not be evaluated
+        :param exclude_seen: True       Whether to remove already seen items from the recommended items
+
+        :param mode: 'sequential', 'parallel', 'batch'
+        :param filterTopPop: False or decimal number        Percentage of items to be removed from recommended list and testing interactions
+        :param filterCustomItems: Array, default empty           Items ID to NOT take into account when recommending
+        :param filterCustomUsers: Array, default empty           Users ID to NOT take into account when recommending
+        :return:
+        """
+
+        if len(filterCustomItems) == 0:
+            self.filterCustomItems = False
+        else:
+            self.filterCustomItems = True
+            self.filterCustomItems_ItemsID = np.array(filterCustomItems)
+
+        '''
+        if filterTopPop != False:
+
+            self.filterTopPop = True
+
+            _,_, self.filterTopPop_ItemsID = removeTopPop(self.URM_train, URM_2 = URM_test_new, percentageToRemove=filterTopPop)
+
+            print("Filtering {}% TopPop items, count is: {}".format(filterTopPop*100, len(self.filterTopPop_ItemsID)))
+
+            # Zero-out the items in order to be considered irrelevant
+            URM_test_new = check_matrix(URM_test_new, format='lil')
+            URM_test_new[:,self.filterTopPop_ItemsID] = 0
+            URM_test_new = check_matrix(URM_test_new, format='csr')
+
+        '''
+
+        # During testing CSR is faster
+        self.URM_test = check_matrix(URM_test, format='csr')
+        self.evaluator = Evaluator()
+        self.URM_train = check_matrix(self.URM_train, format='csr')
+        self.at = at
+        self.minRatingsPerUser = minRatingsPerUser
+        self.exclude_seen = exclude_seen
+
+
+        nusers = self.URM_test.shape[0]
+
+        # Prune users with an insufficient number of ratings
+        rows = self.URM_test.indptr
+        numRatings = np.ediff1d(rows)
+        mask = numRatings >= minRatingsPerUser
+        usersToEvaluate = np.arange(nusers)[mask]
+
+        if len(filterCustomUsers) != 0:
+            print("Filtering {} Users".format(len(filterCustomUsers)))
+            usersToEvaluate = set(usersToEvaluate) - set(filterCustomUsers)
+
+        usersToEvaluate = list(usersToEvaluate)
+
+
+
+        if mode=='sequential':
+            return self.evaluateRecommendationsSequential(usersToEvaluate)
+        elif mode=='parallel':
+            return self.evaluateRecommendationsParallel(usersToEvaluate)
+        elif mode=='batch':
+            return self.evaluateRecommendationsBatch(usersToEvaluate)
+        elif mode=='cython':
+             return self.evaluateRecommendationsCython(usersToEvaluate)
+        # elif mode=='random-equivalent':
+        #     return self.evaluateRecommendationsRandomEquivalent(usersToEvaluate)
+        else:
+            raise ValueError("Mode '{}' not available".format(mode))
+
+    def evaluateOneUser(self, test_user):
+
+        # Being the URM CSR, the indices are the non-zero column indexes
+        # relevant_items = self.URM_test_relevantItems[test_user]
+        relevant_items = self.URM_test[test_user].indices
+
+        # this will rank top n items
+        recommended_items = self.recommend(test_user)
+
+        is_relevant = np.in1d(recommended_items, relevant_items, assume_unique=True)
+
+        # evaluate the recommendation list with ranking metrics ONLY
+
+        map_ = self.evaluator.map(is_relevant, relevant_items)
+
+        return map_
+
+    def evaluateRecommendationsParallel(self, usersToEvaluate):
+
+        print("Evaluation of {} users begins".format(len(usersToEvaluate)))
+
+        pool = multiprocessing.Pool(processes=multiprocessing.cpu_count(), maxtasksperchild=1)
+        resultList = pool.map(self.evaluateOneUser, usersToEvaluate)
+
+        # for i, _ in enumerate(pool.imap_unordered(self.evaluateOneUser, usersToEvaluate), 1):
+        #    if(i%1000 == 0):
+        #        sys.stderr.write('\rEvaluated {} users ({0:%})'.format(i , i / usersToEvaluate))
+
+        # Close the pool to avoid memory leaks
+        pool.close()
+
+        n_eval = len(usersToEvaluate)
+        map_= 0.0
+
+        # Looping is slightly faster then using the numpy vectorized approach, less data transformation
+        for result in resultList:
+            map_ += result[0]
+
+        if (n_eval > 0):
+
+            map_ /= n_eval
+
+
+        else:
+            print("WARNING: No users had a sufficient number of relevant items")
+
+        results_run = {}
+
+        results_run["map"] = map_
+
+        return (results_run)

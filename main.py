@@ -11,30 +11,59 @@ from collaborative_filtering_RS.col_item_itemRS import ColBfIIRS
 from hybrid_col_cbf_RS.hybridRS import HybridRS
 from matrixFactorizationRS.matrix_factorizationRS import MF_BPR_Cython
 from slimRS.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
+from hybrid_col_cbf_RS.hybrid_slim import HybridRS
 import matplotlib.pyplot as plt
 
+
 map_list = []
-epoch_list = []
-epochs = [100, 130, 160, 190]
-rs = SLIM_BPR_Cython(train_data)
-for e in epochs:
-    rs.fit(epochs=e)
-    evaluator = Evaluator()
-    predictions = rs.recommend(target_data["playlist_id"])
+d_list = []
+delta = [1, 1.5, 2, 3, 4, 6, 10]
+evaluator = Evaluator()
+rs = HybridRS(tracks_data)
+rs.fit(full_data)
+predictions = rs.recommend(target_data["playlist_id"])
+evaluator.evaluate(predictions, test_data)
+save_dataframe('output/hybrid_slim_cython.csv', ',', predictions)
+'''
+for d in delta:
+    predictions = rs.recommend(target_data["playlist_id"], delta=d)
     map_ = evaluator.evaluate(predictions, test_data)
+    print("DELTA: ", d)
+    print("map: ", map_)
     map_list.append(map_)
-    epoch_list.append(e)
-# save_dataframe('output/slim_cython.csv', ',', predictions)
+    d_list.append(d)
 
-plt.plot(epoch_list, map_list)
-
-plt.xlabel('epochs')
+plt.plot(d_list, map_list)
+plt.xlabel('Delta')
 plt.ylabel('map')
-plt.title('Epochs Tunning')
+plt.title('Delta Tunning')
 plt.grid(True)
 plt.show()
+'''
+'''
+for b in beta:
+    print("Beta: ", b)
 
+    predictions = rs.recommend(target_data["playlist_id"], beta=b)
+    map_ = evaluator.evaluate(predictions, test_data)
+    map_list.append(map_)
+    b_list.append(b)
 
+plt.plot(b_list, map_list)
+plt.xlabel('Beta (item+slim weight)')
+plt.ylabel('map')
+plt.title('Beta Tunning')
+plt.grid(True)
+plt.show()
+'''
+'''
+rs = SLIM_BPR_Cython(train_data)
+rs.fit(lambda_i=0.001, lambda_j=0.001)
+predictions = rs.recommend(target_data["playlist_id"])
+evaluator = Evaluator()
+evaluator.evaluate(predictions, test_data)
+save_dataframe('output/slim_cython.csv', ',', predictions)
+'''
 '''
 # Hybrid (cbf - colf)
 
@@ -100,32 +129,6 @@ evaluator.evaluate(predictions, test_data)
 save_dataframe('output/cbf_output.csv', ',', predictions)
 '''
 '''
-values = [20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300]
-for i in values:
-    print("Shrink: ", i)
-    rs = ColBfIIRS(10, k=280, shrinkage=i, tf_idf=True)
-    rs.fit(train_data)
-
-    evaluator = Evaluator()
-    predictions = rs.recommend(target_data["playlist_id"])
-    evaluator.evaluate(predictions, test_data)
-
-
-save_dataframe('output/col_i_i_output.csv', ',', predictions)
-'''
-'''
-rs = MF_BPR_Cython(train_data)
-rs.fit()
-evaluator = Evaluator()
-final_prediction = {}
-for k in target_data['playlist_id']:
-    top_songs = rs.recommend(k)
-    string = ' '.join(str(e) for e in top_songs)
-    final_prediction.update({k: string})
-predictions = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
-evaluator.evaluate(predictions, test_data)
-'''
-'''
 # Hybrid Coll_i_i CBF
 evaluator = Evaluator()
 i = 0
@@ -149,21 +152,7 @@ while k < 400:
     k+=20
 save_dataframe('output/cb_u_u_output.csv', ',', predictions)
 '''
-'''
-# SLIM-BPR
-rs = SLIM_BPR_Recommender(train_data)
-rs.fit()
-final_prediction = {}
-for k in target_data['playlist_id']:
-    print("Recomending for playlist: ", k)
-    top_songs = rs.recommend(k, 10, True)
-    string = ' '.join(str(e) for e in top_songs)
-    final_prediction.update({k: string})
-predictions = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
-evaluator = Evaluator()
-evaluator.evaluate(predictions, test_data)
-save_dataframe('output/slim_output.csv', ',', predictions)
-'''
+
 '''
 rs = FunkSVD(train_data)
 rs.fit()
@@ -174,33 +163,6 @@ for k in target_data['playlist_id']:
     string = ' '.join(str(e) for e in top_songs)
     final_prediction.update({k: string})
 predictions = pd.DataFrame(list(final_prediction.items()), columns=['qplaylist_id', 'track_ids'])
-evaluator = Evaluator()
-evaluator.evaluate(predictions, test_data)
-save_dataframe('output/funksvd_output.csv', ',', predictions)
-'''
-'''
-urm = buildURMMatrix(full_data)
-urm_train = buildURMMatrix(train_data)
-model = LightFM(loss='warp')
-model.fit(urm_train, epochs=30)
-final_prediction = {}
-print(urm.shape)
-print(urm_train.shape)
-counter = 0
-tracks = urm_train.indices
-for k in target_data['playlist_id']:
-    print("Playlist: ", k, " Counter: ", counter)
-    row = model.predict(k, tracks)
-    aux = row.argsort()[::-1]
-    user_playlist = urm[k]
-    top_songs = filter_seen(aux, user_playlist)[:10]
-    print(top_songs)
-    string = ' '.join(str(e) for e in top_songs)
-    final_prediction.update({k: string})
-    if (counter % 100) == 0:
-        print("Playlist num", counter, "/10000")
-    counter += 1
-predictions = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
 evaluator = Evaluator()
 evaluator.evaluate(predictions, test_data)
 save_dataframe('output/funksvd_output.csv', ',', predictions)
