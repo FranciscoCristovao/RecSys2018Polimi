@@ -12,9 +12,17 @@ from hybrid_col_cbf_RS.hybridRS import HybridRS
 from matrixFactorizationRS.matrix_factorizationRS import MF_BPR_Cython
 from slimRS.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
 from hybrid_col_cbf_RS.hybrid_slim import HybridRS
+from svdRS.pureSVD import PureSVDRecommender
 import matplotlib.pyplot as plt
 
 
+evaluator = Evaluator()
+rs = PureSVDRecommender(train_data)
+rs.fit()
+predictions = rs.recommend(target_data['playlist_id'])
+evaluator.evaluate(predictions, test_data)
+
+'''
 map_list = []
 t_list = []
 evaluator = Evaluator()
@@ -35,7 +43,29 @@ plt.ylabel('map')
 plt.title('Theta Tuning')
 plt.grid(True)
 plt.show()
+'''
+'''
+map_list = []
+f_list = []
 
+evaluator = Evaluator()
+rs = PureSVDRecommender(train_data)
+factor = 450
+while factor <= 550:
+    rs.fit(num_factors=factor)
+    predictions = rs.recommend(target_data['playlist_id'])
+    map_ = evaluator.evaluate(predictions, test_data)
+    map_list.append(map_)
+    f_list.append(factor)
+    factor += 20
+
+plt.plot(f_list, map_list)
+plt.xlabel('N Factors')
+plt.ylabel('map')
+plt.title('N Factors Tuning')
+plt.grid(True)
+plt.show()
+'''
 '''
 for b in beta:
     print("Beta: ", b)
@@ -103,63 +133,4 @@ while beta <= 10:
 
 predictions = rs.recommend(target_data['playlist_id'], alpha, beta, gamma)
 temp_map = evaluator.evaluate(predictions, test_data)
-'''
-'''
-rs = HybridRS(tracks_data, tf_idf=True)
-evaluator = Evaluator()
-rs.fit(train_data)
-predictions = rs.recommend(target_data["playlist_id"])
-
-evaluator.evaluate(predictions, test_data)
-save_dataframe('output/hybrid_output.csv', ',', predictions)
-'''
-'''
-rs = CbfRS(tracks_data, 10, 10, 10, tf_idf=True)
-rs.fit(train_data)
-
-evaluator = Evaluator()
-predictions = rs.recommend(target_data["playlist_id"])
-evaluator.evaluate(predictions, test_data)
-
-
-save_dataframe('output/cbf_output.csv', ',', predictions)
-'''
-'''
-# Hybrid Coll_i_i CBF
-evaluator = Evaluator()
-i = 0
-rs = HybridRS(tracks_data, 10, 10, 300, 0, tf_idf=True)
-rs.fit(train_data)
-# best alpha=0.5
-predictions = rs.recommend(target_data["playlist_id"], 0.5)
-evaluator.evaluate(predictions, test_data)
-save_dataframe('output/hybrid_col_i_i_cbf.csv', ',', predictions)
-'''
-
-'''
-k=20
-while k < 400:
-    print("K: ", k)
-    rs = ColBfIIRS(10, k, 0, tf_idf=True)
-    rs.fit(train_data)
-    evaluator = Evaluator()
-    predictions = rs.recommend(target_data["playlist_id"])
-    evaluator.evaluate(predictions, test_data)
-    k+=20
-save_dataframe('output/cb_u_u_output.csv', ',', predictions)
-'''
-
-'''
-rs = FunkSVD(train_data)
-rs.fit()
-final_prediction = {}
-for k in target_data['playlist_id']:
-    print("Recomending for playlist: ", k)
-    top_songs = rs.recommend(k, 10, True)
-    string = ' '.join(str(e) for e in top_songs)
-    final_prediction.update({k: string})
-predictions = pd.DataFrame(list(final_prediction.items()), columns=['qplaylist_id', 'track_ids'])
-evaluator = Evaluator()
-evaluator.evaluate(predictions, test_data)
-save_dataframe('output/funksvd_output.csv', ',', predictions)
 '''
