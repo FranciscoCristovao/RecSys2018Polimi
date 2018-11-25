@@ -8,6 +8,7 @@ Created on 14/06/18
 from utils.auxUtils import check_matrix, buildURMMatrix, filter_seen
 
 from sklearn.decomposition import TruncatedSVD
+from scipy.sparse import csr_matrix
 import scipy.sparse as sps
 import pandas as pd
 import numpy as np
@@ -112,3 +113,10 @@ class PureSVDRecommender():
 
     def get_estimated_ratings(self):
         return self.U.dot(self.s_Vt)
+
+    def build_similarity_matrix(self, playlist_ids):
+        df = pd.DataFrame()
+        for k in playlist_ids:
+            df.loc[k] = self.compute_score_SVD(k)
+
+        return csr_matrix(df)
