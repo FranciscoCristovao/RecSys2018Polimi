@@ -227,6 +227,7 @@ class AsySVD():
     # TODO: add global effects
     # TODO: recommendation for new-users. Update the precomputed profiles online
     def __init__(self,
+                 data,
                  num_factors=50,
                  lrate=0.01,
                  reg=0.015,
@@ -255,6 +256,7 @@ class AsySVD():
         self.init_std = init_std
         self.lrate_decay = lrate_decay
         self.rnd_seed = rnd_seed
+        self.dataset = buildURMMatrix(data)
 
     def __str__(self):
         return "AsySVD(num_factors={}, lrate={}, reg={}, iters={}, init_mean={}, " \
@@ -263,17 +265,19 @@ class AsySVD():
             self.rnd_seed
         )
 
-    def fit(self, R):
-        self.dataset = R
+    def fit(self):
+        print('Fitting...')
+        R = self.dataset
         R = check_matrix(R, 'csr', dtype=np.float32)
         self.X, self.Y = AsySVD_sgd(R, self.num_factors, self.lrate, self.reg, self.iters, self.init_mean,
                                     self.init_std,
                                     self.lrate_decay, self.rnd_seed)
+        print('End of fitting...')
         # precompute the user factors
         M = R.shape[0]
         self.U = np.vstack([AsySVD_compute_user_factors(R[i], self.Y) for i in range(M)])
 
-    def recommend(self, user_id, n=None, exclude_seen=True):
+    def recommend(self, user_id, n=10, exclude_seen=True):
         scores = np.dot(self.X, self.U[user_id].T)
         ranking = scores.argsort()[::-1]
         # rank items
@@ -281,13 +285,11 @@ class AsySVD():
             ranking = self._filter_seen(user_id, ranking)
         return ranking[:n]
 
-
     def _get_user_ratings(self, user_id):
         return self.dataset[user_id]
 
     def _get_item_ratings(self, item_id):
         return self.dataset[:, item_id]
-
 
     def _filter_seen(self, user_id, ranking):
         user_profile = self._get_user_ratings(user_id)

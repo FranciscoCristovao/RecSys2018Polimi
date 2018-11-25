@@ -56,7 +56,6 @@ class PureSVDRecommender():
         try:
 
             item_weights = self.U[user_id_array, :].dot(self.s_Vt)
-
         except:
             pass
         return item_weights
@@ -110,3 +109,6 @@ class PureSVDRecommender():
                     protocol=pickle.HIGHEST_PROTOCOL)
 
         print("{}: Saving complete")
+
+    def get_estimated_ratings(self):
+        return self.U.dot(self.s_Vt)

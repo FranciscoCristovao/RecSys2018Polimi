@@ -146,7 +146,7 @@ def AsySVD_sgd(R, num_factors=50, lrate=0.01, reg=0.015, iters=10, init_mean=0.0
     cdef np.ndarray[np.float32_t, ndim=1] X_j = np.zeros(num_factors, dtype=np.float32)
     cdef np.ndarray[np.float32_t, ndim=1] Y_acc = np.zeros(num_factors, dtype=np.float32)
     cdef np.ndarray[np.float32_t, ndim=2] Y_copy = np.zeros_like(Y, dtype=np.float32)
-
+    print('before sgd')
     #
     # Stochastic Gradient Descent starts here
     #
@@ -180,6 +180,8 @@ def AsySVD_sgd(R, num_factors=50, lrate=0.01, reg=0.015, iters=10, init_mean=0.0
             X[j] += lrate * (err * Y_acc - reg * X_j)
             # copy the current item preference factors
             Y_copy = Y.copy()
+            if n % 10000 == 0:
+                print(n, '/', nnz)
             for l in col_indices[indptr[i]:indptr[i+1]]:
                 Y_l = Y_copy[l]
                 Y[l] += lrate * (err * X_j - reg * Y_l)
