@@ -1,7 +1,6 @@
 import time
 
 from parameterTunning.AbstractClassSearch import DictionaryKeys
-from slimRS.slimRS import SLIM_BPR_Recommender
 from loader.loader import save_dataframe, train_data, target_data, test_data, tracks_data
 from utils.auxUtils import Evaluator, buildURMMatrix, filter_seen
 import pandas as pd

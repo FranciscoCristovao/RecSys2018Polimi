@@ -6,6 +6,8 @@ from slimRS.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
 from cbfRS.cbfRS import CbfRS
 from collaborative_filtering_RS.col_item_itemRS import ColBfIIRS
 from collaborative_filtering_RS.col_user_userRS import ColBfUURS
+from svdRS.pureSVD import PureSVDRecommender
+from scipy import sparse
 
 
 class HybridRS:
@@ -38,8 +40,10 @@ class HybridRS:
         self.cbf_recommender.fit(train_data)
         self.slim_recommender = SLIM_BPR_Cython(train_data)
         self.slim_recommender.fit(lambda_i=lambda_i, lambda_j=lambda_j, topK=topK, sgd_mode=sgd_mode)
+        self.pureSVD_recommender = PureSVDRecommender(train_data)
+        self.pureSVD_recommender.fit()
 
-    def recommend(self, playlist_ids, alpha=1, beta=5, gamma=7, delta=10, filter_top_pop=False):
+    def recommend(self, playlist_ids, alpha=1, beta=5, gamma=7, theta=50, delta=10, filter_top_pop=False):
         print("Recommending... Am I filtering top_top songs?", filter_top_pop)
 
         final_prediction = {}
@@ -74,6 +78,9 @@ class HybridRS:
             try:
                 row = estimated_ratings_final[k]
                 # aux contains the indices (track_id) of the most similar songs
+                mf_row = sparse.csr_matrix(self.pureSVD_recommender.compute_score_SVD(k)).multiply(theta)
+                # summing it to the row we are considering
+                row += mf_row
                 indx = row.data.argsort()[::-1]
                 aux = row.indices[indx]
                 user_playlist = self.urm[k]
@@ -225,68 +232,3 @@ class HybridRS:
         # print(df)
         return df
 
-    def recommend_old(self, playlist_ids, alpha=1, beta=5, gamma=7, delta=0.9):
-        print("Recommending...")
-        gc.collect()
-
-        final_prediction = {}
-        counter = 0
-
-        # e_r_ stands for estimated rating
-        e_r_col_i_i = self.col_i_i_recommender.get_estimated_ratings()
-        e_r_col_u_u = self.col_u_u_recommender.get_estimated_ratings()
-
-        estimated_ratings_final = e_r_col_u_u.multiply(alpha) + e_r_col_i_i.multiply(beta)
-        e_r_col_i_i = []
-        e_r_col_u_u = []
-        gc.collect()
-        e_r_cbf = self.cbf_recommender.get_estimated_ratings()
-        estimated_ratings_final += e_r_cbf.multiply(gamma)
-
-        e_r_cbf = []
-        gc.collect()
-        e_r_slim_bpr = self.slim_recommender.get_estimated_ratings()
-        '''
-        print(e_r_cbf[7].data[e_r_cbf[7].data.argsort()[::-1]])
-        print(e_r_col_i_i[7].data[e_r_col_i_i[7].data.argsort()[::-1]])
-        print(e_r_col_u_u[7].data[e_r_col_u_u[7].data.argsort()[::-1]])
-        '''
-
-        for k in playlist_ids:
-            try:
-                row = estimated_ratings_final[k]
-                # aux contains the indices (track_id) of the most similar songs
-                indx = row.data.argsort()[::-1]
-                aux = row.indices[indx]
-                user_playlist = self.urm[k]
-
-                aux = np.concatenate((aux, self.top_pop_songs), axis=None)
-                aux_filtered = list(filter_seen(aux, user_playlist))
-
-                slim_bpr_row = e_r_slim_bpr[k]
-                slim_bpr_index = slim_bpr_row.data.argsort()[::-1]
-                slim_bpr_aux = slim_bpr_row.indices[slim_bpr_index]
-                slim_bpr_row_filtered = filter_seen(slim_bpr_aux, user_playlist)
-
-                top_songs = aux_filtered[:int(round(self.at * (1 - delta)))]
-
-                i = 0
-                while len(top_songs) < 10 and i < len(slim_bpr_row_filtered):
-                    el = slim_bpr_row_filtered[i]
-                    if el not in top_songs:
-                        top_songs.append(el)
-                    i += 1
-
-                string = ' '.join(str(e) for e in top_songs)
-                final_prediction.update({k: string})
-            except IndexError:
-                print("I don't have a value in the test_data")
-
-            if (counter % 1000) == 0:
-                print("Playlist num", counter, "/10000")
-
-            counter += 1
-
-        df = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
-        # print(df)
-        return df

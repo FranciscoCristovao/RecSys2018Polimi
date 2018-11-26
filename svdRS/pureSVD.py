@@ -8,6 +8,7 @@ Created on 14/06/18
 from utils.auxUtils import check_matrix, buildURMMatrix, filter_seen
 
 from sklearn.decomposition import TruncatedSVD
+from scipy.sparse import csr_matrix
 import scipy.sparse as sps
 import pandas as pd
 import numpy as np
@@ -22,6 +23,8 @@ class PureSVDRecommender():
 
         # CSR is faster during evaluation
         self.URM_train = check_matrix(buildURMMatrix(train_data), 'csr')
+        self.n_users = self.URM_train.shape[0]
+        self.n_items = self.URM_train.shape[1]
 
         self.compute_item_score = self.compute_score_SVD
 
@@ -111,4 +114,13 @@ class PureSVDRecommender():
         print("{}: Saving complete")
 
     def get_estimated_ratings(self):
-        return self.U.dot(self.s_Vt)
+        return csr_matrix(pd.DataFrame(self.U.dot(self.s_Vt)), shape=(self.n_users, self.n_items))
+
+    def get_ratings_matrix(self, playlist_ids):
+        df = pd.DataFrame()
+
+        for k in playlist_ids:
+            print(k)
+            df.loc[k] = self.compute_score_SVD(k)
+
+        return csr_matrix(df)
