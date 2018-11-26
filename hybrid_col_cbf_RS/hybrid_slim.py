@@ -39,7 +39,7 @@ class HybridRS:
         self.slim_recommender = SLIM_BPR_Cython(train_data)
         self.slim_recommender.fit(lambda_i=lambda_i, lambda_j=lambda_j, topK=topK, sgd_mode=sgd_mode)
 
-    def recommend(self, playlist_ids, alpha=1, beta=5, gamma=7, theta=1, delta=10, filter_top_pop=False):
+    def recommend(self, playlist_ids, alpha=1, beta=5, gamma=7, delta=10, filter_top_pop=False):
         print("Recommending... Am I filtering top_top songs?", filter_top_pop)
 
         final_prediction = {}
@@ -60,12 +60,12 @@ class HybridRS:
         print("SLIM")
         print(e_r_slim_bpr[7].data[e_r_slim_bpr[7].data.argsort()[::-1]])
         '''
-        estimated_ratings_final = e_r_col_u_u.multiply(alpha) + e_r_col_i_i.multiply(beta) + e_r_cbf.multiply(gamma)
+        estimated_ratings_aux = e_r_col_u_u.multiply(alpha) + e_r_col_i_i.multiply(beta) + e_r_cbf.multiply(gamma)
 
         # print("Hybrid")
         # print(estimated_ratings_final[7].data[estimated_ratings_final[7].data.argsort()[::-1]])
 
-        estimated_ratings_final = estimated_ratings_final.multiply(theta) + e_r_slim_bpr.multiply(delta)
+        estimated_ratings_final = estimated_ratings_aux + e_r_slim_bpr.multiply(delta)
 
         # print("FINAL")
         # print(estimated_ratings_final[7].data[estimated_ratings_final[7].data.argsort()[::-1]])

@@ -7,7 +7,7 @@ Created on 07/09/17
 """
 import multiprocessing
 
-from utils.auxUtils import check_matrix, filter_seen, buildURMMatrix, similarityMatrixTopK, Evaluator
+from utils.auxUtils import check_matrix, filter_seen, buildURMMatrix, similarityMatrixTopK
 
 import subprocess
 import os, sys, time, platform
