@@ -17,10 +17,10 @@ python compileCython.py Cosine_Similarity_Cython.pyx build_ext --inplace
 
 
 ################## RESUME' OF ALL RESULTS #####################
-Algorithm       knn     MAP
-Slim cython     600     0.07852
-Slim cython_Opt 200     0.08250    lambda_i = 0.001; lambda_j= 0.001; epochs = 160; learning_rate=0.001
-Hybrid_delivery ...     0.08871    alpha = 1, beta = 5, gamma = 7, s_cf, k_cf = 10; k_ii = 700, s_ii=200, k_u_u=200, s_uu = 50
-Hybrid_slim1    same hy 0.08846    stnd par of slim (likely)
+Algorithm       knn     MAP        Local Map other parameters
+Slim cython     600     0.07852    0.000000  ASD
+Slim cython_Opt 200     0.08250    0.000000  lambda_i = 0.001; lambda_j= 0.001; epochs = 160; learning_rate=0.001
+Hybrid_delivery ...     0.08871    0.000000  alpha = 1, beta = 5, gamma = 7, s_cf, k_cf = 10; k_ii = 700, s_ii=200, k_u_u=200, s_uu = 50
+Hybrid_slim1    same hy 0.08846    0.000000  stnd par of slim (likely)
 
 
