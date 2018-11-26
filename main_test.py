@@ -5,13 +5,13 @@ from svdRS.matrix_factorization import FunkSVD
 import pandas as pd
 # SLIM_ MAX
 rs = FunkSVD(train_data)
-num_factors = 100
-num_epochs = 100
+num_factors = 800
+num_epochs = 400
 evaluator = Evaluator()
 results_tuning = pd.DataFrame([], columns=['epochs', 'factor', 'map'])
 
-while num_epochs < 350:
-    num_factors = 100
+while num_epochs < 450:
+    num_factors = 800
     while num_factors < 1000:
         rs.fit(num_factors=num_factors, epochs=num_epochs)
         final_prediction = {}

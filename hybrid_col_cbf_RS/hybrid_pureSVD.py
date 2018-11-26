@@ -5,6 +5,7 @@ from svdRS.pureSVD import PureSVDRecommender
 from cbfRS.cbfRS import CbfRS
 from collaborative_filtering_RS.col_item_itemRS import ColBfIIRS
 from collaborative_filtering_RS.col_user_userRS import ColBfUURS
+from scipy import sparse
 
 
 class HybridRS:
@@ -117,7 +118,7 @@ class HybridRS:
         # print(df)
         return df
 
-    def recommend_linear(self, playlist_ids, alpha=1, beta=5, gamma=7, delta=0.9, filter_top_pop=True):
+    def recommend_linear(self, playlist_ids, alpha=1, beta=5, gamma=7, delta=10, filter_top_pop=True):
         print("Recommending... Am I filtering top_top songs?", filter_top_pop)
 
         final_prediction = {}
@@ -127,29 +128,30 @@ class HybridRS:
         e_r_cbf = self.cbf_recommender.get_estimated_ratings()
         e_r_col_i_i = self.col_i_i_recommender.get_estimated_ratings()
         e_r_col_u_u = self.col_u_u_recommender.get_estimated_ratings()
-        e_r_pureSVD = self.pureSVD.get_estimated_ratings()
-
+        # e_r_pureSVD = self.pureSVD.get_estimated_ratings()
+        '''
         print("CBF")
         print(e_r_cbf[7].data[e_r_cbf[7].data.argsort()[::-1]])
         print("COL_I_I")
         print(e_r_col_i_i[7].data[e_r_col_i_i[7].data.argsort()[::-1]])
         print("COL_U_U")
         print(e_r_col_u_u[7].data[e_r_col_u_u[7].data.argsort()[::-1]])
-        '''
+        
         print("pureSVD")
         print(e_r_pureSVD[7].data[e_r_pureSVD[7].data.argsort()[::-1]])
         '''
         estimated_ratings_final = e_r_col_u_u.multiply(alpha) + e_r_col_i_i.multiply(beta) + e_r_cbf.multiply(gamma)
-
+        print('after sum..')
         for k in playlist_ids:
             try:
                 row = estimated_ratings_final[k]
                 # getting the row from svd
-                mf_row = np.multiply(self.pureSVD.compute_score_SVD(k), delta)
+                # try with check matrix..
+                mf_row = sparse.csr_matrix(self.pureSVD.compute_score_SVD(k)).multiply(delta)
                 # summing it to the row we are considering
                 row += mf_row
                 # aux contains the indices (track_id) of the most similar songs
-                indx = row.argsort()[::-1]
+                indx = row.data.argsort()[::-1]
                 aux = row.indices[indx]
                 user_playlist = self.urm[k]
 
@@ -158,9 +160,9 @@ class HybridRS:
                 top_songs = filter_seen(aux, user_playlist)
 
                 if filter_top_pop:
-                    top_songs = filter_seen_array(top_songs, self.top_pop_songs)
+                    top_songs = filter_seen_array(top_songs, self.top_pop_songs)[:self.at]
                 else:
-                    top_songs = top_songs
+                    top_songs = top_songs[:self.at]
 
                 if len(top_songs) < 10:
                     print("Francisco was right once")
