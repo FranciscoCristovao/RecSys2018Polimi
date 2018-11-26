@@ -18,7 +18,7 @@ from slimRS.slimElasticNet import SLIMElasticNetRecommender
 
 map_list = []
 k_list = []
-ks = [100, 200, 300, 400, 500, 600, 700]
+ks = [200, 300, 400, 500, 600, 700]
 evaluator = Evaluator()
 rs = SLIMElasticNetRecommender(train_data)
 
