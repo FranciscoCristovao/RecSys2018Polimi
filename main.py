@@ -10,56 +10,33 @@ from collaborative_filtering_RS.col_item_itemRS import ColBfIIRS
 from hybrid_col_cbf_RS.hybridRS import HybridRS
 from matrixFactorizationRS.matrix_factorizationRS import MF_BPR_Cython
 from slimRS.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
-from hybrid_col_cbf_RS.hybrid_slim import HybridRS
 # from hybrid_col_cbf_RS.hybrid_pureSVD import HybridRS
-from svdRS.pureSVD import PureSVDRecommender
 import matplotlib.pyplot as plt
 from slimRS.slimElasticNet import SLIMElasticNetRecommender
+from hybrid_col_cbf_RS.hybrid_slim_pureSVD import HybridRS
 
-map_list = []
-k_list = []
-ks = [100, 200, 300, 400, 500, 600, 700]
-evaluator = Evaluator()
-rs = SLIMElasticNetRecommender(train_data)
 
-for k in ks:
-    rs.fit(topK=k)
-    predictions = rs.recommend(target_data['playlist_id'])
-    map_ = evaluator.evaluate(predictions, test_data)
-    print("K: ", k)
-    print("map: ", map_)
-    map_list.append(map_)
-    k_list.append(k)
-
-plt.plot(k_list, map_list)
-plt.xlabel('K')
-plt.ylabel('map')
-plt.title('K ElasticNet Tuning')
-plt.grid(True)
-plt.show()
-
-'''
 map_list = []
 d_list = []
-deltas = [0, 5, 10, 15, 20]
+deltas = [-10, 0, 10, 20, 30, 40, 50]
 evaluator = Evaluator()
 rs = HybridRS(tracks_data)
 rs.fit(train_data)
-for d in deltas:
-    predictions = rs.recommend(target_data['playlist_id'], delta=d)
+for theta in deltas:
+    predictions = rs.recommend(target_data['playlist_id'], theta=theta)
     map_ = evaluator.evaluate(predictions, test_data)
-    print("Delta: ", d)
+    print("Theta: ", theta)
     print("map: ", map_)
     map_list.append(map_)
-    d_list.append(d)
+    d_list.append(theta)
 
 plt.plot(d_list, map_list)
-plt.xlabel('Delta')
+plt.xlabel('Theta')
 plt.ylabel('map')
-plt.title('Delta SLIM hybrid Tuning')
+plt.title('Theta SLIM pure SVD hybrid Tuning')
 plt.grid(True)
 plt.show()
-'''
+
 '''
 map_list = []
 t_list = []

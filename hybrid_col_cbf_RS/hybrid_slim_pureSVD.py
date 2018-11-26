@@ -43,7 +43,7 @@ class HybridRS:
         self.pureSVD_recommender = PureSVDRecommender(train_data)
         self.pureSVD_recommender.fit()
 
-    def recommend(self, playlist_ids, alpha=1, beta=5, gamma=7, theta=50, delta=10, filter_top_pop=False):
+    def recommend(self, playlist_ids, alpha=1, beta=5, gamma=7, delta=10, theta=50, filter_top_pop=False):
         print("Recommending... Am I filtering top_top songs?", filter_top_pop)
 
         final_prediction = {}
