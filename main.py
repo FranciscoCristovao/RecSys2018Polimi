@@ -18,7 +18,7 @@ from hybrid_col_cbf_RS.hybrid_slim_pureSVD import HybridRS
 
 map_list = []
 d_list = []
-deltas = [-10, 0, 10, 20, 30, 40, 50]
+deltas = [0, 10, 15, 18, 20, 22, 25]
 evaluator = Evaluator()
 rs = HybridRS(tracks_data)
 rs.fit(train_data)
