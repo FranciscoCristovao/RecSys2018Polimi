@@ -16,7 +16,7 @@ class MF_BPR_Cython():
 
 
     def __init__(self, train_data, recompile_cython = False,
-                 num_factors=20):
+                 num_factors=200):
 
         self.URM_train = buildURMMatrix(train_data)
         self.n_users = self.URM_train.shape[0]
