@@ -68,7 +68,7 @@ class SLIM_BPR_Cython():
             print("Compilation Complete")
 
     def fit(self, epochs=160, logFile=None, playlist_ids=None, filterTopPop=False,
-            batch_size=1000, lambda_i=0.0025, lambda_j=0.00025, learning_rate=0.001, topK=200,
+            batch_size=1000, lambda_i=0.001, lambda_j=0.0001, learning_rate=0.001, topK=200,
             sgd_mode='sgd', gamma=0.995, beta_1=0.9, beta_2=0.999,
             stop_on_validation=False, lower_validatons_allowed=10, validation_metric="map",
             validation_function=None, validation_every_n=10):
