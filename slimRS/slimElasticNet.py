@@ -37,13 +37,12 @@ class SLIMElasticNetRecommender():
         self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values
         self.n_items = self.URM_train.shape[1]
 
-
     def __str__(self):
         return "SLIM (l1_penalty={},l2_penalty={},positive_only={})".format(
             self.l1_penalty, self.l2_penalty, self.positive_only
         )
 
-    def fit(self, l1_penalty=0.1, l2_penalty=0.1, positive_only=True, topK=100):
+    def fit(self, l1_penalty=0.1, l2_penalty=0.1, positive_only=True, topK=200):
         print("Fitting")
 
         self.l1_penalty = l1_penalty
@@ -58,14 +57,14 @@ class SLIMElasticNetRecommender():
             self.l1_ratio = 1.0
 
         # initialize the ElasticNet model
-        self.model = ElasticNet(alpha=1.0,
+        self.model = ElasticNet(alpha=2.0,
                                 l1_ratio=self.l1_ratio,
                                 positive=self.positive_only,
                                 fit_intercept=False,
                                 copy_X=False,
                                 precompute=True,
-                                selection='random',
-                                max_iter=100,
+                                selection='cyclic',
+                                max_iter=1000,
                                 tol=1e-4)
 
         URM_train = check_matrix(self.URM_train, 'csc', dtype=np.float32)
@@ -174,7 +173,7 @@ class SLIMElasticNetRecommender():
             aux = row.indices[indx]
             user_playlist = self.URM_train[k]
 
-            aux = np.concatenate((aux, self.top_pop_songs), axis=None)
+            # aux = np.concatenate((aux, self.top_pop_songs), axis=None)
             top_songs = filter_seen(aux, user_playlist)[:10]
 
             string = ' '.join(str(e) for e in top_songs)
@@ -188,3 +187,30 @@ class SLIMElasticNetRecommender():
         df = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
         # print(df)
         return df
+
+    def get_model(self):
+        return self.model
+
+    def recommend_asd(self, user_id, at=None, exclude_seen=True):
+        # compute the scores using the dot product
+        user_profile = self.URM_train[user_id]
+        scores = user_profile.dot(self.W_sparse).toarray().ravel()
+
+        if exclude_seen:
+            scores = self.filter_seen(user_id, scores)
+
+        # rank items
+        ranking = scores.argsort()[::-1]
+
+        return ranking[:at]
+
+    def filter_seen(self, user_id, scores):
+
+        start_pos = self.URM_train.indptr[user_id]
+        end_pos = self.URM_train.indptr[user_id + 1]
+
+        user_profile = self.URM_train.indices[start_pos:end_pos]
+
+        scores[user_profile] = -np.inf
+
+        return scores
