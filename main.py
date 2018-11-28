@@ -11,32 +11,74 @@ from hybrid_col_cbf_RS.hybridRS import HybridRS
 from matrixFactorizationRS.matrix_factorizationRS import MF_BPR_Cython
 from slimRS.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
 # from hybrid_col_cbf_RS.hybrid_pureSVD import HybridRS
+from svdRS.pureSVD import PureSVDRecommender
 import matplotlib.pyplot as plt
 from slimRS.slimElasticNet import SLIMElasticNetRecommender
 from hybrid_col_cbf_RS.hybrid_slim_pureSVD import HybridRS
+# from hybrid_col_cbf_RS.hybrid_slim import HybridRS
+'''
+evaluator = Evaluator()
+rs = HybridRS(tracks_data)
+rs.fit(full_data)
+predictions = rs.recommend(target_data['playlist_id'])
+evaluator.evaluate(predictions, test_data)
 
-
+save_dataframe('output/hybrid_pureSVD_slim.csv', ',', predictions)
+'''
+'''
 map_list = []
-d_list = []
-deltas = [0, 10, 15, 18, 20, 22, 25]
+t_list = []
+thetas = [10, 15, 18, 20, 22, 25]
 evaluator = Evaluator()
 rs = HybridRS(tracks_data)
 rs.fit(train_data)
-for theta in deltas:
-    predictions = rs.recommend(target_data['playlist_id'], theta=theta)
+for t in thetas:
+    predictions = rs.recommend(target_data['playlist_id'], theta=t)
     map_ = evaluator.evaluate(predictions, test_data)
-    print("Theta: ", theta)
+    print("Theta: ", t)
     print("map: ", map_)
     map_list.append(map_)
-    d_list.append(theta)
+    t_list.append(t)
 
-plt.plot(d_list, map_list)
+plt.plot(t_list, map_list)
 plt.xlabel('Theta')
 plt.ylabel('map')
-plt.title('Theta SLIM pure SVD hybrid Tuning')
+plt.title('Theta SLIM+pureSVD hybrid Tuning')
 plt.grid(True)
 plt.show()
+'''
+evaluator = Evaluator()
+rs = SLIMElasticNetRecommender(train_data)
+rs.fit()
+predictions = rs.recommend(target_data['playlist_id'])
+evaluator.evaluate(predictions, test_data)
 
+save_dataframe('output/slim_elasticnet.csv', ',', predictions)
+'''
+map_list = []
+k_list = []
+l_list = []
+ks = [100, 200, 300, 400, 500, 600, 700]
+ls = [0.1, 0.01, 0.001, 0.0001]
+evaluator = Evaluator()
+rs = MultiThreadSLIM_ElasticNet(train_data)
+
+for l in ls:
+    rs.fit(l1_penalty=l, l2_penalty=l)
+    predictions = rs.recommend(target_data['playlist_id'])
+    map_ = evaluator.evaluate(predictions, test_data)
+    print("Ls: ", l)
+    print("map: ", map_)
+    map_list.append(map_)
+    l_list.append(l)
+
+plt.plot(l_list, map_list)
+plt.xlabel('L')
+plt.ylabel('map')
+plt.title('L ElasticNet Tuning')
+plt.grid(True)
+plt.show()
+'''
 '''
 map_list = []
 t_list = []

@@ -9,7 +9,8 @@ import pandas as pd
 import scipy.sparse as sps
 from utils.auxUtils import check_matrix, buildURMMatrix, filter_seen
 from sklearn.linear_model import ElasticNet
-from scipy.sparse import csr_matrix
+from tqdm import tqdm
+
 
 import time, sys
 
@@ -28,46 +29,40 @@ class SLIMElasticNetRecommender():
         http://glaros.dtc.umn.edu/gkhome/fetch/papers/SLIM2011icdm.pdf
     """
 
-    RECOMMENDER_NAME = "SLIMElasticNetRecommender"
-
     def __init__(self, train_data):
-        print("SLIM ElasticNet has been initialized")
 
         self.URM_train = buildURMMatrix(train_data)
         self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values
-        self.n_items = self.URM_train.shape[1]
 
     def __str__(self):
         return "SLIM (l1_penalty={},l2_penalty={},positive_only={})".format(
             self.l1_penalty, self.l2_penalty, self.positive_only
         )
 
-    def fit(self, l1_penalty=0.1, l2_penalty=0.1, positive_only=True, topK=200):
-        print("Fitting")
+    def fit(self, l1_ratio=0.001, positive_only=True, topK = 100):
 
-        self.l1_penalty = l1_penalty
-        self.l2_penalty = l2_penalty
         self.positive_only = positive_only
         self.topK = topK
-
+        '''
         if self.l1_penalty + self.l2_penalty != 0:
             self.l1_ratio = self.l1_penalty / (self.l1_penalty + self.l2_penalty)
         else:
             print("SLIM_ElasticNet: l1_penalty+l2_penalty cannot be equal to zero, setting the ratio l1/(l1+l2) to 1.0")
             self.l1_ratio = 1.0
-
+        '''
+        self.l1_ratio = l1_ratio
         # initialize the ElasticNet model
-        self.model = ElasticNet(alpha=2.0,
+        self.model = ElasticNet(alpha=1.0,
                                 l1_ratio=self.l1_ratio,
                                 positive=self.positive_only,
                                 fit_intercept=False,
                                 copy_X=False,
                                 precompute=True,
-                                selection='cyclic',
-                                max_iter=1000,
+                                selection='random',
+                                max_iter=100,
                                 tol=1e-4)
 
-        URM_train = check_matrix(self.URM_train, 'csc', dtype=np.float32)
+        URM_train = sps.csc_matrix(self.URM_train)
 
         n_items = URM_train.shape[1]
 
@@ -84,11 +79,10 @@ class SLIMElasticNetRecommender():
         start_time_printBatch = start_time
 
         # fit each item's factors sequentially (not in parallel)
-        for currentItem in range(n_items):
+        for currentItem in tqdm(range(n_items)):
 
             # get the target column
             y = URM_train[:, currentItem].toarray()
-
             # set the j-th column of X to zero
             start_pos = URM_train.indptr[currentItem]
             end_pos = URM_train.indptr[currentItem + 1]
@@ -113,8 +107,9 @@ class SLIMElasticNetRecommender():
 
             nonzero_model_coef_index = self.model.sparse_coef_.indices
             nonzero_model_coef_value = self.model.sparse_coef_.data
+            # print(nonzero_model_coef_index)
 
-            local_topK = min(len(nonzero_model_coef_value) - 1, self.topK)
+            local_topK = min(len(nonzero_model_coef_value)-1, self.topK)
 
             relevant_items_partition = (-nonzero_model_coef_value).argpartition(local_topK)[0:local_topK]
             relevant_items_partition_sorting = np.argsort(-nonzero_model_coef_value[relevant_items_partition])
@@ -127,6 +122,7 @@ class SLIMElasticNetRecommender():
                     cols = np.concatenate((cols, np.zeros(dataBlock, dtype=np.int32)))
                     values = np.concatenate((values, np.zeros(dataBlock, dtype=np.float32)))
 
+
                 rows[numCells] = nonzero_model_coef_index[ranking[index]]
                 cols[numCells] = currentItem
                 values[numCells] = nonzero_model_coef_value[ranking[index]]
@@ -136,12 +132,12 @@ class SLIMElasticNetRecommender():
             # finally, replace the original values of the j-th column
             URM_train.data[start_pos:end_pos] = current_item_data_backup
 
-            if time.time() - start_time_printBatch > 300 or currentItem == n_items - 1:
+            if time.time() - start_time_printBatch > 300 or currentItem == n_items-1:
                 print("Processed {} ( {:.2f}% ) in {:.2f} minutes. Items per second: {:.0f}".format(
-                    currentItem + 1,
-                    100.0 * float(currentItem + 1) / n_items,
-                    (time.time() - start_time) / 60,
-                    float(currentItem) / (time.time() - start_time)))
+                                  currentItem+1,
+                                  100.0 * float(currentItem+1)/n_items,
+                                  (time.time()-start_time)/60,
+                                  float(currentItem)/(time.time()-start_time)))
                 sys.stdout.flush()
                 sys.stderr.flush()
 
@@ -157,28 +153,24 @@ class SLIMElasticNetRecommender():
 
         final_prediction = {}
 
-        matrix_W = self.W_sparse
-
-        # what dimension does W have?
-        self.W = csr_matrix(matrix_W, shape=(self.n_items, self.n_items))
-        estimated_ratings = check_matrix(self.URM_train.dot(self.W), 'csr')
+        estimated_ratings = check_matrix(self.URM_train.dot(self.W_sparse), 'csr')
 
         counter = 0
 
         for k in playlist_ids:
 
             row = estimated_ratings[k]
+
             # aux contains the indices (track_id) of the most similar songs
             indx = row.data.argsort()[::-1]
             aux = row.indices[indx]
             user_playlist = self.URM_train[k]
 
-            # aux = np.concatenate((aux, self.top_pop_songs), axis=None)
+            aux = np.concatenate((aux, self.top_pop_songs), axis=None)
             top_songs = filter_seen(aux, user_playlist)[:10]
 
             string = ' '.join(str(e) for e in top_songs)
             final_prediction.update({k: string})
-
             if (counter % 1000) == 0:
                 print("Playlist num", counter, "/10000")
 
@@ -188,29 +180,5 @@ class SLIMElasticNetRecommender():
         # print(df)
         return df
 
-    def get_model(self):
-        return self.model
-
-    def recommend_asd(self, user_id, at=None, exclude_seen=True):
-        # compute the scores using the dot product
-        user_profile = self.URM_train[user_id]
-        scores = user_profile.dot(self.W_sparse).toarray().ravel()
-
-        if exclude_seen:
-            scores = self.filter_seen(user_id, scores)
-
-        # rank items
-        ranking = scores.argsort()[::-1]
-
-        return ranking[:at]
-
-    def filter_seen(self, user_id, scores):
-
-        start_pos = self.URM_train.indptr[user_id]
-        end_pos = self.URM_train.indptr[user_id + 1]
-
-        user_profile = self.URM_train.indices[start_pos:end_pos]
-
-        scores[user_profile] = -np.inf
-
-        return scores
+    def get_estimated_ratings(self):
+        return check_matrix(self.URM_train.dot(self.W_sparse), 'csr')

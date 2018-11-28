@@ -43,7 +43,7 @@ class HybridRS:
         self.pureSVD_recommender = PureSVDRecommender(train_data)
         self.pureSVD_recommender.fit()
 
-    def recommend(self, playlist_ids, alpha=1, beta=5, gamma=7, delta=10, theta=50, filter_top_pop=False):
+    def recommend(self, playlist_ids, alpha=1, beta=5, gamma=7, delta=10, theta=20, filter_top_pop=False):
         print("Recommending... Am I filtering top_top songs?", filter_top_pop)
 
         final_prediction = {}
@@ -79,6 +79,7 @@ class HybridRS:
                 row = estimated_ratings_final[k]
                 # aux contains the indices (track_id) of the most similar songs
                 mf_row = sparse.csr_matrix(self.pureSVD_recommender.compute_score_SVD(k)).multiply(theta)
+
                 # summing it to the row we are considering
                 row += mf_row
                 indx = row.data.argsort()[::-1]
