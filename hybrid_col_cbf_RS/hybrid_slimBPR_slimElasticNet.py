@@ -25,7 +25,7 @@ class HybridRS:
         self.slim_elasticNet_recommender = SLIMElasticNetRecommender(train_data)
         self.slim_elasticNet_recommender.fit(l1_ratio=l1_ratio, topK=topK_elasticNet)
 
-    def recommend(self, playlist_ids, filter_top_pop=False):
+    def recommend(self, playlist_ids, omega=60, filter_top_pop=False):
         print("Recommending... Am I filtering top_top songs?", filter_top_pop)
 
         final_prediction = {}
@@ -34,12 +34,14 @@ class HybridRS:
         e_r_slim_bpr = self.slim_bpr_recommender.get_estimated_ratings()
         e_r_slim_elasticNet = self.slim_elasticNet_recommender.get_estimated_ratings()
 
+        '''
         print("SLIM_BPR")
         print(e_r_slim_bpr[7].data[e_r_slim_bpr[7].data.argsort()[::-1]])
         print("SLIM_ElasticNet")
         print(e_r_slim_elasticNet[7].data[e_r_slim_elasticNet[7].data.argsort()[::-1]])
+        '''
 
-        estimated_ratings_final = e_r_slim_bpr + e_r_slim_elasticNet.multiply(100)
+        estimated_ratings_final = e_r_slim_bpr + e_r_slim_elasticNet.multiply(omega)
 
         # print("FINAL")
         # print(estimated_ratings_final[7].data[estimated_ratings_final[7].data.argsort()[::-1]])
@@ -53,7 +55,7 @@ class HybridRS:
                 user_playlist = self.urm[k]
 
                 aux = np.concatenate((aux, self.top_pop_songs), axis=None)
-                top_songs = filter_seen(aux, user_playlist)[:self.at]
+                top_songs = filter_seen(aux, user_playlist)[:10]
 
                 string = ' '.join(str(e) for e in top_songs)
                 final_prediction.update({k: string})
