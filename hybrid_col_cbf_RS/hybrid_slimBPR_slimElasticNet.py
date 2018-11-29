@@ -25,7 +25,7 @@ class HybridRS:
         self.slim_elasticNet_recommender = SLIMElasticNetRecommender(train_data)
         self.slim_elasticNet_recommender.fit(l1_ratio=l1_ratio, topK=topK_elasticNet)
 
-    def recommend(self, playlist_ids, filter_top_pop=False):
+    def recommend(self, playlist_ids, delta=100, filter_top_pop=False):
         print("Recommending... Am I filtering top_top songs?", filter_top_pop)
 
         final_prediction = {}
@@ -39,7 +39,7 @@ class HybridRS:
         print("SLIM_ElasticNet")
         print(e_r_slim_elasticNet[7].data[e_r_slim_elasticNet[7].data.argsort()[::-1]])
 
-        estimated_ratings_final = e_r_slim_bpr + e_r_slim_elasticNet.multiply(100)
+        estimated_ratings_final = e_r_slim_bpr + e_r_slim_elasticNet.multiply(delta)
 
         # print("FINAL")
         # print(estimated_ratings_final[7].data[estimated_ratings_final[7].data.argsort()[::-1]])
