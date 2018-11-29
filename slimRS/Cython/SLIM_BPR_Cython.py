@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on 07/09/17
-
 @author: Maurizio Ferrari Dacrema
 """
 import multiprocessing
@@ -68,7 +67,7 @@ class SLIM_BPR_Cython():
             print("Compilation Complete")
 
     def fit(self, epochs=160, logFile=None, playlist_ids=None, filterTopPop=False,
-            batch_size=1000, lambda_i=0.001, lambda_j=0.0001, learning_rate=0.001, topK=200,
+            batch_size=1000, lambda_i=0.001, lambda_j=0.001, learning_rate=0.001, topK=200,
             sgd_mode='sgd', gamma=0.995, beta_1=0.9, beta_2=0.999,
             stop_on_validation=False, lower_validatons_allowed=10, validation_metric="map",
             validation_function=None, validation_every_n=10):
@@ -343,13 +342,10 @@ class SLIM_BPR_Cython():
         Speed info:
         - Sparse weights: batch mode is 2x faster than sequential
         - Dense weights: batch and sequential speed are equivalent
-
-
         :param URM_test_new:            URM to be used for testing
         :param at: 10                   Length of the recommended items
         :param minRatingsPerUser: 1     Users with less than this number of interactions will not be evaluated
         :param exclude_seen: True       Whether to remove already seen items from the recommended items
-
         :param mode: 'sequential', 'parallel', 'batch'
         :param filterTopPop: False or decimal number        Percentage of items to be removed from recommended list and testing interactions
         :param filterCustomItems: Array, default empty           Items ID to NOT take into account when recommending
@@ -365,18 +361,13 @@ class SLIM_BPR_Cython():
 
         '''
         if filterTopPop != False:
-
             self.filterTopPop = True
-
             _,_, self.filterTopPop_ItemsID = removeTopPop(self.URM_train, URM_2 = URM_test_new, percentageToRemove=filterTopPop)
-
             print("Filtering {}% TopPop items, count is: {}".format(filterTopPop*100, len(self.filterTopPop_ItemsID)))
-
             # Zero-out the items in order to be considered irrelevant
             URM_test_new = check_matrix(URM_test_new, format='lil')
             URM_test_new[:,self.filterTopPop_ItemsID] = 0
             URM_test_new = check_matrix(URM_test_new, format='csr')
-
         '''
 
         # During testing CSR is faster

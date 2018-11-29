@@ -18,13 +18,34 @@ python compileCython.py Cosine_Similarity_Cython.pyx build_ext --inplace
 
 ################## RESUME' OF ALL RESULTS #####################
 Algorithm       knn     MAP        Local Map other parameters
-Slim cython     600     0.07852    0.000000  ASD
-Slim cython_Opt 200     0.08250    0.000000  lambda_i = 0.001; lambda_j= 0.001; epochs = 160; learning_rate=0.001
-Hybrid_delivery ...     0.08871    0.000000  alpha = 1, beta = 5, gamma = 7, s_cf, k_cf = 10; k_ii = 700, s_ii=200, k_u_u=200, s_uu = 50
-Hybrid_slim1    same hy 0.08846    0.0795    stnd par of slim (likely)
-pure_SVD        ...     -------    0.0515    num_factors = 470
-slim            200     -------    0.0707    epochs = 160; lambda_i=0.001; lambda_j=0.0001; learning_rate=0.001;
-funkSVD         300     -------    0.02882   factors = 800
+Slim cython     600     0.078520   --------  standard parameters
+Slim cython_Opt 200     0.082500   0.070700  lambda_i = 0.001; lambda_j= 0.001; epochs = 160; learning_rate=0.001
+Hybrid_delivery ...     0.088710   0.078600  alpha = 1, beta = 5, gamma = 7, s_cf, k_cf = 10; k_ii = 700, s_ii=200, k_u_u=200, s_uu = 50
+Hybrid_slim1    same    0.090970   0.079500  stnd par of slim (likely)
+Hy_slim_pureSVD '''     0.091210   0.079600
+pure_SVD        ...     0.062130   0.051500  num_factors = 470
+slim            200     0.082500   0.070700  epochs = 160; lambda_i=0.001; lambda_j=0.0001; learning_rate=0.001;
+funkSVD         300     --------   0.028820  factors = 800
+ElasticNet      50      --------   0.059200  li_ratio=0.00001
+CF              10      --------   0.000000  shrinkage = 10;
+UF              200     --------   0.000000  shrinkage = 50;
+IF              350     --------   0.000000  shrinkage = 400; can we use also this one here?
+IF              700     --------   0.000000  shrinkage = 200;
+BPR Mf          200     --------   0.018000  num_factors = 30;
 
-
-
+0   0.0676
+10  0.0677
+20  0.0678
+30  0.0677
+40  0.0679
+50  0.0678
+60  0.0680
+70  0.0681
+80  0.0681
+90  0.0680
+100 0.0681
+110 0.0680
+120 0.0679
+130 0.0679
+140 0.0679
+150 0.0679

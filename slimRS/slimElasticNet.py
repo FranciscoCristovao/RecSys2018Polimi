@@ -39,7 +39,7 @@ class SLIMElasticNetRecommender():
             self.l1_penalty, self.l2_penalty, self.positive_only
         )
 
-    def fit(self, l1_ratio=0.001, positive_only=True, topK = 100):
+    def fit(self, l1_ratio=0.00001, positive_only=True, topK=50):
 
         self.positive_only = positive_only
         self.topK = topK
@@ -160,7 +160,8 @@ class SLIMElasticNetRecommender():
         for k in playlist_ids:
 
             row = estimated_ratings[k]
-
+            if (k == 7):
+                print(row.data.sort())
             # aux contains the indices (track_id) of the most similar songs
             indx = row.data.argsort()[::-1]
             aux = row.indices[indx]
