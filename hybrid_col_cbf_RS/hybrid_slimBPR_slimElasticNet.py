@@ -14,8 +14,8 @@ class HybridRS:
         print("Hybrid Slim(s) Initialized")
         self.at = at
 
-    def fit(self, train_data, lambda_i=0.001, lambda_j=0.001, topK_bpr=200, l1_ratio=0.00001,
-            topK_elasticNet = 50, sgd_mode='sgd'):
+    def fit(self, train_data, lambda_i=0.001, lambda_j=0.001, topK_bpr=200, l1_ratio=0.25,
+            topK_elasticNet = 300, sgd_mode='sgd'):
         print('Fitting...')
 
         self.urm = buildURMMatrix(train_data)

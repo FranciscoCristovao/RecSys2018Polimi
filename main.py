@@ -31,7 +31,6 @@ for o in omegas:
     print("map: ", map_)
     map_list.append(map_)
     o_list.append(o)
-    o += 10
 
 plt.plot(o_list, map_list)
 plt.xlabel('Omega')

@@ -1,20 +1,10 @@
 
-Magic script for Cython:
-1)Compile inside the Cython repository with:
-l
-2) Run your code as if it was normal python
-
-Caveat: Of course, each time you modify your python file you have to compile again
-        I had to modify a "long" value, into "long long"
-
-This is a todo file
-2) Check knn, shrink_value
-3) Look for TF_IDF
-4) Merge the tracks, artists albums ICM matrix properly in the collaborative filter
-
 python3 compileCython.py MF_BPR_Cython_Epoch.pyx build_ext --inplace
 python compileCython.py Cosine_Similarity_Cython.pyx build_ext --inplace
 
+####################### TOD0 #########################
+1) Bayesian Optimization
+2) Boosting
 
 ################## RESUME' OF ALL RESULTS #####################
 Algorithm       knn     MAP        Local Map other parameters
@@ -32,24 +22,20 @@ UF              200     --------   0.071300  shrinkage = 50;
 IF              350     --------   0.000000  shrinkage = 400; can we use also this one here?
 IF              700     --------   0.072100  shrinkage = 200;
 BPR Mf          200     --------   0.018000  num_factors = 30;
-hyb_slim+EN     ---     --------   --------  --------------
-
+hyb_slim+EN     ---     --------   --------  alpha = down; topknn=50
+slim_EN         200     --------   0.074700  alpha=0.0001; l1_ratio=0.25
 
 # 0.082 on kaggle ElasticNet => aim
-
-0   0.0676
-10  0.0677
-20  0.0678
-30  0.0677
-40  0.0679
-50  0.0678
-60  0.0680
-70  0.0681
-80  0.0681
-90  0.0680
-100 0.0681
-110 0.0680
-120 0.0679
-130 0.0679
-140 0.0679
-150 0.0679
+Omega   Map
+5       0.075
+10      0.07664
+15      0.077214
+20      0.0772938
+25      0.0772432
+30      0.07683282
+35      0.0762442470
+40      0.0759448655
+45      0.075782117
+50      0.0755624
+55      0.07543466093
+60      .. decreasing..

@@ -52,7 +52,7 @@ class SLIMElasticNetRecommender():
         '''
         self.l1_ratio = l1_ratio
         # initialize the ElasticNet model
-        self.model = ElasticNet(alpha=1.0,
+        self.model = ElasticNet(alpha=0.0001,
                                 l1_ratio=self.l1_ratio,
                                 positive=self.positive_only,
                                 fit_intercept=False,
