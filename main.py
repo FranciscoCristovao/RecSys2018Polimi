@@ -14,24 +14,26 @@ from slimRS.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
 from svdRS.pureSVD import PureSVDRecommender
 import matplotlib.pyplot as plt
 from slimRS.slimElasticNet import SLIMElasticNetRecommender
-from hybrid_col_cbf_RS.hybrid_slim_elasticNet_pureSVD import HybridRS
-# from hybrid_col_cbf_RS.hybrid_slim import HybridRS
-
+from hybrid_col_cbf_RS.hybrid_knn_slimBPR_elasticNet import HybridRS
 
 evaluator = Evaluator()
-rs = SLIMElasticNetRecommender(full_data)
-alphas = [0.01, 0.001, 0.0001]
+rs = HybridRS(tracks_data)
+rs.fit(full_data)
+predictions = rs.recommend(target_data['playlist_id'], omega=30)
+map_ = evaluator.evaluate(predictions, test_data)
+save_dataframe('output/full_hybrid.csv', ',', predictions)
 
-for a in alphas:
+'''
+evaluator = Evaluator()
+rs = SLIMElasticNetRecommender(train_data)
 
-    rs.fit(topK=100, alpha=a, l1_ratio=0.25)
-    predictions = rs.recommend(target_data['playlist_id'])
-    map_ = evaluator.evaluate(predictions, test_data)
-    print("Alpha: ", a)
-    print("map: ", map_)
+rs.fit(topK=300, l1_ratio=0.3)
+predictions = rs.recommend(target_data['playlist_id'])
+map_ = evaluator.evaluate(predictions, test_data)
+print("map: ", map_)
 
     # save_dataframe('output/slim_elasticNet.csv', ',', predictions)
-
+'''
 '''
 map_list = []
 o_list = []

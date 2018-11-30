@@ -31,8 +31,8 @@ class HybridRS:
         self.col_i_i_recommender = ColBfIIRS(self.at, self.k_i_i, self.shrinkage_i_i, tf_idf=self.tf_idf)
         self.col_u_u_recommender = ColBfUURS(self.at, self.k_u_u, self.shrinkage_u_u, tf_idf=self.tf_idf)
 
-    def fit(self, train_data, lambda_i=0.001, lambda_j=0.001, topK_bpr=200, l1_ratio=0.00001,
-            topK_elasticNet=30, sgd_mode='sgd'):
+    def fit(self, train_data, lambda_i=0.001, lambda_j=0.001, topK_bpr=200, l1_ratio=0.25,
+            topK_elasticNet=300, alpha_elasticNet=0.0001, sgd_mode='sgd'):
         print('Fitting...')
 
         self.urm = buildURMMatrix(train_data)
@@ -45,9 +45,9 @@ class HybridRS:
         # self.pureSVD_recommender = PureSVDRecommender(train_data)
         # self.pureSVD_recommender.fit()
         self.slim_elasticNet_recommender = SLIMElasticNetRecommender(train_data)
-        self.slim_elasticNet_recommender.fit(l1_ratio=l1_ratio, topK=topK_elasticNet)
+        self.slim_elasticNet_recommender.fit(l1_ratio=l1_ratio, topK=topK_elasticNet, alpha=alpha_elasticNet)
 
-    def recommend(self, playlist_ids, alpha=0.1, beta=1, gamma=1, delta=2, theta=20, omega=60, filter_top_pop=False):
+    def recommend(self, playlist_ids, alpha=0.1, beta=1, gamma=1, delta=2, theta=20, omega=30, filter_top_pop=False):
         print("Recommending... Am I filtering top_top songs?", filter_top_pop)
 
         final_prediction = {}
