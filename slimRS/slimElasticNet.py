@@ -39,20 +39,15 @@ class SLIMElasticNetRecommender():
             self.l1_penalty, self.l2_penalty, self.positive_only
         )
 
-    def fit(self, l1_ratio=0.00001, positive_only=True, topK=50):
+    def fit(self, l1_ratio=0.00001, positive_only=True, topK=30, alpha=1):
 
         self.positive_only = positive_only
         self.topK = topK
-        '''
-        if self.l1_penalty + self.l2_penalty != 0:
-            self.l1_ratio = self.l1_penalty / (self.l1_penalty + self.l2_penalty)
-        else:
-            print("SLIM_ElasticNet: l1_penalty+l2_penalty cannot be equal to zero, setting the ratio l1/(l1+l2) to 1.0")
-            self.l1_ratio = 1.0
-        '''
         self.l1_ratio = l1_ratio
+        self.alpha = alpha
+
         # initialize the ElasticNet model
-        self.model = ElasticNet(alpha=0.0001,
+        self.model = ElasticNet(alpha=self.alpha,
                                 l1_ratio=self.l1_ratio,
                                 positive=self.positive_only,
                                 fit_intercept=False,
