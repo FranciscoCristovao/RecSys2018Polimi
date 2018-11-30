@@ -14,12 +14,28 @@ from slimRS.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
 from svdRS.pureSVD import PureSVDRecommender
 import matplotlib.pyplot as plt
 from slimRS.slimElasticNet import SLIMElasticNetRecommender
-from hybrid_col_cbf_RS.hybrid_slimBPR_slimElasticNet import HybridRS
+from hybrid_col_cbf_RS.hybrid_slim_elasticNet_pureSVD import HybridRS
 # from hybrid_col_cbf_RS.hybrid_slim import HybridRS
 
+
+evaluator = Evaluator()
+rs = SLIMElasticNetRecommender(full_data)
+alphas = [0.01, 0.001, 0.0001]
+
+for a in alphas:
+
+    rs.fit(topK=100, alpha=a, l1_ratio=0.25)
+    predictions = rs.recommend(target_data['playlist_id'])
+    map_ = evaluator.evaluate(predictions, test_data)
+    print("Alpha: ", a)
+    print("map: ", map_)
+
+    # save_dataframe('output/slim_elasticNet.csv', ',', predictions)
+
+'''
 map_list = []
 o_list = []
-omegas = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 100, 125, 150, 175, 200, 225, 250]
+omegas = [0, 2, 5, 7, 10, 15, 20]
 
 evaluator = Evaluator()
 rs = HybridRS(tracks_data)
@@ -31,24 +47,15 @@ for o in omegas:
     print("map: ", map_)
     map_list.append(map_)
     o_list.append(o)
-    o += 10
 
 plt.plot(o_list, map_list)
 plt.xlabel('Omega')
 plt.ylabel('map')
-plt.title('Omega slim_bpt + ElasticNet Tuning')
+plt.title('Omega Full Hybrid Tuning')
 plt.grid(True)
 plt.show()
-
 '''
-evaluator = Evaluator()
-rs = SLIMElasticNetRecommender(train_data)
-rs.fit()
-predictions = rs.recommend(target_data['playlist_id'])
-evaluator.evaluate(predictions, test_data)
 
-save_dataframe('output/slim_elasticnet.csv', ',', predictions)
-'''
 '''
 evaluator = Evaluator()
 rs = PureSVDRecommender(full_data)

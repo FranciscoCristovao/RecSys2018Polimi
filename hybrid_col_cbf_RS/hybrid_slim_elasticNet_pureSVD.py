@@ -32,7 +32,7 @@ class HybridRS:
         self.col_u_u_recommender = ColBfUURS(self.at, self.k_u_u, self.shrinkage_u_u, tf_idf=self.tf_idf)
 
     def fit(self, train_data, lambda_i=0.001, lambda_j=0.001, topK_bpr=200, l1_ratio=0.00001,
-            topK_elasticNet=50, sgd_mode='sgd'):
+            topK_elasticNet=30, sgd_mode='sgd'):
         print('Fitting...')
 
         self.urm = buildURMMatrix(train_data)
@@ -42,12 +42,12 @@ class HybridRS:
         self.cbf_recommender.fit(train_data)
         self.slim_recommender = SLIM_BPR_Cython(train_data)
         self.slim_recommender.fit(lambda_i=lambda_i, lambda_j=lambda_j, topK=topK_bpr, sgd_mode=sgd_mode)
-        self.pureSVD_recommender = PureSVDRecommender(train_data)
-        self.pureSVD_recommender.fit()
+        # self.pureSVD_recommender = PureSVDRecommender(train_data)
+        # self.pureSVD_recommender.fit()
         self.slim_elasticNet_recommender = SLIMElasticNetRecommender(train_data)
         self.slim_elasticNet_recommender.fit(l1_ratio=l1_ratio, topK=topK_elasticNet)
 
-    def recommend(self, playlist_ids, alpha=1, beta=5, gamma=7, delta=10, theta=20, omega=600, filter_top_pop=False):
+    def recommend(self, playlist_ids, alpha=0.1, beta=1, gamma=1, delta=2, theta=20, omega=60, filter_top_pop=False):
         print("Recommending... Am I filtering top_top songs?", filter_top_pop)
 
         final_prediction = {}
@@ -85,10 +85,10 @@ class HybridRS:
             try:
                 row = estimated_ratings_final[k]
                 # aux contains the indices (track_id) of the most similar songs
-                mf_row = sparse.csr_matrix(self.pureSVD_recommender.compute_score_SVD(k)).multiply(theta)
+                # mf_row = sparse.csr_matrix(self.pureSVD_recommender.compute_score_SVD(k)).multiply(theta)
 
                 # summing it to the row we are considering
-                row += mf_row
+                # row += mf_row
                 indx = row.data.argsort()[::-1]
                 aux = row.indices[indx]
                 user_playlist = self.urm[k]
