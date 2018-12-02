@@ -14,8 +14,8 @@ class HybridRS:
         print("Hybrid Slim(s) Initialized")
         self.at = at
 
-    def fit(self, train_data, lambda_i=0.001, lambda_j=0.001, topK_bpr=200, l1_ratio=0.25,
-            topK_elasticNet = 300, sgd_mode='sgd'):
+    def fit(self, train_data, lambda_i=0.001, lambda_j=0.001, topK_bpr=200, l1_ratio=0.1,
+            topK_elasticNet = 200, alpha_elasticNet=0.0001, sgd_mode='sgd'):
         print('Fitting...')
 
         self.urm = buildURMMatrix(train_data)
@@ -23,7 +23,7 @@ class HybridRS:
         self.slim_bpr_recommender = SLIM_BPR_Cython(train_data)
         self.slim_bpr_recommender.fit(lambda_i=lambda_i, lambda_j=lambda_j, topK=topK_bpr, sgd_mode=sgd_mode)
         self.slim_elasticNet_recommender = SLIMElasticNetRecommender(train_data)
-        self.slim_elasticNet_recommender.fit(l1_ratio=l1_ratio, topK=topK_elasticNet)
+        self.slim_elasticNet_recommender.fit(l1_ratio=l1_ratio, topK=topK_elasticNet, alpha=alpha_elasticNet)
 
     def recommend(self, playlist_ids, omega=60, filter_top_pop=False):
         print("Recommending... Am I filtering top_top songs?", filter_top_pop)

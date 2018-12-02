@@ -39,7 +39,7 @@ class SLIMElasticNetRecommender():
             self.l1_penalty, self.l2_penalty, self.positive_only
         )
 
-    def fit(self, l1_ratio=0.00001, positive_only=True, topK=30, alpha=1):
+    def fit(self, l1_ratio=0.25, positive_only=True, topK=300, alpha=0.0001):
 
         self.positive_only = positive_only
         self.topK = topK
