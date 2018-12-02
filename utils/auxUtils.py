@@ -5,10 +5,10 @@ import scipy.sparse as sps
 import time, sys
 import scipy
 from sklearn.model_selection import train_test_split
+import os
 
 
 def buildURMMatrix(data):
-
     playlists = data["playlist_id"].values
     tracks = data["track_id"].values
     interaction = np.ones(len(tracks))
@@ -523,3 +523,11 @@ def cluster_duration(row):
         d = 2
     row['cluster_dur'] = d
     return row
+
+
+def submit_dataframe_to_kaggle(path_of_dataframe, message):
+    # kaggle competitions submit -c recommender-system-2018-challenge-polimi -f submission.csv -m "Message"
+    # print(os.popen("kaggle competitions list").read())
+    cmd = "kaggle competitions submit -c recommender-system-2018-challenge-polimi -f " + str(path_of_dataframe)
+    cmd = cmd + ' -m "' + str(message) + '"'
+    print(os.popen(cmd).read())

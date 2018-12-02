@@ -7,23 +7,24 @@ python compileCython.py Cosine_Similarity_Cython.pyx build_ext --inplace
 2) Boosting
 
 ################## RESUME' OF ALL RESULTS #####################
-Algorithm       knn     MAP        Local Map other parameters
-Slim cython     600     0.078520   --------  standard parameters
-Slim cython_Opt 200     0.082500   0.070700  lambda_i = 0.001; lambda_j= 0.001; epochs = 160; learning_rate=0.001
-Hybrid_delivery ...     0.088710   0.078600  alpha = 1, beta = 5, gamma = 7, s_cf, k_cf = 10; k_ii = 700, s_ii=200, k_u_u=200, s_uu = 50
-Hybrid_slim1    same    0.090970   0.079500  stnd par of slim (likely)
-Hy_slim_pureSVD '''     0.091210   0.079600
-pure_SVD        ...     0.062130   0.051500  num_factors = 470
-slim            200     0.082500   0.070700  epochs = 160; lambda_i=0.001; lambda_j=0.0001; learning_rate=0.001;
-funkSVD         300     --------   0.028820  factors = 800
-ElasticNet      50      --------   0.059200  li_ratio=0.00001
-CF              10      --------   0.000000  shrinkage = 10;
-UF              200     --------   0.071300  shrinkage = 50;
-IF              350     --------   0.000000  shrinkage = 400; can we use also this one here?
-IF              700     --------   0.072100  shrinkage = 200;
-BPR Mf          200     --------   0.018000  num_factors = 30;
-hyb_slim+EN     ---     --------   --------  alpha = down; topknn=50
-slim_EN         200     --------   0.074700  alpha=0.0001; l1_ratio=0.25
+Algorithm       knn     MAP        Local Map  other parameters
+Slim cython     600     0.078520   --------   standard parameters
+Slim cython_Opt 200     0.082500   0.070700   lambda_i = 0.001; lambda_j= 0.001; epochs = 160; learning_rate=0.001
+Hybrid_delivery ...     0.088710   0.078600   alpha = 1, beta = 5, gamma = 7, s_cf, k_cf = 10; k_ii = 700, s_ii=200, k_u_u=200, s_uu = 50
+Hybrid_slim1    same    0.090970   0.079500   stnd par of slim (likely)
+Hy_slim_pureSVD '''     0.091210   0.079600   ----------------
+pure_SVD        ...     0.062130   0.051500   num_factors = 470
+slim            200     0.082500   0.070700   epochs = 160; lambda_i=0.001; lambda_j=0.0001; learning_rate=0.001;
+funkSVD         300     --------   0.028820   factors = 800
+ElasticNet      50      --------   0.059200   li_ratio=0.00001
+CF              10      --------   0.000000   shrinkage = 10;
+UF              200     --------   0.071300   shrinkage = 50;
+IF              350     --------   0.000000   shrinkage = 400; can we use also this one here?
+IF              700     --------   0.072100   shrinkage = 200;
+BPR Mf          200     --------   0.018000   num_factors = 30;
+hyb_slim+EN     ---     --------   --------   alpha = down; topknn=50
+slim_EN         300     0.088630   0.074700   alpha=0.0001; l1_ratio=0.25
+omega_full      ---     0.093640   0.081420   alpha=0.0001; l1_ratio=0.25, omega=30, knn_o=300
 
 # 0.082 on kaggle ElasticNet => aim
 Omega   Map

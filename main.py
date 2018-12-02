@@ -16,29 +16,29 @@ import matplotlib.pyplot as plt
 from slimRS.slimElasticNet import SLIMElasticNetRecommender
 from hybrid_col_cbf_RS.hybrid_knn_slimBPR_elasticNet import HybridRS
 
+
 evaluator = Evaluator()
 rs = HybridRS(tracks_data)
 rs.fit(full_data)
-predictions = rs.recommend(target_data['playlist_id'], omega=30)
+
+omega = 30
+predictions = rs.recommend(target_data['playlist_id'], omega=omega)
 map_ = evaluator.evaluate(predictions, test_data)
-save_dataframe('output/full_hybrid.csv', ',', predictions)
+save_dataframe('output/submission_1_dicembre.csv', ',', predictions)
 
 '''
 evaluator = Evaluator()
 rs = SLIMElasticNetRecommender(train_data)
-
 rs.fit(topK=300, l1_ratio=0.3)
 predictions = rs.recommend(target_data['playlist_id'])
 map_ = evaluator.evaluate(predictions, test_data)
 print("map: ", map_)
-
     # save_dataframe('output/slim_elasticNet.csv', ',', predictions)
 '''
 '''
 map_list = []
 o_list = []
-omegas = [0, 2, 5, 7, 10, 15, 20]
-
+omegas = [0, 15, 20, 25, 30, 35, 40, 50]
 evaluator = Evaluator()
 rs = HybridRS(tracks_data)
 rs.fit(train_data)
@@ -49,7 +49,6 @@ for o in omegas:
     print("map: ", map_)
     map_list.append(map_)
     o_list.append(o)
-
 plt.plot(o_list, map_list)
 plt.xlabel('Omega')
 plt.ylabel('map')
@@ -81,7 +80,6 @@ for t in thetas:
     print("map: ", map_)
     map_list.append(map_)
     t_list.append(t)
-
 plt.plot(t_list, map_list)
 plt.xlabel('Theta')
 plt.ylabel('map')
@@ -98,7 +96,6 @@ ks = [100, 200, 300, 400, 500, 600, 700]
 ls = [0.1, 0.01, 0.001, 0.0001]
 evaluator = Evaluator()
 rs = MultiThreadSLIM_ElasticNet(train_data)
-
 for l in ls:
     rs.fit(l1_penalty=l, l2_penalty=l)
     predictions = rs.recommend(target_data['playlist_id'])
@@ -107,7 +104,6 @@ for l in ls:
     print("map: ", map_)
     map_list.append(map_)
     l_list.append(l)
-
 plt.plot(l_list, map_list)
 plt.xlabel('L')
 plt.ylabel('map')
@@ -129,7 +125,6 @@ for t in theta:
     print("map: ", map_)
     map_list.append(map_)
     t_list.append(t)
-
 plt.plot(t_list, map_list)
 plt.xlabel('Theta')
 plt.ylabel('map')
@@ -140,7 +135,6 @@ plt.show()
 '''
 map_list = []
 f_list = []
-
 evaluator = Evaluator()
 rs = PureSVDRecommender(train_data)
 factor = 450
@@ -151,7 +145,6 @@ while factor <= 550:
     map_list.append(map_)
     f_list.append(factor)
     factor += 20
-
 plt.plot(f_list, map_list)
 plt.xlabel('N Factors')
 plt.ylabel('map')
@@ -162,12 +155,10 @@ plt.show()
 '''
 for b in beta:
     print("Beta: ", b)
-
     predictions = rs.recommend(target_data["playlist_id"], beta=b)
     map_ = evaluator.evaluate(predictions, test_data)
     map_list.append(map_)
     b_list.append(b)
-
 plt.plot(b_list, map_list)
 plt.xlabel('Beta (item+slim weight)')
 plt.ylabel('map')
@@ -185,26 +176,21 @@ save_dataframe('output/slim_cython.csv', ',', predictions)
 '''
 '''
 # Hybrid (cbf - colf)
-
 rs = HybridRS(tracks_data, 10, tf_idf=True)
 evaluator = Evaluator()
 rs.fit(train_data)
-
 predictions = rs.recommend(target_data['playlist_id'], 1, 5, 7)
 evaluator.evaluate(predictions, test_data)
-
 save_dataframe('output/hybrid_output.csv', ',', predictions)
 '''
 '''
 rs = HybridRS(tracks_data, 10, tf_idf=True)
 evaluator = Evaluator()
 rs.fit(train_data)
-
 df = pd.DataFrame([[0, 0, 0, 0]], columns=['alpha', 'beta', 'gamma', 'map'])
 alpha = 1
 beta = 1
 gamma = 1
-
 while beta <= 10:
     gamma = 1
     while gamma <= 10:
@@ -214,16 +200,12 @@ while beta <= 10:
         hybrid = rs.recommend(target_data['playlist_id'], alpha, beta, gamma)
         print("Alpha: ", alpha, " Beta: ", beta, "Gamma: ", gamma)
         temp_map = evaluator.evaluate(hybrid, test_data)
-
         df = df.append(pd.DataFrame([[alpha, beta, gamma, temp_map]],
                                     columns=['alpha', 'beta', 'gamma', 'map']))
         top_20 = df.sort_values(by=['map']).tail(20)
-
         gamma += 1
-
         print(top_20)
     beta += 1
-
 predictions = rs.recommend(target_data['playlist_id'], alpha, beta, gamma)
 temp_map = evaluator.evaluate(predictions, test_data)
 '''
