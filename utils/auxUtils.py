@@ -149,25 +149,26 @@ class Evaluator:
 
         return map_score
 
-    def evaluate(self, recommended, test_data):
+    def evaluate(self, recommended, test_data, ignore_users=[]):
         cumulative_map = 0.0
         num_eval = 0
         counter = 0
         urm_test = buildURMMatrix(test_data)
 
         for i in recommended["playlist_id"]:
-            try:
-                relevant_items = urm_test[i].indices
-                # relevant_items = self.get_user_relevant_items(test_user)
-            except IndexError:
-                print("No row in the test set")
-                continue
+            if i not in ignore_users:
+                try:
+                    relevant_items = urm_test[i].indices
+                    # relevant_items = self.get_user_relevant_items(test_user)
+                except IndexError:
+                    print("No row in the test set")
+                    continue
 
-            if len(relevant_items) > 0:
-                recommended_items = np.fromstring(recommended["track_ids"][counter], dtype=int, sep=' ')
-                num_eval += 1
+                if len(relevant_items) > 0:
+                    recommended_items = np.fromstring(recommended["track_ids"][counter], dtype=int, sep=' ')
+                    num_eval += 1
 
-                cumulative_map += self.map(recommended_items, relevant_items)
+                    cumulative_map += self.map(recommended_items, relevant_items)
 
             counter += 1
 

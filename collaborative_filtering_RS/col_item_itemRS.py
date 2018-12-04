@@ -17,16 +17,20 @@ class ColBfIIRS:
         self.at = at
         self.tf_idf = tf_idf
 
-    def fit(self, train_data):
+    def fit(self, train_data, init_URM=None):
 
         print("Fitting...")
 
         self.train_data = train_data
         self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values
-        self.urm = buildURMMatrix(train_data)
+        if init_URM is None:
+            self.urm = buildURMMatrix(train_data)
+        else:
+            self.urm = init_URM
+
         if self.tf_idf:
             self.urm = normalize_tf_idf(self.urm.T).T
-        self.cosine = Cosine_Similarity(self.urm, self.k, self.shrinkage, normalize = True)
+        self.cosine = Cosine_Similarity(self.urm, self.k, self.shrinkage, normalize=True)
         # self.cosine = Compute_Similarity_Python(self.urm, self.k, self.shrinkage, normalize=True)
         self.sym = check_matrix(self.cosine.compute_similarity(), 'csr')
 
@@ -39,22 +43,23 @@ class ColBfIIRS:
         counter = 0
 
         for k in playlist_ids:
+            try:
+                row = estimated_ratings[k]
+                # aux contains the indices (track_id) of the most similar songs
+                indx = row.data.argsort()[::-1]
+                aux = row.indices[indx]
+                user_playlist = self.urm[k]
 
-            row = estimated_ratings[k]
-            # aux contains the indices (track_id) of the most similar songs
-            indx = row.data.argsort()[::-1]
-            aux = row.indices[indx]
-            user_playlist = self.urm[k]
+                aux = np.concatenate((aux, self.top_pop_songs), axis=None)
+                top_songs = filter_seen(aux, user_playlist)[:self.at]
 
-            aux = np.concatenate((aux, self.top_pop_songs), axis=None)
-            top_songs = filter_seen(aux, user_playlist)[:self.at]
+                string = ' '.join(str(e) for e in top_songs)
+                final_prediction.update({k: string})
 
-            string = ' '.join(str(e) for e in top_songs)
-            final_prediction.update({k: string})
-
-            if (counter % 1000) == 0:
-                print("Playlist num", counter, "/10000")
-
+                if (counter % 1000) == 0:
+                    print("Playlist num", counter, "/10000")
+            except IndexError:
+                continue
             counter += 1
 
         df = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
