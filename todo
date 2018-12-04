@@ -27,7 +27,7 @@ BPR Mf          200     --------   0.018000   num_factors = 30;
 hyb_slim+EN     ---     --------   --------   alpha = down; topknn=50
 slim_EN         300     0.088630   0.074700   alpha=0.0001; l1_ratio=0.25
 omega_full      ---     0.093640   0.081420   alpha=0.0001; l1_ratio=0.25, omega=30, knn_o=300
-p3alpha         250     --------   0.071400   alpha=1.1, normalize=True
+p3alpha         75     --------   0.071400   alpha=1.1, normalize=True
 
 
 # 0.082 on kaggle ElasticNet => aim
