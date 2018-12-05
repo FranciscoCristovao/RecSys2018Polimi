@@ -20,7 +20,7 @@ class NotifyMail:
         if to_address is 'arto':
             self.to_address = 'artonialessandro1995@gmail.com'
         elif to_address is 'francisco':
-            self.to_address = 'idk'
+            self.to_address = 'francristovao@gmail.com'
         else:
             print('You should choose between -arto- or -francisco-')
             self.to_address = 'artonialessandro1995@gmail.com'

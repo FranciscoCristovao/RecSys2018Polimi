@@ -332,7 +332,10 @@ class SLIM_BPR_Cython():
 
     def default_validation_function(self, playlist_ids):
         e = Evaluator()
-        return e.evaluate(self.recommend(playlist_ids), self.URM_validation)
+        return e.evaluate_tuning(self.recommend(playlist_ids), self.URM_validation)
+
+    def get_URM_train(self):
+        return self.URM_train
 
     def evaluateRecommendations(self, URM_test, at=10, minRatingsPerUser=1, exclude_seen=True,
                                 mode='parallel', filterTopPop = False,
