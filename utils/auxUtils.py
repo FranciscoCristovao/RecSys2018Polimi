@@ -178,6 +178,34 @@ class Evaluator:
         print("Recommender performance is: MAP = {:.4f}".format(cumulative_map))
         return cumulative_map
 
+    def evaluate_tuning(self, recommended, urm_test, ignore_users=[]):
+        cumulative_map = 0.0
+        num_eval = 0
+        counter = 0
+
+        for i in recommended["playlist_id"]:
+            if i not in ignore_users:
+                try:
+                    relevant_items = urm_test[i].indices
+                    # relevant_items = self.get_user_relevant_items(test_user)
+                except IndexError:
+                    print("No row in the test set")
+                    continue
+
+                if len(relevant_items) > 0:
+                    recommended_items = np.fromstring(recommended["track_ids"][counter], dtype=int, sep=' ')
+                    num_eval += 1
+
+                    cumulative_map += self.map(recommended_items, relevant_items)
+
+            counter += 1
+
+        cumulative_map /= num_eval
+        print("Evaluated", num_eval, "playlists")
+
+        print("Recommender performance is: MAP = {:.4f}".format(cumulative_map))
+        return cumulative_map
+
 
 def check_matrix(X, format, dtype=np.float32):
     if format == 'csc' and not isinstance(X, sps.csc_matrix):

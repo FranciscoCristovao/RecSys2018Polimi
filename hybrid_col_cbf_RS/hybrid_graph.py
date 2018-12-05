@@ -46,7 +46,7 @@ class HybridRS:
         self.p3alpha = P3alphaRecommender(train_data)
         self.p3alpha.fit(topK=75, alpha=1.1, implicit=True, normalize_similarity=True)
 
-    def recommend(self, playlist_ids, alpha=0.1, beta=1, gamma=1, delta=2, omega=30, theta=1, filter_top_pop=False):
+    def recommend(self, playlist_ids, alpha=0.1, beta=1, gamma=1, delta=2, omega=30, theta=5, filter_top_pop=False):
         print("Recommending... Am I filtering top_top songs?", filter_top_pop)
 
         final_prediction = {}
