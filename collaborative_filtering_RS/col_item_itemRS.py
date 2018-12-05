@@ -85,3 +85,6 @@ class ColBfIIRS:
 
     def get_estimated_ratings(self):
         return csr_matrix(self.urm.dot(self.sym))
+
+    def get_W(self):
+        return check_matrix(self.sym, 'csr')

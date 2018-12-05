@@ -87,3 +87,22 @@ class ColBfUURS:
 
     def get_estimated_ratings(self):
         return csr_matrix(self.sym.dot(self.urm))
+
+    def get_W(self):
+        '''
+        W * R = (R.T * W.T).T
+
+        proof:
+        a = np.matrix('1 2; 3 4; 5 6')
+        b = np.matrix('7 8 9; 10 11 12')
+        a * b
+        matrix([[27, 30, 33],
+                [61, 68, 75],
+                [95, 106, 117]])
+        (b.T * a.T).T
+        matrix([[ 27,  30,  33],
+                [ 61,  68,  75],
+                [ 95, 106, 117]])
+        '''
+        return csr_matrix(self.sym.T)
+
