@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sps
 from scipy.sparse import csr_matrix
-from utils.auxUtils import check_matrix, filter_seen, buildICMMatrix, buildURMMatrix, normalize_tf_idf
+from utils.auxUtils import check_matrix, filter_seen, buildICMMatrix, buildURMMatrix, normalize_tf_idf, okapi_BM_25
 from utils.Cython.Cosine_Similarity_Max import Cosine_Similarity
 # from utils.cosine_similarity import Compute_Similarity_Python
 from sklearn.preprocessing import normalize
@@ -12,7 +12,7 @@ class CbfRS:
 
     train_data = pd.DataFrame()
 
-    def __init__(self, tracks_data, at, k=10, shrinkage=10, similarity='cosine', tf_idf=True,
+    def __init__(self, tracks_data, at=10, k=35, shrinkage=150, similarity='cosine', tf_idf=False, bm25=True,
                  weight_album=3, weight_artist=1, use_duration=False, weight_duration=0, num_clusters_duration=3):
 
         self.k = k
@@ -20,6 +20,7 @@ class CbfRS:
         self.shrinkage = shrinkage
         self.similarity_name = similarity
         self.tf_idf = tf_idf
+        self.bm25 = bm25
 
         # data = tracks_data.drop(columns="duration_sec")
         # len should be faster, according to this:
@@ -40,6 +41,9 @@ class CbfRS:
 
         if self.tf_idf:
             self.icm = normalize_tf_idf(self.icm)
+
+        if self.bm25:
+            self.icm = okapi_BM_25(self.icm)
 
         # self.icm = normalize(self.icm, norm='l2', axis=1)
 

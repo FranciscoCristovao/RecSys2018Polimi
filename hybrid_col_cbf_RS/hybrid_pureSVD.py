@@ -15,7 +15,7 @@ class HybridRS:
 
     train_data = pd.DataFrame()
 
-    def __init__(self, tracks_data, at=10, k_cbf=10, shrinkage_cbf=10, k_i_i=700, shrinkage_i_i=200, \
+    def __init__(self, tracks_data, at=10, k_cbf=35, shrinkage_cbf=150, k_i_i=700, shrinkage_i_i=200, \
                  k_u_u=200, shrinkage_u_u=50, similarity='cosine', tf_idf=True):
         self.k_cbf = k_cbf
         self.k_i_i = k_i_i
@@ -26,7 +26,7 @@ class HybridRS:
         self.shrinkage_u_u = shrinkage_u_u
         self.similarity = similarity
         self.tf_idf = tf_idf
-        self.cbf_recommender = CbfRS(tracks_data, self.at, self.k_cbf, self.shrinkage_cbf, tf_idf=self.tf_idf)
+        self.cbf_recommender = CbfRS(tracks_data, self.at, self.k_cbf, self.shrinkage_cbf)
         self.col_i_i_recommender = ColBfIIRS(self.at, self.k_i_i, self.shrinkage_i_i, tf_idf=self.tf_idf)
         self.col_u_u_recommender = ColBfUURS(self.at, self.k_u_u, self.shrinkage_u_u, tf_idf=self.tf_idf)
 
