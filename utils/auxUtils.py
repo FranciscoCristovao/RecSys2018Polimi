@@ -17,7 +17,7 @@ def buildURMMatrix(data):
     return coo_urm.tocsr()
 
 
-def buildICMMatrix(data, w_album, w_artist, w_duration=0.001, use_tracks_duration=False):
+def buildICMMatrix(data, w_album=1, w_artist=1, w_duration=0.001, use_tracks_duration=False):
 
     '''
     tracks = data["track_id"].values
@@ -79,6 +79,38 @@ def normalize_tf_idf(icm_all):
     icm_idf.data = icm_idf.data * np.repeat(idf, col_nnz)
 
     return icm_idf
+
+def okapi_BM_25(dataMatrix, K1=1.2, B=0.75):
+    """
+    Items are assumed to be on rows
+    :param dataMatrix:
+    :param K1:
+    :param B:
+    :return:
+    """
+
+    assert B>0 and B<1, "okapi_BM_25: B must be in (0,1)"
+    assert K1>0,        "okapi_BM_25: K1 must be > 0"
+
+
+    # Weighs each row of a sparse matrix by OkapiBM25 weighting
+    # calculate idf per term (user)
+
+    dataMatrix = sps.coo_matrix(dataMatrix)
+
+    N = float(dataMatrix.shape[0])
+    idf = np.log(N / (1 + np.bincount(dataMatrix.col)))
+
+    # calculate length_norm per document
+    row_sums = np.ravel(dataMatrix.sum(axis=1))
+
+    average_length = row_sums.mean()
+    length_norm = (1.0 - B) + B * row_sums / average_length
+
+    # weight matrix rows by bm25
+    dataMatrix.data = dataMatrix.data * (K1 + 1.0) / (K1 * length_norm[dataMatrix.row] + dataMatrix.data) * idf[dataMatrix.col]
+
+    return dataMatrix.tocsr()
 
 
 class Cosine:

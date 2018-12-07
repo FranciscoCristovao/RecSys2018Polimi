@@ -17,6 +17,28 @@ from hybrid_col_cbf_RS.hybrid_knn_slimBPR_elasticNet import HybridRS
 from hybrid_col_cbf_RS.hybrid_graph import HybridRS
 from hybrid_col_cbf_RS.hybrid_pureSVD import HybridRS
 
+'''
+map_list = []
+knn_list = []
+ks = [5, 10, 15, 20, 25, 30, 35, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 250, 300]
+evaluator = Evaluator()
+for k in ks:
+
+    rs = CbfRS(tracks_data, k=k)
+    rs.fit(train_data)
+    predictions = rs.recommend(target_data['playlist_id'])
+    map_ = evaluator.evaluate(predictions, test_data)
+    print("K: ", k)
+    print("MAP: ", map_)
+    map_list.append(map_)
+    knn_list.append(k)
+plt.plot(knn_list, map_list)
+plt.xlabel('K')
+plt.ylabel('map')
+plt.title('Knn cbf Tuning')
+plt.grid(True)
+plt.show()
+'''
 
 rs = HybridRS(tracks_data)
 rs.fit(full_data)
