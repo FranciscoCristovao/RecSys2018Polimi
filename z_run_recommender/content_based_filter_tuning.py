@@ -17,7 +17,7 @@ while shrinkage < 50:
     knn_list = []
     k = 10
     while k < 100:
-        rs = CbfRS(tracks_data, 10, k, shrinkage, tf_idf=True)
+        rs = CbfRS(tracks_data, 10, k, shrinkage, tf_idf=False, bm25=True)
         rs.fit(train_data)
         print('knn: ', k, ' shrinkage: ', shrinkage)
         predictions = rs.recommend(target_data['playlist_id'])

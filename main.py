@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from slimRS.slimElasticNet import SLIMElasticNetRecommender
 from hybrid_col_cbf_RS.hybrid_knn_slimBPR_elasticNet import HybridRS
 from hybrid_col_cbf_RS.hybrid_graph import HybridRS
-from hybrid_col_cbf_RS.hybrid_pureSVD import HybridRS
+from hybrid_col_cbf_RS.hybrid_knn_slimBPR_elasticNet import HybridRS
 
 '''
 map_list = []
@@ -40,10 +40,14 @@ plt.grid(True)
 plt.show()
 '''
 
-rs = HybridRS(tracks_data)
-rs.fit(full_data)
-predictions = rs.recommend(target_data['playlist_id'])
-save_dataframe('output/hybrid_pureSVD.csv', ',', predictions)
+rs = HybridRS(tracks_data, at=30)
+rs.fit(train_data)
+all_playlists = full_data['playlist_id'].drop_duplicates()
+# todo: all playlists
+predictions = rs.recommend(all_playlists)
+save_dataframe('xgboost_train', dataframe=train_data)
+save_dataframe('xgboost_test', dataframe=test_data)
+save_dataframe('output/xgboost_start_80.csv', sep=',', dataframe=predictions)
 
 '''
 map_list = []
@@ -95,7 +99,7 @@ rs.fit(full_data)
 omega = 30
 predictions = rs.recommend(target_data['playlist_id'], omega=omega)
 map_ = evaluator.evaluate(predictions, test_data)
-save_dataframe('output/submission_1_dicembre.csv', ',', predictions)
+save_dataframe('output/submission_1_dicembre.csv', sep=',', dataframe=predictions)
 '''
 '''
 evaluator = Evaluator()
@@ -104,7 +108,7 @@ rs.fit(topK=300, l1_ratio=0.3)
 predictions = rs.recommend(target_data['playlist_id'])
 map_ = evaluator.evaluate(predictions, test_data)
 print("map: ", map_)
-    # save_dataframe('output/slim_elasticNet.csv', ',', predictions)
+    # save_dataframe('output/slim_elasticNet.csv', ',', dataframe=predictions)
 '''
 '''
 map_list = []
@@ -134,7 +138,7 @@ rs = PureSVDRecommender(full_data)
 rs.fit()
 predictions = rs.recommend(target_data['playlist_id'])
 evaluator.evaluate(predictions, test_data)
-save_dataframe('output/pureSVD.csv', ',', predictions)
+save_dataframe('output/pureSVD.csv', ',', dataframe=predictions)
 '''
 
 '''
@@ -243,7 +247,7 @@ rs.fit(lambda_i=0.001, lambda_j=0.001)
 predictions = rs.recommend(target_data["playlist_id"])
 evaluator = Evaluator()
 evaluator.evaluate(predictions, test_data)
-save_dataframe('output/slim_cython.csv', ',', predictions)
+save_dataframe('output/slim_cython.csv', ',', dataframe=predictions)
 '''
 '''
 # Hybrid (cbf - colf)
@@ -252,7 +256,7 @@ evaluator = Evaluator()
 rs.fit(train_data)
 predictions = rs.recommend(target_data['playlist_id'], 1, 5, 7)
 evaluator.evaluate(predictions, test_data)
-save_dataframe('output/hybrid_output.csv', ',', predictions)
+save_dataframe('output/hybrid_output.csv', ',', dataframe=predictions)
 '''
 '''
 rs = HybridRS(tracks_data, 10, tf_idf=True)

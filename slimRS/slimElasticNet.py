@@ -29,22 +29,35 @@ class SLIMElasticNetRecommender():
         http://glaros.dtc.umn.edu/gkhome/fetch/papers/SLIM2011icdm.pdf
     """
 
-    def __init__(self, train_data):
+    def __init__(self, train_data, save=True, load_model=False, load_model_full=False):
 
         self.URM_train = buildURMMatrix(train_data)
         self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values
+        self.save = save
+        self.load_model = load_model
+        self.load_model_full = load_model_full
 
     def __str__(self):
         return "SLIM (l1_penalty={},l2_penalty={},positive_only={})".format(
             self.l1_penalty, self.l2_penalty, self.positive_only
         )
 
-    def fit(self, l1_ratio=0.25, positive_only=True, topK=300, alpha=0.0001):
+    def fit(self, l1_ratio=0.1, positive_only=True, topK=300, alpha=0.0002):
 
         self.positive_only = positive_only
         self.topK = topK
         self.l1_ratio = l1_ratio
         self.alpha = alpha
+        if self.load_model_full:
+            print('Loading model with full data from EN...')
+            self.W_sparse = sps.load_npz('model/sparse_matrix_full.npz')
+            print(self.W_sparse.shape)
+            return
+        if self.load_model:
+            print('Loading model with 80% data from EN...')
+            self.W_sparse = sps.load_npz('model/sparse_matrix.npz')
+            print(self.W_sparse.shape)
+            return
 
         # initialize the ElasticNet model
         self.model = ElasticNet(alpha=self.alpha,
@@ -141,6 +154,9 @@ class SLIMElasticNetRecommender():
         # generate the sparse weight matrix
         self.W_sparse = sps.csr_matrix((values[:numCells], (rows[:numCells], cols[:numCells])),
                                        shape=(n_items, n_items), dtype=np.float32)
+
+        if self.save:
+            sps.save_npz('model/sparse_matrix.npz', self.W_sparse)
 
     def recommend(self, playlist_ids):
 

@@ -7,7 +7,7 @@ on default features for https://www.kaggle.com/c/allstate-claims-severity
 __author__ = "Vladimir Iglovikov"
 
 import pandas as pd
-import xgboost as xgb
+import xgboost_main as xgb
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import mean_absolute_error
 from bayes_opt import BayesianOptimization

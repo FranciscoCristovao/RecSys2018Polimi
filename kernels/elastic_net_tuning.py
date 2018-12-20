@@ -12,8 +12,9 @@ def buildURMMatrix(data):
     tracks = data["track_id"].values
     interaction = np.ones(len(tracks))
     coo_urm = coo_matrix((interaction, (playlists, tracks)))
-
     return coo_urm.tocsr()
+
+
 def split_data_fast(full_data, sequential_data, target_data, test_size):
 
     # items_threshold is the minimum number of tracks to be in a playilist

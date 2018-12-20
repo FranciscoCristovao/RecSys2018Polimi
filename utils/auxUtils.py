@@ -6,13 +6,18 @@ import time, sys
 import scipy
 from sklearn.model_selection import train_test_split
 import os
+from random import *
+from tqdm import tqdm
 
 
-def buildURMMatrix(data):
+def buildURMMatrix(data, shape=None):
     playlists = data["playlist_id"].values
     tracks = data["track_id"].values
     interaction = np.ones(len(tracks))
-    coo_urm = coo_matrix((interaction, (playlists, tracks)))
+    if shape is None:
+        coo_urm = coo_matrix((interaction, (playlists, tracks)), dtype='float32')
+    else:
+        coo_urm = coo_matrix((interaction, (playlists, tracks)), dtype='float32', shape=shape)
 
     return coo_urm.tocsr()
 
@@ -322,6 +327,7 @@ def split_data(full_data, sequential_data, target_data, test_size):
 
 
 def split_data_fast(full_data, sequential_data, target_data, test_size):
+    tqdm.pandas()
 
     # items_threshold is the minimum number of tracks to be in a playilist
     data = full_data
@@ -333,20 +339,77 @@ def split_data_fast(full_data, sequential_data, target_data, test_size):
 
     # not so good, list / len does not work
 
-    train_data_sequential = sequential_data.groupby('playlist_id', as_index=False).\
-        apply(lambda x: x[:int(len(x)*(1 - test_size))]).reset_index(drop=True)
+    train_data_sequential = sequential_data.groupby('playlist_id', as_index=False). \
+        progress_apply(lambda x: x[:int(len(x)*(1 - test_size))]).reset_index(drop=True)
 
-    test_data_sequential = sequential_data.groupby('playlist_id', as_index=False).\
-        apply(lambda x: x[int(len(x)*(1 - test_size)):]).reset_index(drop=True)
+    test_data_sequential = sequential_data.groupby('playlist_id', as_index=False). \
+        progress_apply(lambda x: x[int(len(x)*(1 - test_size)):]).reset_index(drop=True)
 
     random_data_shuffled = random_data.sample(frac=1)
     # random_data.groupby('playlist_id').apply(lambda x: x['track_id'].sample(len(x)))
 
-    train_data_shuffled = random_data_shuffled.groupby('playlist_id', as_index=False).\
-        apply(lambda x: x[:(int(len(x)*(1 - test_size)))]).reset_index(drop=True)
+    train_data_shuffled = random_data_shuffled.groupby('playlist_id', as_index=False). \
+        progress_apply(lambda x: x[:(int(len(x)*(1 - test_size)))]).reset_index(drop=True)
+
+    '''
+    train_data_shuffled = random_data_shuffled[:5].groupby('playlist_id', as_index=False). \
+        progress_apply(lambda x: print(len(str(x['track_ids']).split()))).reset_index(drop=True)
+    '''
+
     # with list it's faster
-    test_data_shuffled = random_data_shuffled.groupby('playlist_id', as_index=False).\
-        apply(lambda x: x[(int(len(x)*(1 - test_size))):]).reset_index(drop=True)
+    test_data_shuffled = random_data_shuffled.groupby('playlist_id', as_index=False). \
+        progress_apply(lambda x: x[(int(len(x)*(1 - test_size))):]).reset_index(drop=True)
+
+    test_data = test_data_shuffled.append(test_data_sequential)
+    train_data = train_data_shuffled.append(train_data_sequential)
+
+    return train_data, test_data
+
+
+def split_data_fast_xgboost(full_data, sequential_data, target_data, test_size):
+    tqdm.pandas()
+
+    # items_threshold is the minimum number of tracks to be in a playilist
+    data = full_data
+
+    '''
+    train_data_sequential = sequential_data.groupby('playlist_id', as_index=False). \
+        progress_apply(lambda x: x[:int(len(x)*(1 - test_size))]).reset_index(drop=True)
+    
+    test_data_sequential = sequential_data.groupby('playlist_id', as_index=False). \
+        progress_apply(lambda x: x[int(len(x)*(1 - test_size)):]).reset_index(drop=True)
+        
+    test_data_shuffled = random_data_shuffled[:5].groupby('playlist_id', as_index=False). \
+    progress_apply(lambda x: print(x['track_ids'].values[int(len(x['track_ids'].values)*(1 - test_size)):])) \
+    .reset_index(drop=True)
+    '''
+
+    sequential_index = target_data[:5000]['playlist_id'].values
+    sequential_mask = data['playlist_id'].isin(sequential_index)  # .reset_index()['playlist_id']
+
+    random_data = data[~sequential_mask]
+    sequential_data = data[sequential_mask]
+    # not so good, list / len does not work
+
+    train_data_sequential = sequential_data.groupby('playlist_id', as_index=False). \
+        progress_apply(lambda x: str(x['track_ids']).split()[:(int(len(str(x['track_ids']).split()) * (1 - test_size)))]) \
+        .reset_index(drop=True)
+
+    test_data_sequential = sequential_data.groupby('playlist_id', as_index=False). \
+        progress_apply(lambda x: str(x['track_ids']).split()[(int(len(str(x['track_ids']).split()) * (1 - test_size))):]) \
+        .reset_index(drop=True)
+
+    random_data_shuffled = random_data.sample(frac=1)
+    # random_data.groupby('playlist_id').apply(lambda x: x['track_id'].sample(len(x)))
+
+    train_data_shuffled = random_data_shuffled.groupby('playlist_id', as_index=False). \
+        progress_apply(lambda x: str(x['track_ids']).split()[:(int(len(str(x['track_ids']).split())*(1 - test_size)))])\
+        .reset_index(drop=True)
+
+    # with list it's faster
+    test_data_shuffled = random_data_shuffled.groupby('playlist_id', as_index=False). \
+        progress_apply(lambda x: str(x['track_ids']).split()[(int(len(str(x['track_ids']).split())*(1 - test_size))):])\
+        .reset_index(drop=True)
 
     test_data = test_data_shuffled.append(test_data_sequential)
     train_data = train_data_shuffled.append(train_data_sequential)
@@ -592,3 +655,47 @@ def submit_dataframe_to_kaggle(path_of_dataframe, message):
     cmd = "kaggle competitions submit -c recommender-system-2018-challenge-polimi -f " + str(path_of_dataframe)
     cmd = cmd + ' -m "' + str(message) + '"'
     print(os.popen(cmd).read())
+
+
+def buildFMMatrix(train_data):
+    playlists = train_data["playlist_id"].values
+    tracks = train_data["track_id"].values
+    f_col = playlists
+    s_col = tracks + np.full(len(tracks), np.max(f_col))
+    t_col = np.full(len(tracks), np.max(s_col))
+    # building the row composed by the num of interactions * 3. 1 for playlists, 1 for 1 items, 1 for ratings
+    row_m = np.append(np.append(np.arange(len(tracks)), np.arange(len(s_col))), np.arange(len(tracks)))
+    data_m = np.ones(len(row_m))
+    col_m = np.append(np.append(f_col, s_col), t_col)
+    # m = csr_matrix((data_m, (row_m, col_m)), shape=(len(tracks), np.max(col_m)+1))
+    # building 0s matrix
+    seen_songs = train_data.groupby('playlist_id', as_index=True).apply(lambda x: list(x['track_id']))
+    f_col_neg = []
+    s_col_neg = []
+    # it takes 1 minute
+    for i in tqdm(range(len(playlists))):
+        # 1) pick a random index
+        playlist_index = randint(0, len(playlists))
+        # 2) pick a random not seen song
+        track_index = randint(0, len(tracks))
+        while track_index not in seen_songs:
+            track_index = randint(0, len(tracks))
+        # 3) add interaction 0. Repeat until we've enough interations
+        # i don't need the row
+        f_col_neg.append(playlist_index)
+        s_col_neg.append(track_index)
+
+    col_n = np.append(np.array(f_col), np.array(s_col))
+    data_n = np.ones(len(col_n))
+
+    # adding to the data 0s
+    row_n = np.append(np.arange(len(tracks), 2*len(tracks)), np.arange(len(tracks), 2*len(tracks)))
+    data = np.append(data_m, data_n)
+    row = np.append(row_m, row_n)
+    col = np.append(col_m, col_n)
+
+    final = csr_matrix((data, (row, col)), shape=(np.max(row)+1, np.max(col) + 1))
+    # m_no_interactions = csr_matrix((data, (row, col)), shape=(len(tracks), np.max(col) + 1))
+    return final
+
+
