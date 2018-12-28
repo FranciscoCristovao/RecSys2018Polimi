@@ -6,7 +6,9 @@ python compileCython.py Cosine_Similarity_Cython.pyx build_ext --inplace
 1) Bayesian Optimization
 2) Boosting
 3) Use instead of tf-idf bm25
+____________
 
+0) Add diffrent item item with diffrent knns..
 
 ################## RESUME' OF ALL RESULTS #####################
 Algorithm       knn     MAP        Local Map  other parameters
@@ -29,6 +31,8 @@ slim_EN         300     0.088630   0.074700   alpha=0.0001; l1_ratio=0.25
 omega_full      ---     0.093640   0.081420   alpha=0.0001; l1_ratio=0.25, omega=30, knn_o=300
 p3alpha         75      --------   0.071400   alpha=1.0, normalize=True
 CFW_similarity  ---     --------   0.035800   i used standard ones... nothing changed really
+Similarities    ---     --------   0.078126   alpha=0.3, beta =10, gamma =1
+
 
 # 0.082 on kaggle ElasticNet => aim
 Omega   Map

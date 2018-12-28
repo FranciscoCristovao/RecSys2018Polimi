@@ -169,3 +169,6 @@ class P3alphaRecommender:
 
     def get_estimated_ratings(self):
         return check_matrix(self.URM_train.dot(self.W_sparse), 'csr')
+
+    def get_sym_matrix(self, weight):
+        return check_matrix(self.W_sparse*weight, 'csr')

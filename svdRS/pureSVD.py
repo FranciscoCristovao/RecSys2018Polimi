@@ -55,9 +55,7 @@ class PureSVDRecommender():
         # U, s, Vt =
 
     def compute_score_SVD(self, user_id_array):
-
         try:
-
             item_weights = self.U[user_id_array, :].dot(self.s_Vt)
         except:
             pass
