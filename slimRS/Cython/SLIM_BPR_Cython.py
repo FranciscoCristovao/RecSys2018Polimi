@@ -287,6 +287,9 @@ class SLIM_BPR_Cython():
         matrix_W = self.get_weight_matrix()
         return check_matrix(self.URM_train.dot(matrix_W), 'csr')
 
+    def get_sym_matrix(self, weight):
+        return check_matrix(self.get_weight_matrix()*weight, 'csr')
+
     def recommend(self, playlist_ids):
 
         print("Recommending...")

@@ -195,7 +195,16 @@ class SLIMElasticNetRecommender():
     def get_estimated_ratings(self):
         return check_matrix(self.URM_train.dot(self.W_sparse), 'csr')
 
+    def get_sym_matrix(self, weight):
+        print(self.W_sparse.shape)
+        try:
+            return check_matrix(self.W_sparse * weight, 'csr')
+        except ValueError:
+            print('caught valueError for the shape')
+            self.W_sparse = self.W_sparse * weight
+            return sps.csr_matrix(self.W_sparse, shape=(20634, 20634))
 
+'''
 # SimilarityMatrixRecommender
 class MultiThreadSLIM_ElasticNet(SLIMElasticNetRecommender):
 
@@ -364,3 +373,4 @@ class _myThread(threading.Thread):
 
     def get_components(self):
         return self.values, self.rows, self.cols
+'''
