@@ -8,22 +8,19 @@ import numpy as np
 import scipy.sparse as sps
 
 from sklearn.preprocessing import normalize
-from Base.Recommender import Recommender
-from Base.Recommender_utils import check_matrix, similarityMatrixTopK
-
-from Base.SimilarityMatrixRecommender import SimilarityMatrixRecommender
+from utils.auxUtils import check_matrix, similarityMatrixTopK, buildURMMatrix, filter_seen
+import pandas as pd
 import time, sys
 
 
-class RP3betaRecommender(SimilarityMatrixRecommender, Recommender):
+class RP3betaRecommender():
     """ RP3beta recommender """
 
-    RECOMMENDER_NAME = "RP3betaRecommender"
+    def __init__(self, train_data):
 
-    def __init__(self, URM_train):
-        super(RP3betaRecommender, self).__init__()
+        self.URM_train = buildURMMatrix(train_data)
+        self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values
 
-        self.URM_train = check_matrix(URM_train, format='csr', dtype=np.float32)
         self.sparse_weights = True
 
     def __str__(self):
@@ -32,7 +29,7 @@ class RP3betaRecommender(SimilarityMatrixRecommender, Recommender):
             self.beta, self.min_rating, self.topK,
             self.implicit, self.normalize_similarity)
 
-    def fit(self, alpha=1., beta=0.6, min_rating=0, topK=100, implicit=False, normalize_similarity=True):
+    def fit(self, alpha=0.2, beta=0.01, min_rating=0, topK=100, implicit=False, normalize_similarity=True):
 
         self.alpha = alpha
         self.beta = beta
@@ -146,3 +143,40 @@ class RP3betaRecommender(SimilarityMatrixRecommender, Recommender):
         if self.topK != False:
             self.W_sparse = similarityMatrixTopK(self.W, forceSparseOutput=True, k=self.topK)
             self.sparse_weights = True
+
+
+    def recommend(self, playlist_ids):
+
+        print("Recommending...")
+
+        final_prediction = {}
+
+        estimated_ratings = check_matrix(self.URM_train.dot(self.W_sparse), 'csr')
+
+        counter = 0
+
+        for k in playlist_ids:
+
+            row = estimated_ratings[k]
+            # aux contains the indices (track_id) of the most similar songs
+            indx = row.data.argsort()[::-1]
+            aux = row.indices[indx]
+            user_playlist = self.URM_train[k]
+
+            aux = np.concatenate((aux, self.top_pop_songs), axis=None)
+            top_songs = filter_seen(aux, user_playlist)[:10]
+
+            string = ' '.join(str(e) for e in top_songs)
+            final_prediction.update({k: string})
+
+            if (counter % 1000) == 0:
+                print("Playlist num", counter, "/10000")
+
+            counter += 1
+
+        df = pd.DataFrame(list(final_prediction.items()), columns=['playlist_id', 'track_ids'])
+        # print(df)
+        return df
+
+    def get_sym_matrix(self, weight):
+        return check_matrix(self.W_sparse*weight, 'csr')

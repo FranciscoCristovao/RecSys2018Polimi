@@ -11,6 +11,7 @@ from slimRS.slimElasticNet import SLIMElasticNetRecommender
 from scipy import sparse
 from tqdm import tqdm
 from graphBased.p3alpha import P3alphaRecommender
+from graphBased.rp3betaRS import RP3betaRecommender
 
 
 class HybridRS:
@@ -49,13 +50,16 @@ class HybridRS:
         self.p3alpha = P3alphaRecommender(train_data)
         self.p3alpha.fit()
 
+        self.rp3beta = RP3betaRecommender(train_data)
+        self.rp3beta.fit()
+
         self.slim_recommender = SLIM_BPR_Cython(train_data)
         self.slim_recommender.fit(lambda_i=lambda_i, lambda_j=lambda_j, topK=topK_bpr, sgd_mode=sgd_mode)
 
         self.slim_elasticNet_recommender = SLIMElasticNetRecommender(train_data)
         self.slim_elasticNet_recommender.fit(l1_ratio=l1_ratio, topK=topK_elasticNet, alpha=alpha_elasticNet)
 
-    def recommend(self, playlist_ids, alpha=0.2, beta=10, gamma=1, delta=2, omega=30, eta=10, theta=30,
+    def recommend(self, playlist_ids, alpha=0.2, beta=10, gamma=1, delta=2, omega=30, eta=10, theta=30, sigma=1,
                   filter_top_pop=False):
         print("Recommending... Am I filtering top_top songs?", filter_top_pop)
 
@@ -65,9 +69,10 @@ class HybridRS:
 
         cii_sym = self.col_i_i_recommender.get_sym_matrix(beta)
         p3a_sym = self.p3alpha.get_sym_matrix(theta)
+        rp3b_sym = self.rp3beta.get_sym_matrix(sigma)
         slim_sym = self.slim_recommender.get_sym_matrix(delta)
         en_sym = self.slim_elasticNet_recommender.get_sym_matrix(omega)
-        sym = cbf_sym + cii_sym + p3a_sym + slim_sym + en_sym
+        sym = cbf_sym + cii_sym + p3a_sym + slim_sym + en_sym + rp3b_sym
         # e_r_ stands for estimated rating
         e_r_hybrid = self.urm*sym
         # print(e_r_hybrid)

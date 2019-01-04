@@ -9,7 +9,7 @@ from mail_notification.notify import NotifyMail
 r = HybridRS(tracks_data)
 e = Evaluator()
 
-r.fit(full_data)
+r.fit(train_data)
 # content filter
 gammas = [1]
 # collaborative user
@@ -27,9 +27,7 @@ deltas = [1]
 omegas = [40]
 list_res = []
 # 0.2 10 1.0 10 1 40.0 30
-
-gamma = 1
-
+sigmas = [0, 5, 10, 15, 20, 30, 50, 100, 200, 500]
 for gamma in gammas:
     for alpha in alphas:
         for beta in betas:
@@ -37,23 +35,26 @@ for gamma in gammas:
                 for theta in thetas:
                     for delta in deltas:
                         for omega in omegas:
-                            pred = r.recommend(target_data['playlist_id'], alpha=alpha, beta=beta, gamma=gamma, eta=eta,
-                                               theta=theta, delta=delta, omega=omega)
-                            temp_map = e.evaluate(pred, test_data)
-                            # print(pred[:10])
-                            print(alpha, beta, gamma, eta, theta, delta, omega)
-                            list_res.append({'map': temp_map, 'alpha': alpha, 'beta': beta, 'gamma': gamma, 'eta': eta,
-                                             'theta': theta, 'delta': delta, 'omega': omega})
+                            for sigma in sigmas:
+                                pred = r.recommend(target_data['playlist_id'], alpha=alpha, beta=beta,
+                                                   gamma=gamma, eta=eta, theta=theta, delta=delta, omega=omega,
+                                                   sigma=sigma)
+                                temp_map = e.evaluate(pred, test_data)
+                                # print(pred[:10])
+                                print(alpha, beta, gamma, eta, theta, delta, omega, sigma)
+                                list_res.append({'map': temp_map, 'alpha': alpha, 'beta': beta, 'gamma': gamma,
+                                                 'eta': eta, 'theta': theta, 'delta': delta, 'omega': omega,
+                                                 'sigma': sigma})
 
-'''
+
 print(list_res)
-df = pd.DataFrame(list_res)
+df = pd.DataFrame(list_res).sort_values(by='map')
 df = df.sort_values(by='map')
 df.to_csv('result.csv', '\t')
-'''
-'''
+
 notify = NotifyMail(to_address='arto', dataframe=df)
 notify.send_email()
-'''
-save_dataframe('output/submission_hybrid', ',', pred)
-submit_dataframe_to_kaggle('output/submission_hybrid', '0.2 10 1.0 10 1 40.0 30 alpha  beta  delta  eta  gamma omega  theta')
+
+# save_dataframe('output/submission_hybrid', ',', pred)
+# submit_dataframe_to_kaggle('output/submission_hybrid', '0.2 10 1.0 10 1 40.0 30 alpha  beta  delta  eta  gamma omega  theta')
+
