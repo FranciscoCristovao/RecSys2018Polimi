@@ -11,23 +11,22 @@ e = Evaluator()
 
 r.fit(train_data)
 # content filter
-gammas = [1]
-# collaborative user
-alphas = [0.2]
-# collaborative item
-betas = [10]
+gammas = [0, 0.8, 1]
+# collaborative user user
+alphas = [0, 0.2, 0.3]
+# collaborative item item
+betas = [0, 10]
 # pureSVD
-etas = [10]
+etas = [0, 10]
 # graph based
-thetas = [30]
-deltas = [1]
+thetas = [0, 20, 30]
 # slim BPR
-# deltas = [0, 1]
+deltas = [0, 0.8, 1]
 # slim EN
-omegas = [40]
+omegas = [0, 10, 30]
 list_res = []
 # 0.2 10 1.0 10 1 40.0 30
-sigmas = [0, 5, 10, 15, 20, 30, 50, 100, 200, 500]
+sigmas = [0, 20]
 for gamma in gammas:
     for alpha in alphas:
         for beta in betas:
@@ -41,7 +40,14 @@ for gamma in gammas:
                                                    sigma=sigma)
                                 temp_map = e.evaluate(pred, test_data)
                                 # print(pred[:10])
-                                print(alpha, beta, gamma, eta, theta, delta, omega, sigma)
+                                print("alpha: ", alpha,
+                                      "beta: ", beta,
+                                      "gamma: ", gamma,
+                                      "eta: ", eta,
+                                      "theta: ", theta,
+                                      "delta: ", delta,
+                                      "omega: ", omega,
+                                      "sigma: ", sigma)
                                 list_res.append({'map': temp_map, 'alpha': alpha, 'beta': beta, 'gamma': gamma,
                                                  'eta': eta, 'theta': theta, 'delta': delta, 'omega': omega,
                                                  'sigma': sigma})

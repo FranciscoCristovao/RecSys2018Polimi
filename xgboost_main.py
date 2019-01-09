@@ -52,7 +52,7 @@ for i in tqdm(all_playlist):
     mask = np.in1d(tracks_splitted, tracks_test, assume_unique=True, invert=False)
     y_test = np.append(y_test, mask.astype(int)) 
 
-#y_test = test_data['playlist_id'].astype('int32')
+# y_test = test_data['playlist_id'].astype('int32')
 
 dtrain = xgb.DMatrix(X_train, label=y_train)
 dtest = xgb.DMatrix(X_test, label=y_test)
@@ -60,10 +60,10 @@ dtest = xgb.DMatrix(X_test, label=y_test)
 params = {
     'max_depth': 3,  # the maximum depth of each tree
     'eta': 0.3,  # step for each iteration
-    'silent': 1, # keep it quiet
+    'silent': 1,  # keep it quiet
     'objective': 'multi:softprob',  # error evaluation for multiclass training
-    'num_class': 3, # the number of classes
-    'eval_metric': 'merror'} # evaluation metric
+    'num_class': 3,  # the number of classes
+    'eval_metric': 'merror'}  # evaluation metric
 
 num_round = 20  # the number of training iterations (number of trees)
 

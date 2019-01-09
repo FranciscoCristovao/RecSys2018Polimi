@@ -11,7 +11,7 @@ ____________
 0) Add diffrent item item with diffrent knns..
 
 ################## RESUME' OF ALL RESULTS #####################
-Algorithm       knn     MAP        Local Map  other parameters
+Algorithm       knn     MAP        Local Map  other parametlers
 Slim cython     600     0.078520   --------   standard parameters
 Slim cython_Opt 200     0.082500   0.070700   lambda_i = 0.001; lambda_j= 0.001; epochs = 160; learning_rate=0.001
 Hybrid_delivery ...     0.088710   0.078600   alpha = 1, beta = 5, gamma = 7, s_cf, k_cf = 10; k_ii = 700, s_ii=200, k_u_u=200, s_uu = 50
