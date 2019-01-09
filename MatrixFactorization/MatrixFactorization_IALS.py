@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 from utils.auxUtils import filter_seen
 from tqdm import tqdm
+from utils.auxUtils import check_matrix
 # from Base.Recommender import Recommender
 # from MatrixFactorization.Cython.MF_RMSE import FunkSVD_sgd, AsySVD_sgd, AsySVD_compute_user_factors, BPRMF_sgd
 
@@ -209,4 +210,7 @@ class IALS_numpy():
         seen = user_profile.indices
         unseen_mask = np.in1d(ranking, seen, assume_unique=True, invert=True)
         return ranking[unseen_mask]
+
+    def get_estimated_ratings(self):
+        return check_matrix(np.dot(self.X, self.Y.T), 'csr')
 
