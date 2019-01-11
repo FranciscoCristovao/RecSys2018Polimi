@@ -12,9 +12,7 @@ import numpy as np
 import pandas as pd
 from utils.auxUtils import filter_seen
 from tqdm import tqdm
-from utils.auxUtils import check_matrix
-# from Base.Recommender import Recommender
-# from MatrixFactorization.Cython.MF_RMSE import FunkSVD_sgd, AsySVD_sgd, AsySVD_compute_user_factors, BPRMF_sgd
+from scipy.sparse import csr_matrix
 
 
 class IALS_numpy():
@@ -212,5 +210,4 @@ class IALS_numpy():
         return ranking[unseen_mask]
 
     def get_estimated_ratings(self):
-        return check_matrix(np.dot(self.X, self.Y.T), 'csr')
-
+        return np.dot(self.X, self.Y.T)

@@ -31,7 +31,7 @@ class HybridRS:
         self.cbf_recommender = CbfRS(tracks_data, self.at, self.k_cbf, self.shrinkage_cbf, tf_idf=self.tf_idf)
         self.col_i_i_recommender = ColBfIIRS(self.at, self.k_i_i, self.shrinkage_i_i, tf_idf=self.tf_idf)
         self.col_u_u_recommender = ColBfUURS(self.at, self.k_u_u, self.shrinkage_u_u, tf_idf=self.tf_idf)
-        self.als_recommender = IALS_numpy(num_factors=250)
+        self.als_recommender = IALS_numpy(num_factors=250, reg=100)
 
     def fit(self, train_data, lambda_i=0.001, lambda_j=0.001, topK_bpr=200, l1_ratio=0.1,
             topK_elasticNet=300, alpha_elasticNet=0.0002, sgd_mode='sgd'):
@@ -78,9 +78,8 @@ class HybridRS:
 
         estimated_ratings_aux2 = estimated_ratings_aux1 + e_r_slim_bpr.multiply(delta)
 
-        estimated_ratings_aux3 = estimated_ratings_aux2 + e_r_slim_elasticNet.multiply(omega)
+        estimated_ratings_final = estimated_ratings_aux2 + e_r_slim_elasticNet.multiply(omega)
 
-        estimated_ratings_final = estimated_ratings_aux3 + e_r_als.multiply(phi)
 
         # print("FINAL")
         # print(estimated_ratings_final[7].data[estimated_ratings_final[7].data.argsort()[::-1]])
@@ -88,12 +87,19 @@ class HybridRS:
         for k in playlist_ids:
             try:
                 row = estimated_ratings_final[k]
+                # getting the row from svd
+                # try with check matrix..
+                mf_row = sparse.csr_matrix(e_r_als[k]).multiply(phi)
+                # summing it to the row we are considering
+                row += mf_row
+                # aux contains the indices (track_id) of the most similar songs
                 indx = row.data.argsort()[::-1]
                 aux = row.indices[indx]
                 user_playlist = self.urm[k]
 
                 aux = np.concatenate((aux, self.top_pop_songs), axis=None)
-                top_songs = filter_seen(aux, user_playlist)[:self.at]
+
+                top_songs = filter_seen(aux, user_playlist)
 
                 string = ' '.join(str(e) for e in top_songs)
                 final_prediction.update({k: string})

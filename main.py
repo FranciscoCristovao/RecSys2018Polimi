@@ -13,33 +13,31 @@ from slimRS.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
 from svdRS.pureSVD import PureSVDRecommender
 import matplotlib.pyplot as plt
 from slimRS.slimElasticNet import SLIMElasticNetRecommender
-from hybrid_col_cbf_RS.hybrid_knn_slimBPR_elasticNet import HybridRS
-from hybrid_col_cbf_RS.hybrid_graph import HybridRS
-from hybrid_col_cbf_RS.hybrid_knn_slimBPR_elasticNet import HybridRS
+from hybrid_col_cbf_RS.hybrid_als_knn_slimBPR_elasticNet import HybridRS
 
-'''
+
 map_list = []
-knn_list = []
-ks = [5, 10, 15, 20, 25, 30, 35, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 250, 300]
+phi_list = []
+phis = [1, 5, 10, 15, 20, 30, 50, 100]
 evaluator = Evaluator()
-for k in ks:
+for phi in phis:
 
-    rs = CbfRS(tracks_data, k=k)
+    rs = HybridRS(tracks_data)
     rs.fit(train_data)
-    predictions = rs.recommend(target_data['playlist_id'])
+    predictions = rs.recommend(target_data['playlist_id'], phi=phi)
     map_ = evaluator.evaluate(predictions, test_data)
-    print("K: ", k)
+    print("PHI: ", phi)
     print("MAP: ", map_)
     map_list.append(map_)
-    knn_list.append(k)
-plt.plot(knn_list, map_list)
-plt.xlabel('K')
+    phi_list.append(phi)
+plt.plot(phi_list, map_list)
+plt.xlabel('phi')
 plt.ylabel('map')
-plt.title('Knn cbf Tuning')
+plt.title('Phi hybrid tuning')
 plt.grid(True)
 plt.show()
-'''
 
+'''
 rs = HybridRS(tracks_data, at=30)
 rs.fit(train_data)
 all_playlists = full_data['playlist_id'].drop_duplicates()
@@ -48,7 +46,7 @@ predictions = rs.recommend(all_playlists)
 save_dataframe('xgboost_train', dataframe=train_data)
 save_dataframe('xgboost_test', dataframe=test_data)
 save_dataframe('output/xgboost_start_80.csv', sep=',', dataframe=predictions)
-
+'''
 '''
 map_list = []
 e_list = []
