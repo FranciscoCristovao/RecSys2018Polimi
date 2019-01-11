@@ -29,7 +29,7 @@ class SLIMElasticNetRecommender():
         http://glaros.dtc.umn.edu/gkhome/fetch/papers/SLIM2011icdm.pdf
     """
 
-    def __init__(self, train_data, save=True, load_model=False, load_model_full=False):
+    def __init__(self, train_data, save=False, load_model=False, load_model_full=False):
 
         self.URM_train = buildURMMatrix(train_data)
         self.top_pop_songs = train_data['track_id'].value_counts().head(20).index.values

@@ -47,7 +47,7 @@ class HybridRS:
         self.slim_elasticNet_recommender.fit(l1_ratio=l1_ratio, topK=topK_elasticNet, alpha=alpha_elasticNet)
         self.als_recommender.fit(self.urm)
 
-    def recommend(self, playlist_ids, alpha=0.1, beta=1, gamma=1, delta=2, omega=30, phi=2, filter_top_pop=False):
+    def recommend(self, playlist_ids, alpha=0.1, beta=1, gamma=1, delta=2, omega=50, phi=2, filter_top_pop=False):
         print("Recommending... Am I filtering top_top songs?", filter_top_pop)
 
         final_prediction = {}
@@ -99,7 +99,7 @@ class HybridRS:
 
                 aux = np.concatenate((aux, self.top_pop_songs), axis=None)
 
-                top_songs = filter_seen(aux, user_playlist)
+                top_songs = filter_seen(aux, user_playlist)[:self.at]
 
                 string = ' '.join(str(e) for e in top_songs)
                 final_prediction.update({k: string})

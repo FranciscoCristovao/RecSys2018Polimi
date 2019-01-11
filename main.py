@@ -18,12 +18,12 @@ from hybrid_col_cbf_RS.hybrid_als_knn_slimBPR_elasticNet import HybridRS
 
 map_list = []
 phi_list = []
-phis = [1, 5, 10, 15, 20, 30, 50, 100]
+phis = [1, 5, 10, 20, 30, 50, 80, 100, 150]
 evaluator = Evaluator()
+rs = HybridRS(tracks_data)
+rs.fit(train_data)
 for phi in phis:
 
-    rs = HybridRS(tracks_data)
-    rs.fit(train_data)
     predictions = rs.recommend(target_data['playlist_id'], phi=phi)
     map_ = evaluator.evaluate(predictions, test_data)
     print("PHI: ", phi)
