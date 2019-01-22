@@ -16,9 +16,16 @@ from slimRS.slimElasticNet import SLIMElasticNetRecommender
 from hybrid_col_cbf_RS.hybrid_als_knn_slimBPR_elasticNet import HybridRS
 
 
+rs = HybridRS(tracks_data)
+rs.fit(full_data)
+pred = rs.recommend(target_data['playlist_id'])
+save_dataframe('output/hybrid_als.csv', sep=',', dataframe=pred)
+
+
+''' PHI TUNNING
 map_list = []
 phi_list = []
-phis = [1, 5, 10, 20, 30, 50, 80, 100, 150]
+phis = [8, 10, 12, 14, 16, 18, 20, 22, 24]
 evaluator = Evaluator()
 rs = HybridRS(tracks_data)
 rs.fit(train_data)
@@ -36,7 +43,7 @@ plt.ylabel('map')
 plt.title('Phi hybrid tuning')
 plt.grid(True)
 plt.show()
-
+'''
 '''
 rs = HybridRS(tracks_data, at=30)
 rs.fit(train_data)
